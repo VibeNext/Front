@@ -1,0 +1,17 @@
+{
+  "editor.defaultFormatter": "esbenp.prettier-vscode", // 기본 포맷터를 Prettier로
+  "editor.tabSize": 2,
+  "editor.formatOnSave": true,
+
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit",
+    "source.organizeImports": "explicit"
+  },
+
+  "javascript.format.enable": false, // VSCode 기본 JS 포맷터 끔(Prettier와 충돌 방지)
+  "files.autoSave": "onFocusChange",
+
+  "[javascriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  }
+}
