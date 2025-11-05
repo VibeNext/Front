@@ -14,7 +14,7 @@ const NAV_ITEMS = [
   { path: '/badge', label: '학습 뱃지', Icon: BadgeIcon },
 ];
 
-const TopNavigation = () => {
+const TopnNavigationBeforeLogin = () => {
   const navigate = useNavigate();
   const [activePath, setActivePath] = useState('/home');
 
@@ -58,7 +58,7 @@ const TopNavigation = () => {
   );
 };
 
-export default TopNavigation;
+export default TopnNavigationBeforeLogin;
 
 /* ---------------- styles ---------------- */
 
