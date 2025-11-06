@@ -1,7 +1,15 @@
+import 'pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css';
 import { createGlobalStyle } from 'styled-components';
 
 const GlobalStyle = createGlobalStyle`
 
+  @font-face {
+    font-family: 'DungGeunMo';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_six@1.0/DungGeunMo.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+  }
 * {
   margin: 0;
   padding: 0;
@@ -83,6 +91,8 @@ input::-webkit-inner-spin-button {
 
     @supports (width: 100svw) { width: 100svw; }
     @supports not (width: 100svw) { width: 100vw; }
+
+     font-family: ${({ theme }) => theme.fonts.families.body};
   }
 `;
 
