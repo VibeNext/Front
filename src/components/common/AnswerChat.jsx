@@ -9,8 +9,6 @@ const AnswerChat = () => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const chatRef = useRef(null);
-  const [isFetching, setIsFetching] = useState(false);
-  const [hasMore, setHasMore] = useState(true);
 
   // 채팅 내용 (더미 데이터 사용)
   useEffect(() => {
