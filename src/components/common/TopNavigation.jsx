@@ -20,7 +20,7 @@ const TopNavigation = () => {
   const [activePath, setActivePath] = useState('/home');
 
   return (
-    <SHearderWrap>
+    <SHeaderWrap>
       <SBar>
         <SBrand>
           <LogoIcon />
@@ -52,7 +52,7 @@ const TopNavigation = () => {
           <UserIcon />
         </SRight>
       </SBar>
-    </SHearderWrap>
+    </SHeaderWrap>
   );
 };
 
@@ -60,7 +60,7 @@ export default TopNavigation;
 
 /* ---------------- styles ---------------- */
 
-const SHearderWrap = styled.div`
+const SHeaderWrap = styled.div`
   position: sticky;
   z-index: 1000;
   top: 0;

@@ -14,12 +14,12 @@ const NAV_ITEMS = [
   { path: '/badge', label: '학습 뱃지', Icon: BadgeIcon },
 ];
 
-const TopnNavigationBeforeLogin = () => {
+const TopNavigationBeforeLogin = () => {
   const navigate = useNavigate();
   const [activePath, setActivePath] = useState('/home');
 
   return (
-    <SHearderWrap>
+    <SHeaderWrap>
       <SBar>
         <SBrand>
           <LogoIcon />
@@ -54,15 +54,15 @@ const TopnNavigationBeforeLogin = () => {
           </SButton>
         </SRight>
       </SBar>
-    </SHearderWrap>
+    </SHeaderWrap>
   );
 };
 
-export default TopnNavigationBeforeLogin;
+export default TopNavigationBeforeLogin;
 
 /* ---------------- styles ---------------- */
 
-const SHearderWrap = styled.div`
+const SHeaderWrap = styled.div`
   position: sticky;
   z-index: 1000;
   top: 0;
