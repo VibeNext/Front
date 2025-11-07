@@ -32,6 +32,16 @@ const AnswerChat = () => {
     setMessages(dummy);
   }, []);
 
+  // 새 메세지 추가될때마다 스크롤 맨 아래로 자동 이동(부드럽게 효과 추가)
+  useEffect(() => {
+  if (chatRef.current) {
+    chatRef.current.scrollTo({
+      top: chatRef.current.scrollHeight,
+      behavior: 'smooth',
+    });
+  }
+}, [messages]);
+
   // 새 메시지 전송
   const handleSend = () => {
     if (!input.trim()) return;
