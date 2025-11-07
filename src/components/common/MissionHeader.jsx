@@ -35,8 +35,8 @@ const MissionHeader = ({ initialStep = 1, stepNumber, onStepChange, title }) => 
         ))}
       </Container>
 
-      {/* 제목 속성값으로 받아오기 */}
-      {title && <Title>{title}</Title>}
+      {/* 아래 제목 영역 추가 */}
+      <Title>{title}</Title>
     </Wrapper>
   );
 };
