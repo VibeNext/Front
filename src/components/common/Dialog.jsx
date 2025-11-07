@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-
+import CloseIcon from '../../assets/icons/close.svg?react'; // SVG 파일 import (vite-plugin-svgr 필요)
 const Dialog = ({
   isOpen,
   onClose,
@@ -24,7 +24,11 @@ const Dialog = ({
         padding={padding}
         onClick={(e) => e.stopPropagation()}
       >
-        {!showButton && <CloseButton onClick={onClose}>×</CloseButton>}
+        {!showButton && (
+          <CloseButton onClick={onClose}>
+            <CloseIcon width='100%' height='100%' />
+          </CloseButton>
+        )}
 
         <IconWrapper $iconSize={iconSize}>{icon}</IconWrapper>
 
@@ -67,7 +71,7 @@ const DialogContainer = styled.div`
   position: relative;
   background: #fff;
   border-radius: 1rem;
-  padding: ${({ padding }) => padding || '1.5rem 1.5rem 1.5rem 1.5rem'};
+  padding: ${({ padding }) => padding || '1.5rem'};
   width: ${({ width }) => width || '24.5rem'};
   height: ${({ height }) => height || '22.185rem'};
   text-align: center;
@@ -75,20 +79,28 @@ const DialogContainer = styled.div`
 
   display: flex;
   flex-direction: column;
-  justify-content: center; /* 세로 중앙 정렬 */
-  align-items: center; /* 가로 중앙 정렬 */
+  justify-content: center;
+  align-items: center;
 `;
 
 const CloseButton = styled.button`
   width: 2.25rem;
   height: 2.25rem;
+  aspect-ratio: 1/1;
   position: absolute;
   top: 1rem;
   right: 1rem;
   background: transparent;
   border: none;
   cursor: pointer;
-  color: #999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  svg {
+    width: 100%;
+    height: 100%;
+  }
 `;
 
 const IconWrapper = styled.div`
@@ -106,9 +118,7 @@ const Title = styled.h2`
   text-align: center;
   font-family: Pretendard;
   font-size: 1.5rem;
-  font-style: normal;
   font-weight: 600;
-  line-height: 1.3125rem; /* 87.5% */
   margin-bottom: 0.75rem;
 `;
 
@@ -117,27 +127,21 @@ const Description = styled.p`
   text-align: center;
   font-family: Pretendard;
   font-size: 1rem;
-  font-style: normal;
   font-weight: 400;
-  line-height: 1.3125rem; /* 131.25% */
-  margin-bottom: ${({ showButton }) => (showButton ? '3rem' : '0')};
   line-height: 1.5;
+  margin-bottom: ${({ showButton }) => (showButton ? '3rem' : '0')};
   white-space: pre-line;
 `;
 
 const ActionButton = styled.button`
   width: 18.5rem;
-  padding: 0.625rem 1rem;
   height: 2.75rem;
-  gap: 10px;
   border: none;
   border-radius: 8px;
   background: var(--Brand-1, #5c9dff);
   color: #fff;
   font-family: Pretendard;
   font-size: 16px;
-  font-style: normal;
   font-weight: 700;
-  line-height: 21px; /* 131.25% */
   cursor: pointer;
 `;
