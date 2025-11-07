@@ -63,19 +63,20 @@ const CardContainer = styled.div`
           background: linear-gradient(
             180deg,
             rgba(134, 139, 163, 0.05) 0%,
-            rgba(134, 139, 163, 0.15) 100%
+            rgba(134, 139, 163, 0.2) 100%
           );
           box-shadow: 12.155px 12.155px 24.309px 0 rgba(134, 139, 163, 0.1);
         `
       : css`
           /* 라이트 버전 */
-          border: 2px solid #ffffff;
-          background:
-            linear-gradient(
-              180deg,
-              rgba(255, 255, 255, 0.2) 0%,
-              rgba(255, 255, 255, 0.4) 100%
-            ),
+          border: 2px solid #fff;
+
+          background: linear-gradient(
+            180deg,
+            rgba(255, 255, 255, 0.2) 0%,
+            rgba(255, 255, 255, 0.4) 100%
+          );
+
           box-shadow: 12.155px 12.155px 24.309px 0 rgba(134, 139, 163, 0.1);
         `}
 `;
