@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import nextBlack from '../../assets/icons/next_black.png';
 import nextGray from '../../assets/icons/next_gray.png';
 
-const MissionStepNav = ({ initialStep = 1, onStepChange, stepNumber, title}) => {
+const MissionHeader = ({ initialStep = 1, stepNumber, onStepChange, title }) => {
   const [currentStep, setCurrentStep] = useState(initialStep);
   const steps = ['Mission 01', 'Mission 02', 'Mission 03'];
 
@@ -41,7 +41,7 @@ const MissionStepNav = ({ initialStep = 1, onStepChange, stepNumber, title}) => 
   );
 };
 
-export default MissionStepNav;
+export default MissionHeader;
 
 
 //styled-components
