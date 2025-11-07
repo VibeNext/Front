@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import nextBlack from '../../assets/icons/next_black.png';
 import nextGray from '../../assets/icons/next_gray.png';
 
-const MissionStepNav = ({ initialStep = 1, onStepChange }) => {
+const MissionStepNav = ({ initialStep = 1, onStepChange, stepNumber, title}) => {
   const [currentStep, setCurrentStep] = useState(initialStep);
   const steps = ['Mission 01', 'Mission 02', 'Mission 03'];
 
@@ -15,7 +15,7 @@ const MissionStepNav = ({ initialStep = 1, onStepChange }) => {
   return (
     <Wrapper>
       <Container>
-        <StepBox>01 순차</StepBox>
+        <StepBox>{stepNumber}</StepBox>
 
         {steps.map((label, index) => (
           <React.Fragment key={index}>
@@ -36,7 +36,7 @@ const MissionStepNav = ({ initialStep = 1, onStepChange }) => {
       </Container>
 
       {/* 아래 제목 영역 추가 */}
-      <Title>요리사의 레시피 : 토마토 스프</Title>
+      <Title>{title}</Title>
     </Wrapper>
   );
 };
