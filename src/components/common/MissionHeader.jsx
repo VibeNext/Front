@@ -1,15 +1,16 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import styled from 'styled-components';
 import nextBlack from '../../assets/icons/next_black.png';
 import nextGray from '../../assets/icons/next_gray.png';
 
-const MissionHeader = ({ initialStep = 1, stepNumber, onStepChange, title }) => {
-  const [currentStep, setCurrentStep] = useState(initialStep);
+const MissionHeader = ({ stepNumber, title, stepId }) => {
+  const navigate = useNavigate();
+  const { missionId } = useParams(); // 현재 경로 파라미터 읽기
   const steps = ['Mission 01', 'Mission 02', 'Mission 03'];
 
   const handleClick = (index) => {
-    setCurrentStep(index + 1);
-    if (onStepChange) onStepChange(index + 1);
+    navigate(`/step/${stepId}/mission/${index + 1}`);
   };
 
   return (
@@ -20,14 +21,19 @@ const MissionHeader = ({ initialStep = 1, stepNumber, onStepChange, title }) => 
         {steps.map((label, index) => (
           <React.Fragment key={index}>
             <StepItem
-              active={currentStep === index + 1}
+              active={Number(missionId) === index + 1}
               onClick={() => handleClick(index)}
             >
               {label}
             </StepItem>
             {index < steps.length - 1 && (
               <Arrow
-                src={currentStep === index + 1 ? nextBlack : nextGray}
+                src={
+                  Number(missionId) === index + 1 ||
+                  Number(missionId) === index + 2
+                    ? nextBlack
+                    : nextGray
+                }
                 alt="arrow"
               />
             )}
@@ -35,7 +41,6 @@ const MissionHeader = ({ initialStep = 1, stepNumber, onStepChange, title }) => 
         ))}
       </Container>
 
-      {/* 아래 제목 영역 추가 */}
       <Title>{title}</Title>
     </Wrapper>
   );
@@ -49,7 +54,7 @@ const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
   gap: 20px;
-  padding: 20px 30px;
+  padding: 0rem 74.88rem 2.44rem 12.5rem ;
   border-radius: 12px;
 `;
 

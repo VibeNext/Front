@@ -1,4 +1,3 @@
-import 'pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css';
 import { createGlobalStyle } from 'styled-components';
 
 const GlobalStyle = createGlobalStyle`
