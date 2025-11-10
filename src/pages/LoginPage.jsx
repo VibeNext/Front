@@ -1,14 +1,55 @@
-import { useState } from 'react';
-import styled from 'styled-components';
+import { useForm } from 'react-hook-form';
+import { useNavigate } from 'react-router-dom';
+import styled, { css } from 'styled-components';
 import TopNavigationBeforeLogin from '../components/common/TopnNavigationBeforeLogin';
 
-const LoginPage = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+// API 연결 전, 가상의 성공 인증 정보
+const VALID_EMAIL = 'test@nextvibe.com';
+const VALID_PASSWORD = 'password123';
 
-  const handleLogin = (e) => {
-    e.preventDefault();
-    console.log('로그인 시도:', { email, password });
+const LoginPage = () => {
+  const navigate = useNavigate();
+  const {
+    register,
+    handleSubmit,
+    // 버튼 제어를 위해 isValid, isSubmitting, setError 추가
+    formState: { errors, isValid, isSubmitting },
+    setError,
+  } = useForm({
+    mode: 'onBlur',
+  });
+
+  //  API 호출 대신 가상의 인증 로직으로 대체
+  const onSubmit = async (data) => {
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+    const isEmailCorrect = data.email === VALID_EMAIL;
+    const isPasswordCorrect = data.password === VALID_PASSWORD;
+
+    if (!isEmailCorrect || !isPasswordCorrect) {
+      console.error('Login Failed (Mock)');
+
+      // 1. 이메일 오류
+      if (!isEmailCorrect) {
+        setError('email', {
+          type: 'manual',
+          message: '이메일이 등록되어 있지 않아요.',
+        });
+      }
+
+      // 2. 비밀번호 오류
+      else if (isEmailCorrect && !isPasswordCorrect) {
+        setError('password', {
+          type: 'manual',
+          message: '비밀번호가 일치하지 않아요.',
+        });
+      }
+      return;
+    }
+
+    //  로그인 성공 로직
+    console.log('Login Success (Mock):', data);
+    navigate('/home');
   };
 
   return (
@@ -19,26 +60,69 @@ const LoginPage = () => {
           <STitle>로그인</STitle>
           <SDescription>NEXTVIBE와 함께 컴퓨팅 사고력을 높이세요!</SDescription>
 
-          <SForm onSubmit={handleLogin}>
-            <SLabel>이메일</SLabel>
-            <SInput
-              type='email'
-              placeholder='이메일을 입력해주세요.'
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
+          <SForm onSubmit={handleSubmit(onSubmit)} noValidate>
+            {/* 이메일 필드 */}
+            <div>
+              <SLabel htmlFor='email'>이메일</SLabel>
+              <SInput
+                id='email'
+                type='email'
+                placeholder='이메일을 입력해주세요.'
+                autoComplete='email'
+                aria-invalid={!!errors.email}
+                {...register('email', {
+                  required: '이메일을 입력해 주세요.',
+                  pattern: {
+                    value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                    message: '올바른 이메일 형식이 아닙니다.', // 입력 중 오류 메시지
+                  },
+                })}
+                $hasError={!!errors.email}
+              />
+              {/* 오류 메시지 표시 */}
+              {errors.email && (
+                <SErrorMessage id='email-error'>
+                  {errors.email?.message}
+                </SErrorMessage>
+              )}
+            </div>
 
-            <SLabel>비밀번호</SLabel>
-            <SInput
-              type='password'
-              placeholder='비밀번호를 입력해주세요.'
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
+            {/* 비밀번호 필드 */}
+            <div>
+              <SLabel htmlFor='password'>비밀번호</SLabel>
+              <SInput
+                id='password'
+                type='password'
+                placeholder='비밀번호를 입력해주세요.'
+                autoComplete='current-password'
+                aria-invalid={!!errors.password}
+                // register와 유효성 검사 규칙 적용
+                {...register('password', {
+                  required: '비밀번호를 입력해 주세요.',
+                  minLength: {
+                    value: 6,
+                    message: '비밀번호는 6자리 이상이어야 합니다.',
+                  },
+                })}
+                $hasError={!!errors.password}
+              />
+              {/*  오류 메시지 표시 */}
+              {errors.password && (
+                <SErrorMessage id='password-error'>
+                  {errors.password?.message}
+                </SErrorMessage>
+              )}
+            </div>
 
-            <SButton type='submit'>로그인</SButton>
+            {/*  버튼 disabled 제어 및 로딩 상태 표시 */}
+            <SButton
+              type='submit'
+              $marginTop='1.5rem'
+              disabled={!isValid || isSubmitting}
+              aria-busy={isSubmitting}
+            >
+              {isSubmitting ? '로그인 중...' : '로그인'}
+            </SButton>
           </SForm>
 
           <SBottomText>
@@ -66,12 +150,12 @@ const SWrapper = styled.div`
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  align-items: center; /* ✅ 수직 중앙 */
-  justify-content: center; /* ✅ 수평 중앙 */
+  align-items: center;
+  justify-content: center;
 `;
 
 const SFormContainer = styled.div`
-  width: 31.8rem; /* ✅ Figma 기준 폭 */
+  width: 31.8rem;
   display: flex;
   flex-direction: column;
 `;
@@ -118,9 +202,9 @@ const SLabel = styled.label`
   font-weight: 700;
   line-height: 1.5rem; /* 150% */
   text-align: left;
+  display: block;
   margin-bottom: 0.5rem;
 `;
-
 const SInput = styled.input`
   width: 100%;
   height: 3.5rem;
@@ -135,13 +219,35 @@ const SInput = styled.input`
     color: #a0a3aa;
   }
 
+  /*  1. 기본 스타일: 오류 없을 때와 오류 있을 때의 기본 테두리 */
+  ${({ $hasError }) =>
+    $hasError &&
+    css`
+      /* 오류가 있을 때 기본 테두리 색상 */
+      border-color: #ff9a8c;
+    `}
+
+  /* 2. 포커스 스타일*/
   &:focus {
-    border-color: #5171ff;
     outline: none;
-    background-color: #f7f8fa;
-    box-shadow: 0 0 0 2px rgba(81, 113, 255, 0.15);
+
+    ${({ $hasError }) =>
+      !$hasError
+        ? css`
+            /* 에러 없을 때 포커스: #eff5ff  */
+            background-color: #eff5ff;
+            border-color: #5c9dff;
+            box-shadow: 0 0 0 2px rgba(81, 113, 255, 0.15);
+          `
+        : css`
+            /* 에러 있을 때 포커스: 오류 스타일 유지 */
+            border-color: #ff9a8c;
+            box-shadow: 0 0 0 2px rgba(255, 92, 92, 0.2);
+            background-color: #f5f5f7;
+          `}
   }
-  margin-bottom: 1.5rem;
+
+  margin-bottom: 0.5rem;
 `;
 
 const SButton = styled.button`
@@ -161,21 +267,36 @@ const SButton = styled.button`
   line-height: 1.5rem; /* 120% */
   cursor: pointer;
   transition: background 0.2s ease;
+
+  margin-top: ${({ $marginTop }) => $marginTop || '0'}; /* 마진 prop 사용 */
+
+  /* disabled 상태 스타일 */
+  &:disabled {
+    background: #c4c7d3;
+    cursor: not-allowed;
+    opacity: 0.8;
+  }
+`;
+
+// 오류 메시지 스타일 추가
+const SErrorMessage = styled.p`
+  color: #ff5c5c;
+  font-size: 0.875rem;
+  text-align: left;
+  margin-bottom: 1rem; /* 다음 필드와의 간격 */
+  margin-left: 0.1rem;
+  font-weight: 500;
 `;
 
 const SBottomText = styled.p`
   margin-top: 1.5rem;
   font-size: 0.95rem;
-  color: #666;
+  color: #718096;
   text-align: center;
 
   a {
     color: #5c9dff;
-    font-weight: 600;
+    font-weight: 700;
     text-decoration: none;
-
-    &:hover {
-      text-decoration: underline;
-    }
   }
 `;
