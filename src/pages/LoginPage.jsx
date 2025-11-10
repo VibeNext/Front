@@ -153,8 +153,6 @@ const SWrapper = styled.div`
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  align-items: center;
-  justify-content: center;
 `;
 
 const SFormContainer = styled.div`
