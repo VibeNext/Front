@@ -10,7 +10,7 @@ const MissionCard = ({
 }) => {
   return (
     <CardContainer size={size} themeType={theme}>
-      <MissionText size={size}>
+      <MissionText size={size} themeType={theme}>
         {size === 'large' ? `Mission ${missionNumber}` : missionNumber}
       </MissionText>
       <Title size={size} themeType={theme}>
@@ -18,7 +18,7 @@ const MissionCard = ({
       </Title>
       {size === 'large' && (
         <>
-          <ImageWrapper>
+          <ImageWrapper size={size}>
             <img src={imageSrc} alt={title} />
           </ImageWrapper>
           <Description size={size} themeType={theme}>
@@ -97,8 +97,7 @@ const Title = styled.h2`
   font-weight: 400;
   line-height: 1.4;
   color: ${({ themeType }) => (themeType === 'dark' ? '#646879' : '#191927')};
-  '#191927'margin-bottom: ${({ size }) =>
-    size === 'large' ? '1.25rem' : '0.75rem'};
+  margin-bottom: ${({ size }) => (size === 'large' ? '1.25rem' : '0.75rem')};
   text-align: center;
 `;
 
