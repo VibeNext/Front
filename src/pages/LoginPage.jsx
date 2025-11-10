@@ -1,7 +1,8 @@
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import styled, { css } from 'styled-components';
-import TopNavigationBeforeLogin from '../components/common/TopnNavigationBeforeLogin';
+import TopNavigation from '../components/common/TopNavigation.jsx';
+import useAuthStore from '../stores/useAuthStore';
 
 // API 연결 전, 가상의 성공 인증 정보
 const VALID_EMAIL = 'test@nextvibe.com';
@@ -49,12 +50,14 @@ const LoginPage = () => {
 
     //  로그인 성공 로직
     console.log('Login Success (Mock):', data);
+    const login = useAuthStore.getState().login;
+    login({ id: 1, email: data.email });
     navigate('/home');
   };
 
   return (
     <SPageContainer>
-      <TopNavigationBeforeLogin />
+      <TopNavigation />
       <SWrapper>
         <SFormContainer>
           <STitle>로그인</STitle>
