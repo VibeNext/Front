@@ -52,7 +52,7 @@ const LoginPage = () => {
     console.log('Login Success (Mock):', data);
     const login = useAuthStore.getState().login;
     login({ id: 1, email: data.email });
-    navigate('/home');
+    navigate('/');
   };
 
   return (
@@ -103,8 +103,8 @@ const LoginPage = () => {
                 {...register('password', {
                   required: '비밀번호를 입력해 주세요.',
                   minLength: {
-                    value: 6,
-                    message: '비밀번호는 6자리 이상이어야 합니다.',
+                    value: 8,
+                    message: '비밀번호는 8자리 이상이어야 합니다.',
                   },
                 })}
                 $hasError={!!errors.password}
@@ -153,6 +153,7 @@ const SWrapper = styled.div`
   display: flex;
   align-items: flex-start;
   justify-content: center;
+  align-items: center;
 `;
 
 const SFormContainer = styled.div`
