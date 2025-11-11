@@ -31,7 +31,7 @@ const useAuthStore = create(
         set({ user: u, isAuthenticated: true });
       },
 
-      // 로그아웃: 전부 초기화
+      // 로그아웃: 로그인 상태 해제
       logout: () => set({ isAuthenticated: false }),
     }),
     {
