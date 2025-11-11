@@ -1,5 +1,4 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import LogoTextIcon from '../../assets/icons/NEXTVIBE.svg?react';
 import BadgeIcon from '../../assets/icons/badge.svg?react';
@@ -16,7 +15,7 @@ const NAV_ITEMS = [
 
 const TopNavigationBeforeLogin = () => {
   const navigate = useNavigate();
-  const [activePath, setActivePath] = useState('/home');
+  const location = useLocation();
 
   return (
     <SHeaderWrap>
@@ -28,14 +27,13 @@ const TopNavigationBeforeLogin = () => {
 
         <SNav>
           {NAV_ITEMS.map(({ path, label, Icon }) => {
-            const active = activePath.startsWith(path);
+            const active = location.pathname.startsWith(path);
             return (
               <SNavBtn
                 key={path}
                 to={path}
                 type='button'
                 $active={active}
-                onClick={() => setActivePath(path)}
                 aria-current={active ? 'page' : undefined}
               >
                 <SIcon $active={active}>
