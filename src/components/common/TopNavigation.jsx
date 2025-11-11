@@ -22,7 +22,7 @@ const TopNavigation = () => {
 
   // 전역 인증 상태
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
-  const logout = useAuthStore((s) => s.logout);
+  // const logout = useAuthStore((s) => s.logout);
 
   return (
     <SHeaderWrap>
