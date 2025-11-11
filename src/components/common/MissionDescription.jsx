@@ -2,7 +2,7 @@ import styled from 'styled-components';
 import commentIcon from '../../assets/icons/comment.png';
 import lineIcon from '../../assets/icons/Line23.png';
 
-const MissionDescription = ({ instruction, images = [] }) => {
+const MissionDescription = ({ children }) => {
   return (
     <Wrapper>
       <Header>
@@ -12,19 +12,8 @@ const MissionDescription = ({ instruction, images = [] }) => {
 
       <Line src={lineIcon} alt="divider" />
 
-      {/* 문제 제목, 설명 */}
-      <TextSection>
-        <Instruction>{instruction}</Instruction>
-      </TextSection>
-
-      {/* 이미지 리스트 */}
-      {images.length > 0 && (
-        <ImageSection>
-          {images.map((src, idx) => (
-            <DescripImg key={idx} src={src} alt={`ingredient-${idx}`} />
-          ))}
-        </ImageSection>
-      )}
+      {/* MissionPage에서 전달한 내용 렌더링 */}
+      <Content>{children}</Content>
     </Wrapper>
   );
 };
@@ -72,33 +61,12 @@ const Line = styled.img`
 `;
 
 // 설명란
-const TextSection = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-`;
-
-const Instruction = styled.p`
-  font-size: 1.125rem;
-  color: #555;
-  line-height: 1.6;
-  margin: 0;
-  white-space: pre-line;
-  padding: 1.75rem 1.5rem 1.75rem 1.5rem;
-`;
-
-const ImageSection = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: flex-end;
-  flex-wrap: wrap;
-  gap: 1.5rem;
-  margin-top: 2rem;
-`;
-
-const DescripImg = styled.img`
-  width: 90px;
-  height: 90px;
-  object-fit: contain;
-  border-radius: 10px;
+const Content = styled.div`
+  padding: 1.75rem 1.5rem;
+  color: var(--Black, #191927);
+  font-family: Pretendard;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 150%;
 `;

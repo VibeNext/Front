@@ -54,7 +54,7 @@ const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
   gap: 20px;
-  padding: 0rem 74.88rem 2.44rem 12.5rem ;
+  padding: 0rem 0rem 2.44rem 12.5rem ;
   border-radius: 12px;
 `;
 
