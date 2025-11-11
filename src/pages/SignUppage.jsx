@@ -5,11 +5,12 @@ import styled, { css } from 'styled-components';
 import CheckIcon from '../assets/icons/check.svg?react';
 import Dialog from '../components/common/Dialog.jsx';
 import TopNavigation from '../components/common/TopNavigation.jsx';
+import useAuthStore from '../stores/useAuthStore';
 
 const SignUpPage = () => {
   const navigate = useNavigate();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-
+  const registerUser = useAuthStore((s) => s.registerUser);
   const {
     register,
     handleSubmit,
@@ -41,7 +42,7 @@ const SignUpPage = () => {
       return;
     }
 
-    console.log('회원가입 성공 (Mock):', data);
+    registerUser({ name: data.name, email: data.email });
     setIsDialogOpen(true);
   };
 
@@ -156,7 +157,6 @@ const SignUpPage = () => {
         </SFormContainer>
       </SWrapper>
 
-      {/* 회원가입 완료 다이얼로그 */}
       <Dialog
         isOpen={isDialogOpen}
         onClose={() => setIsDialogOpen(false)}
@@ -164,7 +164,10 @@ const SignUpPage = () => {
         title='회원가입이 완료되었어요!'
         description={`이제 NEXTVIBE의 학습을 시작해보세요.`}
         buttonText='로그인하러 가기'
-        onButtonClick={() => navigate('/login')}
+        onButtonClick={async () => {
+          await new Promise((r) => setTimeout(r, 200)); // 잠깐 대기 (persist 저장 시간 확보)
+          navigate('/login'); // 로그인 페이지로 이동
+        }}
       />
     </SPageContainer>
   );

@@ -11,7 +11,7 @@ import LogoIcon from '../../assets/icons/서비스 로고.svg?react';
 
 // 라우팅 전 임시 path (나중에 ROUTE_PATH로 교체)
 const NAV_ITEMS = [
-  { path: '/home', label: '홈', Icon: HomeIcon },
+  { path: '/', label: '홈', Icon: HomeIcon },
   { path: '/learning', label: '학습 단계', Icon: LearningIcon },
   { path: '/badge', label: '학습 뱃지', Icon: BadgeIcon },
 ];
@@ -21,8 +21,7 @@ const TopNavigation = () => {
   const location = useLocation();
 
   // 전역 인증 상태
-  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
-  // const logout = useAuthStore((s) => s.logout);
+  const { isAuthenticated, user } = useAuthStore();
 
   return (
     <SHeaderWrap>
@@ -38,7 +37,10 @@ const TopNavigation = () => {
 
         <SNav>
           {NAV_ITEMS.map(({ path, label, Icon }) => {
-            const active = location.pathname.startsWith(path);
+            const active =
+              path === '/'
+                ? location.pathname === '/' // 홈만 정확히 일치해야 활성화됨
+                : location.pathname.startsWith(path);
             return (
               <SNavBtn
                 key={path}
@@ -57,14 +59,18 @@ const TopNavigation = () => {
 
         <SRight>
           {isAuthenticated ? (
-            // 로그인 상태: 프로필 아이콘 (필요 시 드롭다운/마이페이지로 확장)
             <ProfileBtn
               type='button'
               aria-label='프로필로 이동'
               onClick={() => navigate('/mypage')}
               title='프로필'
             >
-              <UserIcon />
+              {/* 회원가입 시 부여된 아바타가 있다면 표시, 없으면 기본 아이콘 */}
+              {user?.avatar ? (
+                <SProfileImage src={user.avatar} alt='프로필 이미지' />
+              ) : (
+                <UserIcon />
+              )}
             </ProfileBtn>
           ) : (
             // 로그아웃(미인증) 상태: 기존 before-login 우측 버튼 그대로
@@ -199,4 +205,11 @@ const ProfileBtn = styled.button`
   padding: 0;
   cursor: pointer;
   line-height: 0;
+`;
+
+const SProfileImage = styled.img`
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
 `;
