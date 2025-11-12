@@ -10,13 +10,23 @@ const Router = () => {
         <Route path='/' element={<div>홈</div>} />
 
         {/* Step 01 (순차) */}
-        <Route path="/step/1/mission/:missionId" element={<MissionPage_01 />} />
+        <Route
+          path="/step/1/mission/:missionId"
+          element={<MissionPage_01 key={window.location.pathname} />}
+        />
+
 
         {/* Step 02 (조건) */}
-        <Route path="/step/2/mission/:missionId" element={<MissionPage_02 />} />
+        <Route
+          path="/step/2/mission/:missionId"
+          element={<MissionPage_02 key={window.location.pathname} />}
+        />
 
         {/* Step 03 (반복) */}
-        <Route path="/step/3/mission/:missionId" element={<MissionPage_03 />} />
+        <Route
+          path="/step/3/mission/:missionId"
+          element={<MissionPage_03 key={window.location.pathname} />}
+        />
 
       </Routes>
     </BrowserRouter>
