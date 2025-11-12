@@ -12,7 +12,12 @@ import LogoIcon from '../../assets/icons/서비스 로고.svg?react';
 // 라우팅 전 임시 path (나중에 ROUTE_PATH로 교체)
 const NAV_ITEMS = [
   { path: '/', label: '홈', Icon: HomeIcon },
-  { path: '/learning', label: '학습 단계', Icon: LearningIcon },
+  {
+    path: '/step/1/mission/1',
+    basePath: '/step',
+    label: '학습 단계',
+    Icon: LearningIcon,
+  },
   { path: '/badge', label: '학습 뱃지', Icon: BadgeIcon },
 ];
 
@@ -39,8 +44,9 @@ const TopNavigation = () => {
           {NAV_ITEMS.map(({ path, label, Icon }) => {
             const active =
               path === '/'
-                ? location.pathname === '/' // 홈만 정확히 일치해야 활성화됨
-                : location.pathname.startsWith(path);
+                ? location.pathname === '/' // 홈만 정확히 일치
+                : location.pathname.startsWith(`${path}/`) ||
+                  location.pathname === path;
             return (
               <SNavBtn
                 key={path}
