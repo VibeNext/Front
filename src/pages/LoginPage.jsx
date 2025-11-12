@@ -9,6 +9,7 @@ const VALID_EMAIL = 'test@nextvibe.com';
 const VALID_PASSWORD = 'password123';
 
 const LoginPage = () => {
+  const user = useAuthStore((s) => s.user);
   const navigate = useNavigate();
   const {
     register,
@@ -23,10 +24,9 @@ const LoginPage = () => {
   //  API 호출 대신 가상의 인증 로직으로 대체
   const onSubmit = async (data) => {
     await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    const isEmailCorrect = data.email === VALID_EMAIL;
-    const isPasswordCorrect = data.password === VALID_PASSWORD;
-
+    const isEmailCorrect = data.email === user?.email;
+    const isPasswordCorrect = true;
+    // 비번은 무시 (API 연결 전 단계)
     if (!isEmailCorrect || !isPasswordCorrect) {
       console.error('Login Failed (Mock)');
 
@@ -51,7 +51,7 @@ const LoginPage = () => {
     //  로그인 성공 로직
     console.log('Login Success (Mock):', data);
     const login = useAuthStore.getState().login;
-    login({ id: 1, email: data.email });
+    login();
     navigate('/');
   };
 
