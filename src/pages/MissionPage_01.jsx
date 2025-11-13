@@ -1,5 +1,6 @@
 // Step 01 순서 페이지
 
+import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import styled from 'styled-components';
 import AnswerChat from '../components/common/AnswerChat.jsx';
@@ -18,9 +19,15 @@ import soupImg from '../assets/icons/soup.png';
 import tomatoImg from '../assets/icons/tomato.png';
 import waterImg from '../assets/icons/water.png';
 
+import botIcon from '../assets/icons/bot.png';
+
 const MissionPage_01 = () => {
+  const [status, setStatus] = useState('default'); // default,success,fail
   const { missionId } = useParams();
   const mission = Number(missionId);
+  useEffect(() => {
+    setStatus('default'); 
+  }, [missionId]);
 
   const renderMissionContent = () => {
     switch (mission) {
@@ -139,23 +146,70 @@ const MissionPage_01 = () => {
             ? '요리사의 레시피: 버섯 스프'
             : '요리사의 레시피: 손님의 스프'}
           initialStep={mission}
+          status={status}
         />
 
         {/* 메인 레이아웃 */}
         <MainLayout>
           {/* 왼쪽: 문제 설명 + 정답 확인 */}
           <LeftPanel>
-            <MissionDescription>
-              {renderMissionContent()}
-            </MissionDescription>
-            <AnswerCheckContainer status="default">
+            <MissionDescription>{renderMissionContent()}</MissionDescription>
+
+            {/* 정답 확인 영역 - 상태 연동 */}
+            <AnswerCheckContainer status={status}>
+              {/* 여기에 정답 이미지는 나중에 children으로 들어감 */}
             </AnswerCheckContainer>
           </LeftPanel>
 
           {/* 오른쪽: 문제 풀이 */}
           <RightPanel>
-            <AnswerChat />
+            {(() => {
+              switch (mission) {
+                case 1:
+                  return (
+                    <AnswerChat
+                      key={missionId}
+                      botIcon={botIcon}
+                      initialMessage={`레시피는 다음과 같은 형식으로 작성해주세요!<br><span style="color:#868ba3;">예시) “1. 00하기 / 2. 00하기”</span>`}
+                      correctMessage={`<strong style="color:#37AF00;">정답입니다!</strong><br><br>따뜻하고 맛있는 <b>토마토 스프</b>가 완성되었어요.<br>요리사로서의 첫걸음을 성공적으로 내딛었네요!<br><span style="color:#868ba3; font-weight:500;">레시피가 순차적으로 작동했다면 정답으로 인정됩니다.</span>`}
+                      wrongMessage={`<strong style="color:#FF644F;">오답입니다!</strong><br><br>레시피 순서를 다시 확인해주세요!<br><span style="color:#868ba3; font-weight:500;">예: 불을 켜야만 물을 끓일 수 있겠죠?</span>`}
+                      status={status}
+                      setStatus={setStatus}
+                    />
+                  );
+
+                case 2:
+                  return (
+                    <AnswerChat
+                      key={missionId}
+                      botIcon={botIcon}
+                      initialMessage={`1. 잘못된 레시피<br>레시피는 다음과 같은 형식으로 작성해주세요!<br><span style="color:#868ba3;">예시) “ 1. 00하기 / 2. 00하기 ”</span><br><br>2. 레시피가 잘못된 이유<br>잘못된 이유는 다음과 같이 서술형으로 작성해 주세요!<br><span style="color:#868ba3;">예시) “ ~라서 레시피가 순차적으로 적합하지 않아요. ”</span>`}
+                      correctMessage={`<strong style="color:#37AF00;">정답입니다!</strong><br><br>잘못된 레시피를 적절하게 고치는 방법까지 터득하셨네요! 이제 프로 요리사가 되기 위한 마지막 단계로 가볼까요?<br><span style="color:#868ba3; font-weight:500;">1. 잘못된 레시피를 정확하게 찾으셨다면, 정답으로 인정됩니다. </span><br><span style="color:#868ba3; font-weight:500;">2. 레시피가 잘못된 이유를 순차적인 개념과 함께 타당하게 제시하였다면, 정답으로 인정됩니다.  </span>`}
+                      wrongMessage={`<strong style="color:#FF644F;">오답입니다!</strong><br><br>레시피를 다시 점검해주세요.<br><span style="color:#868ba3; font-weight:500;">1. 잘피드백 문장 (레시피의 전후 관계를 다시 확인해주세요! 예를 들어, 불을 먼저 켜야만 나중에 끌 수 있겠죠?) </span><br><span style="color:#868ba3; font-weight:500;">2. 피드백 문장 (해당 레시피가 왜 잘못되었을까요? 순차적인 개념과 함께 생각해봅시다.)  </span>`}
+                      tatus={status}
+                      setStatus={setStatus}
+                    />
+                  );
+
+                case 3:
+                  return (
+                    <AnswerChat
+                      key={missionId}
+                      botIcon={botIcon}
+                      initialMessage={`레시피는 다음과 같은 형식으로 작성해주세요!<br>예시) “1. 00하기 / 2. 00하기”`}
+                      correctMessage={`<strong style="color:#37AF00;">버섯과 꿀이 들어가고 허브가 뿌려진</strong><br><strong style="color:#37AF00;">매우 맛있는 스프가 완성되었어요!</strong><br><br>손님의 주문에 맞춰 매우 맛있는 스프를 요리해낸 당신! 프로 요리사로서, 이제 어떤 스프든 맛있게 만들어낼 수 있을 거에요!<br><span style="color:#868ba3; font-weight:500;">손님의 주문에 맞춰 레시피가 논리에 문제 없이 순차적으로 작동한다면, 정답으로 인정됩니다. </span>`}
+                      wrongMessage={`<strong style="color:#FF644F;">맛이 밍밍한</strong><br><strong style="color:#FF644F;">아쉬운 스프가 완성되었어요!</strong><br><br>레시피를 다시 점검해주세요.<br><span style="color:#868ba3; font-weight:500;">* 피드백 문장 (곰 손님의 주문을 다시 확인해보고, 순차적으로 문제 없도록 요리에 적용해보세요!)</span>`}
+                      status={status}
+                      setStatus={setStatus}
+                    />
+                  );
+
+                default:
+                  return null;
+              }
+            })()}
           </RightPanel>
+
         </MainLayout>
       </ContentWrap>
     </Wrapper>
