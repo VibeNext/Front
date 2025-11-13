@@ -18,11 +18,34 @@ const AnswerCheckContainer = ({
         {sandboxed ? (
           <SandboxBox>
             <SandboxedFrame
-              // 필요하면 최소 스타일 주입 가능
               headCSS={`
-                body { display:flex; align-items:center; justify-content:center; }
-                img { max-width: 100%; height: auto; display:block; }
-              `}
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      overflow: hidden; /* ✅ 내부 스크롤 제거 */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: white;
+       flex-direction: column; 
+    }
+    img {
+      height: auto;
+      width: auto;
+      object-fit: contain;
+      display: block;
+      margin: 0 auto;
+    }
+    p {
+      margin: 1rem 0 0 0;
+      color: #868BA3;
+      font-family: Pretendard, sans-serif;
+      font-size: 1rem;
+      font-weight: 500;
+      text-align: center;
+    }
+  `}
             >
               {children}
             </SandboxedFrame>
@@ -45,10 +68,12 @@ const Container = styled.div`
   border: 1.5px solid
     ${({ status }) =>
       status === 'success'
-        ? 'var(--Success, #76CA66)'
+        ? 'var(--Success, #76CA66)' // 정답: 초록색
         : status === 'fail'
-          ? 'var(--Error, #FF9A8C)'
-          : 'var(--Gray-3, #c4c7d3)'};
+          ? 'var(--Error, #FF9A8C)' // 오답: 빨강
+          : status === 'checking'
+            ? 'var(--Brand-2, #7DB1FF)' // 정답확인 중: 파랑
+            : 'var(--Gray-3, #C4C7D3)'};
   transition: border-color 0.3s ease;
 `;
 
@@ -85,6 +110,8 @@ const Content = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  text-align: center;
+  margin-top: 4.81rem;
 `;
 
 const SandboxBox = styled.div`
