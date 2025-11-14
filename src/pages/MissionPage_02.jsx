@@ -21,15 +21,48 @@ import keyCXImg from '../assets/icons/key_c_x.png';
 
 import botIcon from '../assets/icons/bot2.png';
 
+import defaultImg from '../assets/icons/missionpage_2/default.svg';
+
+import img1_checking from '../assets/icons/missionpage_2/1_checking.svg';
+import img1_fail from '../assets/icons/missionpage_2/1_fail.svg';
+import img1_success from '../assets/icons/missionpage_2/1_success.svg';
+
+import img2_checking from '../assets/icons/missionpage_2/2_checking.svg';
+import img2_fail from '../assets/icons/missionpage_2/2_fail.svg';
+import img2_success from '../assets/icons/missionpage_2/2_success.svg';
+
+import img3_checking from '../assets/icons/missionpage_2/3_checking.svg';
+import img3_fail from '../assets/icons/missionpage_2/3_fail.svg';
+import img3_success from '../assets/icons/missionpage_2/3_success.svg';
 
 const MissionPage_02 = () => {
   const [status, setStatus] = useState('default'); // default,success,fail
   const { missionId } = useParams();
   const mission = Number(missionId);
   useEffect(() => {
-    setStatus('default'); 
+    setStatus('default');
   }, [missionId]);
 
+  const images = {
+    1: {
+      default: defaultImg,
+      checking: img1_checking,
+      success: img1_success,
+      fail: img1_fail,
+    },
+    2: {
+      default: defaultImg,
+      checking: img2_checking,
+      success: img2_success,
+      fail: img2_fail,
+    },
+    3: {
+      default: defaultImg,
+      checking: img3_checking,
+      success: img3_success,
+      fail: img3_fail,
+    },
+  };
 
   const renderMissionContent = () => {
     switch (mission) {
@@ -37,25 +70,38 @@ const MissionPage_02 = () => {
         return (
           <>
             <p>손재주가 뛰어난 건축가인 당신!</p>
-            <p style={{ marginBottom: '1rem' }}>뚝딱뚝딱 새로 지은 집의 문이 완성됐어요.</p>
+            <p style={{ marginBottom: '1rem' }}>
+              뚝딱뚝딱 새로 지은 집의 문이 완성됐어요.
+            </p>
             <p>이제 문단속을 위해 하나의 열쇠로만 문이 열리도록 해야해요.</p>
-            <p>아래 그림을 보고, 어떤 열쇠로 문이 열리고 닫히는지 직접 조건문을 만들어 봅시다!</p>
+            <p>
+              아래 그림을 보고, 어떤 열쇠로 문이 열리고 닫히는지 직접 조건문을
+              만들어 봅시다!
+            </p>
 
             <ImageRow>
               <ImageItem>
                 <small>열쇠 A</small>
-                <img src={keyAImg} alt="열쇠 A" />
+                <img src={keyAImg} alt='열쇠 A' />
               </ImageItem>
               <ImageItem>
                 <small>열쇠 B</small>
-                <img src={keyBImg} alt="열쇠 B" />
+                <img src={keyBImg} alt='열쇠 B' />
               </ImageItem>
               <ImageItem>
                 <small>열쇠 C</small>
-                <img src={keyCImg} alt="열쇠 C" />
+                <img src={keyCImg} alt='열쇠 C' />
               </ImageItem>
               <ImageItem>
-                <img src={doorImg} alt="문" style={{ width: '5.5rem', height: '8.875rem', marginLeft: '2rem' }}/>
+                <img
+                  src={doorImg}
+                  alt='문'
+                  style={{
+                    width: '5.5rem',
+                    height: '8.875rem',
+                    marginLeft: '2rem',
+                  }}
+                />
               </ImageItem>
             </ImageRow>
           </>
@@ -65,28 +111,44 @@ const MissionPage_02 = () => {
         return (
           <>
             <p>앗! 잠시 자리를 비운 사이, 누군가가 잠금장치를 망가뜨렸어요!</p>
-            <p style={{ marginBottom: '1rem' }}>방해꾼이 잠금장치를 엉망으로 만들어버린 바람에, 문이 이상하게 작동하기 시작했어요.</p>
-            <p>아래 그림을 보고, 잠금장치에서 무엇이 잘못되었는지 설명해주세요. </p>
-            <p>그 후 잠금장치가 올바르게 작동하도록 새로운 조건문을 직접 작성해봅시다!</p>
+            <p style={{ marginBottom: '1rem' }}>
+              방해꾼이 잠금장치를 엉망으로 만들어버린 바람에, 문이 이상하게
+              작동하기 시작했어요.
+            </p>
+            <p>
+              아래 그림을 보고, 잠금장치에서 무엇이 잘못되었는지
+              설명해주세요.{' '}
+            </p>
+            <p>
+              그 후 잠금장치가 올바르게 작동하도록 새로운 조건문을 직접
+              작성해봅시다!
+            </p>
 
             <ImageRow>
               <ImageItem>
                 <small>열쇠 A</small>
-                <img src={keyAOImg} alt="열쇠 A" />
+                <img src={keyAOImg} alt='열쇠 A' />
               </ImageItem>
               <ImageItem>
                 <small>열쇠 B</small>
-                <img src={keyBOImg} alt="열쇠 B" />
+                <img src={keyBOImg} alt='열쇠 B' />
               </ImageItem>
               <ImageItem>
                 <small>열쇠 C</small>
-                <img src={keyCXImg} alt="열쇠 C" />
+                <img src={keyCXImg} alt='열쇠 C' />
               </ImageItem>
               <ImageItem>
-                <img src={dooropenImg} alt="문" style={{ width: '5.5rem', height: '8.875rem', marginLeft: '2rem' }}/>
+                <img
+                  src={dooropenImg}
+                  alt='문'
+                  style={{
+                    width: '5.5rem',
+                    height: '8.875rem',
+                    marginLeft: '2rem',
+                  }}
+                />
               </ImageItem>
             </ImageRow>
-
           </>
         );
 
@@ -94,26 +156,67 @@ const MissionPage_02 = () => {
         return (
           <>
             <p>건축가로서 능력을 인정받은 당신! </p>
-            <p style={{ marginBottom: '1rem' }}>이번에는 은행에서 새로운 잠금장치를 의뢰했어요. </p>
-            <p>보다 뛰어난 보안을 위해, 이전보다 복잡한 규칙으로 문이 열리도록 만들어야 해요.</p>
-            <p>아래 그림을 보고, 새로운 잠금장치에 맞는 조건문을 직접 작성해보세요!</p>
-            
-            <ImageRow style={{ marginTop: '0.5rem', gap: '0.75rem'}}>
+            <p style={{ marginBottom: '1rem' }}>
+              이번에는 은행에서 새로운 잠금장치를 의뢰했어요.{' '}
+            </p>
+            <p>
+              보다 뛰어난 보안을 위해, 이전보다 복잡한 규칙으로 문이 열리도록
+              만들어야 해요.
+            </p>
+            <p>
+              아래 그림을 보고, 새로운 잠금장치에 맞는 조건문을 직접
+              작성해보세요!
+            </p>
+
+            <ImageRow style={{ marginTop: '0.5rem', gap: '0.75rem' }}>
               {/* 왼쪽 열쇠 세트 */}
               <LockSetGroup>
                 <LockSet>
                   <KeyGroup>
                     <ImageItem>
-                      <small style={{ fontSize: '0.6075rem', lineHeight: '0.91125rem'}}>열쇠 A</small>
-                      <img src={keyAImg} alt="열쇠 A" style={{ width: '3.52269rem', height: '5.43169rem'}}/>
+                      <small
+                        style={{
+                          fontSize: '0.6075rem',
+                          lineHeight: '0.91125rem',
+                        }}
+                      >
+                        열쇠 A
+                      </small>
+                      <img
+                        src={keyAImg}
+                        alt='열쇠 A'
+                        style={{ width: '3.52269rem', height: '5.43169rem' }}
+                      />
                     </ImageItem>
                     <ImageItem>
-                      <small style={{ fontSize: '0.6075rem', lineHeight: '0.91125rem'}}>열쇠 B</small>
-                      <img src={keyBImg} alt="열쇠 B" style={{ width: '3.52269rem', height: '5.43169rem'}}/>
+                      <small
+                        style={{
+                          fontSize: '0.6075rem',
+                          lineHeight: '0.91125rem',
+                        }}
+                      >
+                        열쇠 B
+                      </small>
+                      <img
+                        src={keyBImg}
+                        alt='열쇠 B'
+                        style={{ width: '3.52269rem', height: '5.43169rem' }}
+                      />
                     </ImageItem>
                     <ImageItem>
-                      <small style={{ fontSize: '0.6075rem', lineHeight: '0.91125rem'}}>열쇠 C</small>
-                      <img src={keyCImg} alt="열쇠 C" style={{ width: '3.52269rem', height: '5.43169rem'}}/>
+                      <small
+                        style={{
+                          fontSize: '0.6075rem',
+                          lineHeight: '0.91125rem',
+                        }}
+                      >
+                        열쇠 C
+                      </small>
+                      <img
+                        src={keyCImg}
+                        alt='열쇠 C'
+                        style={{ width: '3.52269rem', height: '5.43169rem' }}
+                      />
                     </ImageItem>
                   </KeyGroup>
                 </LockSet>
@@ -127,16 +230,49 @@ const MissionPage_02 = () => {
                 <LockSet>
                   <KeyGroup>
                     <ImageItem>
-                      <small style={{ fontSize: '0.6075rem', lineHeight: '0.91125rem'}}>열쇠 1</small>
-                      <img src={keyAImg} alt="열쇠 1" style={{ width: '3.52269rem', height: '5.43169rem'}}/>
+                      <small
+                        style={{
+                          fontSize: '0.6075rem',
+                          lineHeight: '0.91125rem',
+                        }}
+                      >
+                        열쇠 1
+                      </small>
+                      <img
+                        src={keyAImg}
+                        alt='열쇠 1'
+                        style={{ width: '3.52269rem', height: '5.43169rem' }}
+                      />
                     </ImageItem>
                     <ImageItem>
-                      <small style={{ fontSize: '0.6075rem', lineHeight: '0.91125rem'}}>열쇠 2</small>
-                      <img src={keyBImg} alt="열쇠 2" style={{ width: '3.52269rem', height: '5.43169rem'}}/>
+                      <small
+                        style={{
+                          fontSize: '0.6075rem',
+                          lineHeight: '0.91125rem',
+                        }}
+                      >
+                        열쇠 2
+                      </small>
+                      <img
+                        src={keyBImg}
+                        alt='열쇠 2'
+                        style={{ width: '3.52269rem', height: '5.43169rem' }}
+                      />
                     </ImageItem>
                     <ImageItem>
-                      <small style={{ fontSize: '0.6075rem', lineHeight: '0.91125rem'}}>열쇠 3</small>
-                      <img src={keyCImg} alt="열쇠 3" style={{ width: '3.52269rem', height: '5.43169rem'}}/>
+                      <small
+                        style={{
+                          fontSize: '0.6075rem',
+                          lineHeight: '0.91125rem',
+                        }}
+                      >
+                        열쇠 3
+                      </small>
+                      <img
+                        src={keyCImg}
+                        alt='열쇠 3'
+                        style={{ width: '3.52269rem', height: '5.43169rem' }}
+                      />
                     </ImageItem>
                   </KeyGroup>
                 </LockSet>
@@ -146,7 +282,11 @@ const MissionPage_02 = () => {
               <Arrow src={arrowrightIcon} />
 
               <ImageItem>
-                <img src={doorImg} alt="문" style={{ width: '5.5rem', height: '8.875rem'}}/>
+                <img
+                  src={doorImg}
+                  alt='문'
+                  style={{ width: '5.5rem', height: '8.875rem' }}
+                />
               </ImageItem>
             </ImageRow>
           </>
@@ -166,12 +306,14 @@ const MissionPage_02 = () => {
         {/* 헤더 (Step, Mission 제목) */}
         <MissionHeader
           stepId={2}
-          stepNumber="02 조건"
-          title={mission === 1
-            ? '건축가의 잠금장치: 하나의 열쇠로만'
-            : mission === 2
-            ? '건축가의 잠금장치: 고장난 잠금장치'
-            : '건축가의 잠금장치: 이중잠금'}
+          stepNumber='02 조건'
+          title={
+            mission === 1
+              ? '건축가의 잠금장치: 하나의 열쇠로만'
+              : mission === 2
+                ? '건축가의 잠금장치: 고장난 잠금장치'
+                : '건축가의 잠금장치: 이중잠금'
+          }
           initialStep={mission}
           status={status}
         />
@@ -183,8 +325,42 @@ const MissionPage_02 = () => {
             <MissionDescription>{renderMissionContent()}</MissionDescription>
 
             {/* 정답 확인 영역 - 상태 연동 */}
-            <AnswerCheckContainer status={status}>
-              {/* 여기에 정답 이미지는 나중에 children으로 들어감 */}
+            <AnswerCheckContainer status={status} sandboxed={true}>
+              {status === 'default' && (
+                <div style={{ textAlign: 'center' }}>
+                  <img
+                    src={images[mission].default}
+                    alt='기본 이미지'
+                    style={{
+                      width: 'auto',
+                      height: 'auto',
+                      maxWidth: '60%',
+                      maxHeight: '60%',
+                      objectFit: 'contain',
+                      display: 'block',
+                      margin: '0 auto',
+                    }}
+                  />
+                  <p
+                    style={{
+                      color: '#868BA3',
+                      fontFamily: 'Pretendard',
+                      fontWeight: 500,
+                      fontSize: '1rem',
+                      marginTop: '1rem',
+                    }}
+                  >
+                    프롬포트 입력시 결과 확인이 가능합니다.
+                  </p>
+                </div>
+              )}
+
+              {status !== 'default' && (
+                <img
+                  src={images[mission][status]}
+                  alt={`${mission}번 미션 ${status} 이미지`}
+                />
+              )}
             </AnswerCheckContainer>
           </LeftPanel>
 
@@ -213,7 +389,7 @@ const MissionPage_02 = () => {
                       initialMessage={`잠금장치에서 무엇이 잘못되었는지와 새로운 조건문을 모두 작성해주세요.<br><br>1.잠금장치에서 무엇이 잘못되었는지는 다음과 같은 형식으로 작성해볼 수 있어요!<br><span style="color:#868ba3;">    예시) “지금은 ~라서 잠금장치가 제대로 작동하지 않아요.”</span><br><br>2. 조건문은 다음과 같은 형식으로 작성해주세요!<br><span style="color:#868ba3;">    예시) “만약 ○○라면, △△한다. 그렇지 않다면, ▽▽한다.”</span>`}
                       correctMessage={`<strong style="color:#37AF00;">정답입니다!</strong><br><br>잠금장치의 문제를 정확히 찾아냈어요! 이제 더욱 멋진 건축가가 되기 위한 마지막 단계로 가볼까요?<br><span style="color:#868ba3; font-weight:500;">1. 잠금장치에서 무엇이 잘못되었는지 논리적으로 찾아 설명한다면 정답으로 인정됩니다.</span><br><span style="color:#868ba3; font-weight:500;">2. 한 가지 열쇠로만 문이 열리도록 새로운 조건문을 적절하게 작성한다면 정답으로 인정됩니다.</span>`}
                       wrongMessage={`<strong style="color:#FF644F;">오답입니다!</strong><br><br>작성한 답변을 다시 점검해주세요.<br><span style="color:#868ba3; font-weight:500;">1. 피드백 문장 (Mission01에서 만들었던 잠금장치가 몇 개의 열쇠로 열렸는지 기억해보아요!) </span><br><span style="color:#868ba3; font-weight:500;">2. 피드백 문장 (해당 조건문이 왜 잘못되었을까요? 조건의 범위는 넓거나 중복되지 않도록 구성해야 한다는 사실을 기억해요!)   </span>`}
-                      tatus={status}
+                      status={status}
                       setStatus={setStatus}
                     />
                   );
@@ -302,7 +478,7 @@ const ImageItem = styled.div`
     font-size: 0.75rem;
     font-style: normal;
     font-weight: 500;
-    line-height: 1.125rem; 
+    line-height: 1.125rem;
     margin-bottom: 0.5rem;
     padding-left: 0.5rem;
   }
@@ -327,7 +503,7 @@ const LockSet = styled.div`
   flex-direction: column;
   align-items: center;
   border-radius: 1.25rem;
-  border: 1px dashed var(--Gray-2, #868BA3);
+  border: 1px dashed var(--Gray-2, #868ba3);
   padding: 0.56rem 0.94rem;
 `;
 
@@ -337,7 +513,7 @@ const KeyGroup = styled.div`
 `;
 
 const SetLabel = styled.small`
-  color: var(--Gray-2, #868BA3);
+  color: var(--Gray-2, #868ba3);
   text-align: center;
   font-family: Pretendard;
   font-size: 0.75rem;
@@ -345,7 +521,6 @@ const SetLabel = styled.small`
   font-weight: 500;
   line-height: 1.125rem; /* 150% */
 `;
-
 
 const Arrow = styled.img`
   width: 1.5rem;

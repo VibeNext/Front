@@ -41,11 +41,12 @@ const TopNavigation = () => {
         </SBrand>
 
         <SNav>
-          {NAV_ITEMS.map(({ path, label, Icon }) => {
+          {NAV_ITEMS.map(({ path, label, basePath, Icon }) => {
+            const activeBase = basePath || path;
             const active =
               path === '/'
                 ? location.pathname === '/' // 홈만 정확히 일치
-                : location.pathname.startsWith(`${path}/`) ||
+                : location.pathname.startsWith(`${activeBase}/`) ||
                   location.pathname === path;
             return (
               <SNavBtn

@@ -4,12 +4,11 @@ import editIcon from '../../assets/icons/edit.png';
 import lineIcon from '../../assets/icons/Line23.png';
 import sendIcon from '../../assets/icons/send.png';
 
-
 const AnswerChat = ({
-  botIcon,              // 시스템 캐릭터 이미지
-  initialMessage,       // 첫 안내 메시지
-  correctMessage,       // 정답일 때 시스템 메시지
-  wrongMessage,         // 오답일 때 시스템 메시지 (현재는 미사용)
+  botIcon, // 시스템 캐릭터 이미지
+  initialMessage, // 첫 안내 메시지
+  correctMessage, // 정답일 때 시스템 메시지
+  wrongMessage, // 오답일 때 시스템 메시지 (현재는 미사용)
   status,
   setStatus,
 }) => {
@@ -34,24 +33,38 @@ const AnswerChat = ({
     }
   }, [messages]);
 
-  // 메시지 전송 핸들러
   const handleSend = () => {
     if (!input.trim()) return;
 
     const userMsg = { id: Date.now(), role: 'user', text: input };
+    setMessages((prev) => [...prev, userMsg]);
+    setInput('');
 
-    // 지금은 일단 입력하면 무조건 정답 처리함 (임시, 나중에 정답 로직 추가 필요)
-    const resultMsg = {
+    // "정답 확인 중" 상태로 변경
+    setStatus('checking');
+
+    // "정답을 확인 중입니다..." 메시지 추가
+    const checkingMsg = {
       id: Date.now() + 1,
       role: 'ai',
-      text: correctMessage,
+      text: '결과 확인 중.',
     };
+    setMessages((prev) => [...prev, checkingMsg]);
 
-    setMessages((prev) => [...prev, userMsg, resultMsg]);
-    setInput('');
-    setStatus('success'); // 바로 정답 처리
+    // 1.5초 뒤 실제 정답 / 오답 판단
+    setTimeout(() => {
+      const isCorrect = input.includes('정답'); // 예시 판별 (나중에 로직 연결 가능)
+
+      const resultMsg = {
+        id: Date.now() + 2,
+        role: 'ai',
+        text: isCorrect ? correctMessage : wrongMessage,
+      };
+
+      setMessages((prev) => [...prev, resultMsg]);
+      setStatus(isCorrect ? 'success' : 'fail');
+    }, 1500);
   };
-
   return (
     <>
       <Wrapper>
@@ -61,14 +74,14 @@ const AnswerChat = ({
           <HeaderText>문제 풀이</HeaderText>
         </Header>
 
-        <Line src={lineIcon} alt="divider" />
+        <Line src={lineIcon} alt='divider' />
 
         {/* 채팅 영역 */}
         <ChatContainer ref={chatRef}>
           {messages.map((msg) => (
             <MessageRow key={msg.id} $role={msg.role}>
               {msg.role === 'ai' && botIcon && (
-                <ProfileImg src={botIcon} alt="bot" />
+                <ProfileImg src={botIcon} alt='bot' />
               )}
               <MessageBubble
                 $role={msg.role}
@@ -83,20 +96,19 @@ const AnswerChat = ({
               </MessageBubble>
             </MessageRow>
           ))}
-
         </ChatContainer>
 
         {/* 입력창 */}
         <InputArea>
           <Input
-            type="text"
-            placeholder="정답 프롬프트를 입력해주세요."
+            type='text'
+            placeholder='정답 프롬프트를 입력해주세요.'
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSend()}
           />
           <SendButton onClick={handleSend}>
-            <SendImg src={sendIcon} alt="send" />
+            <SendImg src={sendIcon} alt='send' />
           </SendButton>
         </InputArea>
       </Wrapper>
@@ -106,8 +118,7 @@ const AnswerChat = ({
 
 export default AnswerChat;
 
-
-//styled-components 
+//styled-components
 const Wrapper = styled.div`
   width: 748px;
   height: 776px;
@@ -170,20 +181,20 @@ const ProfileImg = styled.img`
 const MessageBubble = styled.div`
   display: inline-block;
   background-color: ${({ $role }) =>
-  $role === 'user' ? '#DEEBFF' : '#FFFFFF'};
+    $role === 'user' ? '#DEEBFF' : '#FFFFFF'};
 
   border: ${({ $role }) =>
-  $role === 'user' ? '#FFF' : '1.5px solid var(--Brand-2, #7DB1FF);'};
+    $role === 'user' ? '#FFF' : '1.5px solid var(--Brand-2, #7DB1FF);'};
 
   padding: 16px 20px;
   border-radius: ${({ $role }) =>
     $role === 'ai' ? '0 24px 24px 24px' : '24px 24px 0 24px'};
   // 내용 길이 따라 말풍선 크기 조정
-  width: fit-content;      
-  max-width: 40rem;       
-  word-break: break-word;   
-  white-space: pre-wrap;    
-  
+  width: fit-content;
+  max-width: 40rem;
+  word-break: break-word;
+  white-space: pre-wrap;
+
   color: var(--Black, #191927);
   font-family: Pretendard;
   font-size: 0.95rem;
