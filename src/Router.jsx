@@ -1,4 +1,5 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import Home from './pages/HomePage.jsx';
 import MissionPage_01 from './pages/MissionPage_01.jsx';
 import MissionPage_02 from './pages/MissionPage_02.jsx';
 import MissionPage_03 from './pages/MissionPage_03.jsx';
@@ -7,7 +8,7 @@ const Router = () => {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path='/' element={<div>홈</div>} />
+        <Route path='/' element={<Home/>} />
 
         {/* Step 01 (순차) */}
         <Route

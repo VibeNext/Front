@@ -9,6 +9,15 @@ const GlobalStyle = createGlobalStyle`
     font-style: normal;
     font-display: swap;
   }
+
+  @font-face {
+    font-family: 'EBSHunminjeongeumSB';
+    src: url('/src/assets/fonts/EBS_Hunminjeongeum_SB.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+  }
+
 * {
   margin: 0;
   padding: 0;
@@ -94,5 +103,6 @@ input::-webkit-inner-spin-button {
      font-family: ${({ theme }) => theme.fonts.families.body};
   }
 `;
+
 
 export default GlobalStyle;
