@@ -32,7 +32,7 @@ const TopNavigation = () => {
     <SHeaderWrap>
       <SBar>
         <SBrand
-          onClick={() => navigate('/home')}
+          onClick={() => navigate('/')}
           role='button'
           aria-label='홈으로 이동'
         >

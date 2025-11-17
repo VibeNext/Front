@@ -1,6 +1,7 @@
 import styled from 'styled-components';
 import TopNavigation from '../components/common/TopNavigation';
 
+import Fire from '../assets/icons/fire_on.png';
 import heroBg from '../assets/icons/home_background.png';
 import Key3 from '../assets/icons/key_3.png';
 import Arrow2 from '../assets/icons/right_2.png';
@@ -24,6 +25,7 @@ const Home = () => {
             <SSub>
               <SInlineImgSmall src={Arrow2} alt="arrows" />
               NEXTVIBE <SFrom>에서!</SFrom>
+              <SfireIcon src={Fire} alt="fire" />
             </SSub>
           </STitle>
 
@@ -54,8 +56,10 @@ const SHeroWrapper = styled.section`
 `;
 
 const STextBox = styled.div`
+  display: flex;
+  flex-direction: column;
   color: white;
-  text-shadow: 0 0 12px rgba(0,0,0,0.15);
+  gap: 3.75rem;
 `;
 
 const STagline = styled.p`
@@ -122,6 +126,7 @@ const SInlineImg = styled.img`
   height: 11rem;
   margin: 0 1rem;
   vertical-align: middle;
+  margin-bottom: 1rem;
 
   @media (max-width: 1024px) {
     height: 7rem;
@@ -150,3 +155,8 @@ const SInlineImgSmall = styled.img`
   }
 `;
 
+const SfireIcon = styled.img`
+  width: 9.875rem;
+  height: 9.875rem;
+  margin-left: -1rem;
+`;
