@@ -27,6 +27,7 @@ const fonts = {
   families: {
     body: 'Pretendard',
     display: "'DungGeunMo'",
+    hunmin: 'EBSHunminjeongeumSB, sans-serif',
   },
   weights: {
     regular: 400,
@@ -188,3 +189,4 @@ const textStyles = {
 // ------------------------------------------
 const theme = { colors, fonts, textStyles };
 export { theme };
+
