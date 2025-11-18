@@ -1,5 +1,6 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import Home from './pages/HomePage.jsx';
+import LearningStepPage from './pages/LearningStepPage.jsx';
 import MissionPage_01 from './pages/MissionPage_01.jsx';
 import MissionPage_02 from './pages/MissionPage_02.jsx';
 import MissionPage_03 from './pages/MissionPage_03.jsx';
@@ -9,6 +10,9 @@ const Router = () => {
     <BrowserRouter>
       <Routes>
         <Route path='/' element={<Home/>} />
+
+        {/* 학습 단계 목록 */}
+        <Route path='/learningstep' element={<LearningStepPage/>} />
 
         {/* Step 01 (순차) */}
         <Route

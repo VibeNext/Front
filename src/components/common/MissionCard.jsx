@@ -42,6 +42,8 @@ const CardContainer = styled.div`
   justify-content: center;
   text-align: center;
 
+  transition: all 0.45s cubic-bezier(0.22, 0.61, 0.36, 1); //애니메이션 추가함 
+
   ${({ size }) =>
     size === 'large'
       ? css`
