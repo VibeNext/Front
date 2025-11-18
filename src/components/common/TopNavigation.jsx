@@ -138,8 +138,8 @@ const SBrand = styled.div`
     display: block;
   }
   .text-logo * {
-    stroke: ${({ $isHome }) => ($isHome ? '#DEEBFF' : 'inherit')};
-    fill: ${({ $isHome }) => ($isHome ? '#DEEBFF' : 'inherit')};
+    stroke: ${({ $isHome }) => ($isHome ? '#DEEBFF' : '#191927')};
+    fill: ${({ $isHome }) => ($isHome ? '#DEEBFF' : '#191927')};
   }
 `;
 
