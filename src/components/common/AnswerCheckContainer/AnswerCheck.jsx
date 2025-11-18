@@ -1,12 +1,7 @@
 import styled from 'styled-components';
 import forwardIcon from '../../../assets/icons/forward.svg';
-import SandboxedFrame from './SandboxedFrame';
 
-const AnswerCheckContainer = ({
-  status = 'default',
-  children,
-  sandboxed = true,
-}) => {
+const AnswerCheckContainer = ({ status = 'default', children }) => {
   return (
     <Container status={status}>
       <Header>
@@ -15,44 +10,7 @@ const AnswerCheckContainer = ({
       </Header>
       <Divider />
       <Content>
-        {sandboxed ? (
-          <SandboxBox>
-            <SandboxedFrame
-              headCSS={`
-    html, body {
-      height: 100%;
-      margin: 0;
-      padding: 0;
-      overflow: hidden; /* ✅ 내부 스크롤 제거 */
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background: white;
-       flex-direction: column; 
-    }
-    img {
-      height: auto;
-      width: auto;
-      object-fit: contain;
-      display: block;
-      margin: 0 auto;
-    }
-    p {
-      margin: 1rem 0 0 0;
-      color: #868BA3;
-      font-family: Pretendard, sans-serif;
-      font-size: 1rem;
-      font-weight: 500;
-      text-align: center;
-    }
-  `}
-            >
-              {children}
-            </SandboxedFrame>
-          </SandboxBox>
-        ) : (
-          children
-        )}
+        <ImageWrapper>{children}</ImageWrapper>
       </Content>
     </Container>
   );
@@ -68,11 +26,11 @@ const Container = styled.div`
   border: 1.5px solid
     ${({ status }) =>
       status === 'success'
-        ? 'var(--Success, #76CA66)' // 정답: 초록색
+        ? 'var(--Success, #76CA66)'
         : status === 'fail'
-          ? 'var(--Error, #FF9A8C)' // 오답: 빨강
+          ? 'var(--Error, #FF9A8C)'
           : status === 'checking'
-            ? 'var(--Brand-2, #7DB1FF)' // 정답확인 중: 파랑
+            ? 'var(--Brand-2, #7DB1FF)'
             : 'var(--Gray-3, #C4C7D3)'};
   transition: border-color 0.3s ease;
 `;
@@ -93,9 +51,6 @@ const Title = styled.span`
   color: var(--Black, #191927);
   font-family: DungGeunMo;
   font-size: 1.25rem;
-  font-style: normal;
-  font-weight: 400;
-  line-height: normal;
 `;
 
 const Divider = styled.hr`
@@ -114,7 +69,24 @@ const Content = styled.div`
   margin-top: 4.81rem;
 `;
 
-const SandboxBox = styled.div`
-  width: 100%;
-  height: 100%;
+const ImageWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  img {
+    height: auto;
+    width: auto;
+    max-width: 100%;
+    object-fit: contain;
+  }
+
+  p {
+    margin: 1rem 0 0 0;
+    color: #868ba3;
+    font-family: Pretendard, sans-serif;
+    font-size: 1rem;
+    font-weight: 500;
+    text-align: center;
+  }
 `;

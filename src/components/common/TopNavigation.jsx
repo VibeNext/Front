@@ -24,13 +24,13 @@ const NAV_ITEMS = [
 const TopNavigation = () => {
   const navigate = useNavigate();
   const location = useLocation();
-
+  const isHome = location.pathname === '/';
   // 전역 인증 상태
   const { isAuthenticated, user } = useAuthStore();
 
   return (
     <SHeaderWrap>
-      <SBar>
+      <SBar $isHome={isHome}>
         <SBrand
           onClick={() => navigate('/')}
           role='button'
@@ -54,11 +54,14 @@ const TopNavigation = () => {
                 to={path}
                 $active={active}
                 aria-current={active ? 'page' : undefined}
+                $isHome={isHome}
               >
-                <SIcon $active={active}>
+                <SIcon $active={active} $isHome={isHome}>
                   <Icon />
                 </SIcon>
-                <SLabel $active={active}>{label}</SLabel>
+                <SLabel $active={active} $isHome={isHome}>
+                  {label}
+                </SLabel>
               </SNavBtn>
             );
           })}
@@ -82,8 +85,14 @@ const TopNavigation = () => {
           ) : (
             // 로그아웃(미인증) 상태: 기존 before-login 우측 버튼 그대로
             <>
-              <SButton onClick={() => navigate('/signup')}>회원가입</SButton>
-              <SButton onClick={() => navigate('/login')} $primary>
+              <SButton onClick={() => navigate('/signup')} $isHome={isHome}>
+                회원가입
+              </SButton>
+              <SButton
+                onClick={() => navigate('/login')}
+                $primary
+                $isHome={isHome}
+              >
                 로그인
               </SButton>
             </>
@@ -111,9 +120,10 @@ const SBar = styled.header`
   justify-content: space-between;
   gap: 16px;
   padding: 1rem 2.5rem;
-  background: #fff;
-  border-radius: 8px;
-  border-bottom: 1px solid var(--Gray-3, #c4c7d3);
+  background: ${({ $isHome }) => ($isHome ? '#5C9DFF' : '#fff')};
+  border-bottom: 1px solid
+    ${({ $isHome }) =>
+      $isHome ? 'var(--Gray-3, #c4c7d3)' : 'var(--Gray-3, #c4c7d3)'};
 `;
 
 const SBrand = styled.div`
@@ -142,8 +152,14 @@ const SNavBtn = styled(Link)`
   padding: 0.625rem 1.25rem;
   border-radius: 0.5rem;
   border: 1px solid transparent;
-  background: ${({ $active }) =>
-    $active ? 'rgba(81,113,255,0.10)' : 'transparent'};
+  background: ${({ $isHome, $active }) =>
+    $isHome
+      ? $active
+        ? '#7DB1FF' // 홈 + active
+        : '#5C9DFF' // 홈 + inactive
+      : $active
+        ? 'rgba(81,113,255,0.10)'
+        : 'transparent'};
   cursor: pointer;
   transition: background 0.2s ease;
 
@@ -172,8 +188,9 @@ const SIcon = styled.span`
   justify-content: center;
   svg,
   svg * {
-    stroke: ${({ $active }) => ($active ? '#5C9DFF' : '#646879')};
-    fill: ${({ $active }) => ($active ? '#EFF5FF' : 'none')};
+    stroke: ${({ $isHome, $active }) =>
+      $isHome ? '#DEEBFF' : $active ? '#5C9DFF' : '#646879'};
+    fill: ${({ $isHome }) => ($isHome ? 'none' : 'none')};
     transition:
       stroke 0.2s,
       fill 0.2s;
@@ -183,7 +200,9 @@ const SIcon = styled.span`
 const SLabel = styled.span`
   font-size: 1.25rem;
   line-height: 1;
-  color: ${({ $active }) => ($active ? '#5C9DFF' : '#646879')};
+  color: ${({ $isHome, $active }) =>
+    $isHome ? '#DEEBFF' : $active ? '#5C9DFF' : '#646879'};
+
   font-weight: ${({ $active }) => ($active ? 600 : 500)};
   transition: color 0.2s ease;
 `;
@@ -192,16 +211,33 @@ const SLabel = styled.span`
 const SButton = styled.button`
   font-family: Pretendard;
   font-size: 1.25rem;
-  font-style: normal;
   font-weight: 600;
   line-height: 1.25rem;
 
   height: 2.75rem;
   border-radius: 2.5rem;
   padding: 8px 16px;
-  border: 1px solid ${({ $primary }) => ($primary ? '#DEEBFF' : '#ffffffff')};
-  background: ${({ $primary }) => ($primary ? '#DEEBFF' : 'transparent')};
-  color: ${({ $primary }) => ($primary ? '#646879' : 'var(--Gray-1, #646879)')};
+
+  /* 홈일 때 버튼 색상 변경 */
+  border: ${({ $isHome, $primary }) =>
+    $isHome
+      ? $primary
+        ? '1px solid #DEEBFF' // 로그인 버튼
+        : '1px solid transparent' // 회원가입 버튼
+      : $primary
+        ? '1px solid #DEEBFF'
+        : '1px solid #ffffff'};
+
+  background: ${({ $isHome, $primary }) =>
+    $isHome ? 'transparent' : $primary ? '#DEEBFF' : 'transparent'};
+
+  color: ${({ $isHome, $primary }) =>
+    $isHome
+      ? '#DEEBFF' // 홈일 때는 둘 다 #DEEBFF
+      : $primary
+        ? '#646879'
+        : '#646879'};
+
   cursor: pointer;
   transition: all 0.2s ease;
 `;
