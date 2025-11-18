@@ -2,7 +2,7 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
-// 이미지로 쓸 거니까 ?react 붙이면 안 됨
+// 이미지
 import avatar1 from '../assets/icons/profile/avatar1.svg';
 import avatar2 from '../assets/icons/profile/avatar2.svg';
 import avatar3 from '../assets/icons/profile/avatar3.svg';
@@ -13,31 +13,87 @@ const avatars = [avatar1, avatar2, avatar3, avatar4];
 const useAuthStore = create(
   persist(
     (set, get) => ({
-      user: null, // { name, email?, avatar }
+      user: {
+        email: null,
+        name: null,
+        avatar: null,
+        grantType: null,
+        accessToken: null,
+        refreshToken: null,
+        accessExpireAt: null,
+        refreshExpireAt: null,
+      },
       isAuthenticated: false,
 
-      // 회원가입: 여기서 단 한 번 랜덤 아바타 부여
+      // 회원가입: 랜덤 아바타 배정
       registerUser: ({ name, email }) => {
         const avatar = avatars[Math.floor(Math.random() * avatars.length)];
-        set({ user: { name, email, avatar }, isAuthenticated: false });
-        // 회원가입 직후 바로 로그인 상태로 만들고 싶으면 true로 변경
+
+        set({
+          user: {
+            ...get().user,
+            name,
+            email,
+            avatar,
+          },
+          isAuthenticated: false,
+        });
       },
 
-      // 로그인: 절대 이름/아바타를 덮어쓰지 말 것!
-      // 백엔드가 유저 프로필 내려주면 그때만 갱신하도록 분리
-      login: () => {
-        const u = get().user;
-        // 회원가입 없이 바로 로그인하는 플로우라면 여기서 user를 세팅해야 함(백엔드 응답 사용).
-        set({ user: u, isAuthenticated: true });
+      // 로그인(API 응답 저장 + 랜덤 아바타 없는 경우 자동 생성)
+      login: (payload) => {
+        const prevUser = get().user;
+
+        // avatar 없으면 랜덤 생성
+        const avatar =
+          prevUser?.avatar ??
+          avatars[Math.floor(Math.random() * avatars.length)];
+
+        set({
+          user: {
+            email: payload.email ?? prevUser.email,
+            name: prevUser.name, // 이름은 회원조회 API에서 갱신됨
+            avatar,
+            grantType: payload.grantType,
+            accessToken: payload.accessToken,
+            refreshToken: payload.refreshToken,
+            accessExpireAt: payload.accessExpireAt,
+            refreshExpireAt: payload.refreshExpireAt,
+          },
+          isAuthenticated: true,
+        });
       },
 
-      // 로그아웃: 로그인 상태 해제
-      logout: () => set({ isAuthenticated: false }),
+      // 회원정보 조회 후 이름·프로필 업데이트
+      updateProfile: ({ name, profile_image }) => {
+        set({
+          user: {
+            ...get().user,
+            name,
+            avatar: profile_image ?? get().user.avatar,
+          },
+        });
+      },
+
+      // 로그아웃
+      logout: () =>
+        set({
+          isAuthenticated: false,
+          user: {
+            email: null,
+            name: null,
+            avatar: null,
+            grantType: null,
+            accessToken: null,
+            refreshToken: null,
+            accessExpireAt: null,
+            refreshExpireAt: null,
+          },
+        }),
     }),
     {
       name: 'auth-store',
       storage: createJSONStorage(() => localStorage),
-      // 필요하면 부분만 저장하도록 whitelist 가능: partialize: (s) => ({ user: s.user })
     },
   ),
 );
