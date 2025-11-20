@@ -8,15 +8,13 @@ import TopNavigation from "../components/common/TopNavigation";
 import useAuthStore from "../stores/useAuthStore";
 
 import AlertIcon from "../assets/icons/alert.png";
-import LeftArrow from "../assets/icons/vector_left.png";
-import RightArrow from "../assets/icons/vector_right.png";
+import LineIcon from "../assets/icons/line2.png";
 
 /* ------ MOCK DATA ------ */
 const mockData = {
   chapter: [
     { id: 1, title: "순차", subtitle: "요리사의 레시피" },
-    { id: 2, title: "조건", subtitle: "건축가의 잠금장치" },
-    { id: 3, title: "반복", subtitle: "요리사의 레시피" }
+    { id: 2, title: "조건", subtitle: "건축가의 잠금장치" }
   ],
   mission: [
     { id: 11, chapter: 1, number: "01", title: "토마토 스프", isUnlocked: true },
@@ -26,10 +24,6 @@ const mockData = {
     { id: 21, chapter: 2, number: "01", title: "하나의 열쇠로만", isUnlocked: true },
     { id: 22, chapter: 2, number: "02", title: "고장난 잠금장치", isUnlocked: false },
     { id: 23, chapter: 2, number: "03", title: "이중 잠금", isUnlocked: false },
-
-    { id: 31, chapter: 3, number: "01", title: "하나의 열쇠로만", isUnlocked: false },
-    { id: 32, chapter: 3, number: "02", title: "고장난 잠금장치", isUnlocked: false },
-    { id: 33, chapter: 3, number: "03", title: "이중 잠금", isUnlocked: false }
   ]
 };
 
@@ -55,6 +49,8 @@ const LearningStepPage = () => {
 
   const missions = mockData.mission.filter((m) => m.chapter === selectedChapter);
 
+  const [hoverId, setHoverId] = useState(null);
+
   useEffect(() => {
     setCurrentMission(missions[0]?.id);
   }, [selectedChapter]);
@@ -75,81 +71,24 @@ const LearningStepPage = () => {
     return () => clearTimeout(timer);
   }, [currentMission]);
 
-const moveRight = () => {
-  const idx = missions.findIndex((m) => m.id === currentMission);
 
-  // 이전 미션 (왼쪽으로)
-  if (idx > 0) {
-    setCurrentMission(missions[idx - 1].id);
-    return;
-  }
-
-  // 첫 미션이면 이전 챕터 마지막 미션
-  const currentChapterIdx = mockData.chapter.findIndex(
-    (c) => c.id === selectedChapter
-  );
-
-  const prevChapter = mockData.chapter[currentChapterIdx - 1];
-  if (!prevChapter) return;
-
-  setSelectedChapter(prevChapter.id);
-
-  const prevMissions = mockData.mission.filter(
-    (m) => m.chapter === prevChapter.id
-  );
-
-  setCurrentMission(prevMissions[prevMissions.length - 1].id);
-};
-
-
-const moveLeft = () => {
-  const idx = missions.findIndex((m) => m.id === currentMission);
-
-  // 다음 미션 (오른쪽으로)
-  if (idx < missions.length - 1) {
-    setCurrentMission(missions[idx + 1].id);
-    return;
-  }
-
-  // 마지막 미션이면 다음 챕터 첫 미션
-  const currentChapterIdx = mockData.chapter.findIndex(
-    (c) => c.id === selectedChapter
-  );
-
-  const nextChapter = mockData.chapter[currentChapterIdx + 1];
-  if (!nextChapter) return;
-
-  setSelectedChapter(nextChapter.id);
-
-  const nextMissions = mockData.mission.filter(
-    (m) => m.chapter === nextChapter.id
-  );
-
-  setCurrentMission(nextMissions[0].id);
-};
-
-
-
-
-  const clickMission = (m) => {
-    // 1) 비로그인 → 로그인 다이얼로그
+const clickMission = (m) => {
+    // 1) 비로그인
     if (!user) {
       setLoginDialog(true);
       return;
     }
 
-    // 2) 로그인했을 경우 백엔드의 is_locked 사용
-    //    (is_locked가 true면 잠김)
-    const isLocked = m.is_locked === true;
-
-    if (isLocked) {
+    // 2) 로그인했지만 잠김
+    if (!m.isUnlocked) {
       setLockDialog(true);
       return;
     }
 
-    // 3) 선택된 미션으로 이동
-    setCurrentMission(m.id);
+    // 3) 로그인 + 열림 → 학습 페이지 이동
+    navigate(`/learning/${m.id}`);
   };
+
 
   const selectedMissionData = missions.find((m) => m.id === currentMission);
 
@@ -179,60 +118,79 @@ const moveLeft = () => {
 
       <SWrapper>
         <ChapterTabs>
-          {mockData.chapter.map((c) => {
+          {mockData.chapter.map((c, idx) => {
             const locked = isChapterLocked(c.id);
             const active = selectedChapter === c.id;
 
             return (
-              <ChapterTab
-                key={c.id}
-                active={active}
-                locked={locked}
-                onClick={() => setSelectedChapter(c.id)}
-              >
-                {c.title}
-              </ChapterTab>
+              <div key={c.id} style={{ display: "flex", alignItems: "center" }}>
+                {/* 챕터 텍스트 */}
+                <ChapterTab
+                  active={active}
+                  locked={locked}
+                  onClick={() => setSelectedChapter(c.id)}
+                >
+                  {c.title}
+                </ChapterTab>
+
+                {idx === 0 && mockData.chapter.length > 1 && (
+                  <LineImg
+                    src={LineIcon} alt="line"
+                  />
+                )}
+              </div>
             );
           })}
         </ChapterTabs>
 
-        <SubTitle
-          active={!isChapterLocked(selectedChapter)}
-          locked={isChapterLocked(selectedChapter)}
-        >
-          {mockData.chapter.find((c) => c.id === selectedChapter)?.subtitle}
-        </SubTitle>
 
-        <NavRight onClick={moveRight}>
-          <img src={RightArrow} />
-        </NavRight>
+        <div style={{ display: "flex", gap: "11.25rem", marginTop: "3.13rem" }}>
+          {mockData.chapter.map((c) => {
+            const active = selectedChapter === c.id;
+            const locked = isChapterLocked(c.id);
+
+            return (
+              <SubTitle
+                key={c.id}
+                active={active}
+                locked={locked}
+                onClick={() => setSelectedChapter(c.id)}
+                style={{ cursor: "pointer" }}
+              >
+                {c.subtitle}
+              </SubTitle>
+            );
+          })}
+        </div>
+
+
 
         <MissionContainer ref={containerRef}>
           {missions.map((m) => {
-            const isSelected = m.id === currentMission;
             return (
               <MissionWrapper
-                key={m.id}
-                isSelected={isSelected}
-                ref={(el) => (itemRefs.current[m.id] = el)}
-                onClick={() => clickMission(m)}
-              >
-                <MissionCard
-                  size={isSelected ? "large" : "small"}
-                  theme={m.isUnlocked ? "light" : "dark"}
-                  missionNumber={m.number}
-                  title={m.title}
-                  description={m.description}
-                  imageSrc={m.image}
-                />
-              </MissionWrapper>
+              key={m.id}
+              onMouseEnter={() => setHoverId(m.id)}
+              onMouseLeave={() => {
+                if (!loginDialog && !lockDialog) {
+                  setHoverId(null);
+                }
+              }}
+              onClick={() => clickMission(m)}
+            >
+              <MissionCard
+                size={hoverId === m.id ? "large" : "small"}
+                theme={m.isUnlocked ? "light" : "dark"}
+                missionNumber={m.number}
+                title={m.title}
+                description={m.description}
+                imageSrc={m.image}
+              />
+            </MissionWrapper>
+
             );
           })}
         </MissionContainer>
-
-        <NavLeft onClick={moveLeft}>
-          <img src={LeftArrow} />
-        </NavLeft>
 
         {/* 풀이 기록 */}
         {selectedMissionData?.history && (
@@ -258,7 +216,7 @@ const SPageContainer = styled.div`
 
 const SWrapper = styled.div`
   position: relative;
-  padding-top: 3rem;
+  padding-top: 6.25rem;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -267,7 +225,6 @@ const SWrapper = styled.div`
 const ChapterTabs = styled.div`
   display: flex;
   justify-content: center;
-  gap: 3rem;
 `;
 
 const ChapterTab = styled.button`
@@ -275,36 +232,28 @@ const ChapterTab = styled.button`
   font-family: DungGeunMo;
   font-size: 2.75rem;
   cursor: pointer;
+  margin-left: 4.5rem;
+  margin-right: 4.5rem;
 
   color: ${({ active }) => (active ? "#191927" : "#646879")};
 `;
 
 const SubTitle = styled.div`
   display: flex;
-  justify-content: center;
-  align-items: center;
-
-  width: fit-content;
-
-  padding: 0.875rem 2rem;
-
-  margin-left: auto;
-  margin-right: auto;
-  margin-top: 4rem;
-
   color: #FFF;
   font-family: Pretendard;
   font-size: 1.75rem;
   font-style: normal;
   font-weight: 600;
   line-height: normal;
-
+  cursor: pointer;
+  padding: 0.88rem 2rem;
   border-radius: 1rem;
-
-  background-color: ${({ active, locked }) => {
-    if (locked) return "#C4C7D3";  // 잠김
-    if (active) return "#7DB1FF";   // 활성
-    return "#D9E6FF";               // 활성은 아닌데 잠금도 아닐 때
+  border: none;
+  background-color: ${({ locked, active }) => {
+    if (locked) return "rgba(196, 199, 211, 0.75)";                // 모두 잠김 (회색)
+    if (active) return "var(--Brand-2, #7DB1FF)";                  // 하나라도 열림 + 선택됨 (파랑)
+    return "var(--Brand-4, #B1D0FF)";                              // 하나라도 열림 + 선택 안 됨 (밝은 파랑)
   }};
 `;
 
@@ -344,55 +293,11 @@ const MissionWrapper = styled.div`
   margin-left: 2rem;
   margin-right: 2rem;
 
-  ${({ isSelected }) =>
-    isSelected &&
-    `
-      margin-left: 3.25rem;
-      margin-right: 3.25rem;
-      transform: scale(1.2);
-      opacity: 1;
-    `}
-
-  ${({ isSelected }) =>
-    !isSelected &&
-    `
-      transform: scale(1);
-      opacity: 0.55;
-    `}
-`;
-
-
-const NavLeft = styled.button`
-  position: fixed;
-  right: 1rem;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 3.75rem;
-  height: 7.5rem;
-  background: none;
-  border: none;
-
-  img {
-    width: 100%;
-    height: 100%;
+  &:hover {
+    transform: scale(1.15);
   }
 `;
 
-const NavRight = styled.button`
-  position: fixed;
-  left: 1rem;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 3.75rem;
-  height: 7.5rem;
-  background: none;
-  border: none;
-
-  img {
-    width: 100%;
-    height: 100%;
-  }
-`;
 
 const RecordBox = styled.div`
   margin: auto;
@@ -402,4 +307,9 @@ const RecordBox = styled.div`
   border-radius: 1rem;
   text-align: center;
   font-family: Pretendard;
+`;
+
+const LineImg = styled.img`
+  width: 12.5rem;
+  height: 0.1875rem;
 `;

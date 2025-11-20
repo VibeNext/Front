@@ -18,7 +18,8 @@ const Router = () => {
         <Route path='/mypage' element={<MyPage />} />
 
         {/* 학습 단계 목록 */}
-        <Route path='/learningstep' element={<LearningStepPage />} />
+        <Route path='/learningstep' element={<LearningStepPage/>} />
+
         {/* Step 01 (순차) */}
         <Route
           path='/step/1/mission/:missionId'
