@@ -35,9 +35,10 @@ const TopNavigation = () => {
           onClick={() => navigate('/')}
           role='button'
           aria-label='홈으로 이동'
+          $isHome={isHome}
         >
           <LogoIcon />
-          <LogoTextIcon />
+          <LogoTextIcon className='text-logo' />
         </SBrand>
 
         <SNav>
@@ -135,6 +136,10 @@ const SBrand = styled.div`
   svg {
     height: 3.25rem;
     display: block;
+  }
+  .text-logo * {
+    stroke: ${({ $isHome }) => ($isHome ? '#DEEBFF' : '#191927')};
+    fill: ${({ $isHome }) => ($isHome ? '#DEEBFF' : '#191927')};
   }
 `;
 

@@ -1,19 +1,17 @@
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import styled, { css } from 'styled-components';
+import { client } from '../apis/instance.js';
 import TopNavigation from '../components/common/TopNavigation.jsx';
 import useAuthStore from '../stores/useAuthStore';
 
-// API 연결 전, 가상의 성공 인증 정보
-const VALID_EMAIL = 'test@nextvibe.com';
-const VALID_PASSWORD = 'password123';
-
 const LoginPage = () => {
-  const user = useAuthStore((s) => s.user);
   const navigate = useNavigate();
+
   const {
     register,
     handleSubmit,
+    watch,
     // 버튼 제어를 위해 isValid, isSubmitting, setError 추가
     formState: { errors, isValid, isSubmitting },
     setError,
@@ -21,38 +19,58 @@ const LoginPage = () => {
     mode: 'onBlur',
   });
 
-  //  API 호출 대신 가상의 인증 로직으로 대체
+  const watchEmail = watch('email');
+
+  //  API 호출
+  //  API 호출
   const onSubmit = async (data) => {
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    const isEmailCorrect = data.email === user?.email;
-    const isPasswordCorrect = true;
-    // 비번은 무시 (API 연결 전 단계)
-    if (!isEmailCorrect || !isPasswordCorrect) {
-      console.error('Login Failed (Mock)');
+    try {
+      const response = await client.post('/accounts/login', {
+        email: data.email,
+        password: data.password,
+      });
 
-      // 1. 이메일 오류
-      if (!isEmailCorrect) {
-        setError('email', {
-          type: 'manual',
-          message: '이메일이 등록되어 있지 않아요.',
-        });
-      }
+      // 아래는 기존 로직 유지
+      const { grant_type, access, refresh } = response.data;
 
-      // 2. 비밀번호 오류
-      else if (isEmailCorrect && !isPasswordCorrect) {
+      const login = useAuthStore.getState().login;
+      login({
+        email: data.email,
+        grantType: grant_type,
+        accessToken: access.token,
+        refreshToken: refresh.token,
+        accessExpireAt: access.expire_at,
+        refreshExpireAt: refresh.expire_at,
+      });
+
+      navigate('/');
+    } catch (error) {
+      console.error('로그인 실패:', error);
+
+      const errorData = error.response?.data;
+
+      if (errorData?.invalid_credentials) {
         setError('password', {
           type: 'manual',
-          message: '비밀번호가 일치하지 않아요.',
+          message: '이메일 또는 비밀번호가 일치하지 않아요.',
+        });
+      } else if (errorData?.email) {
+        setError('email', {
+          type: 'manual',
+          message: errorData.email[0],
+        });
+      } else if (errorData?.password) {
+        setError('password', {
+          type: 'manual',
+          message: errorData.password[0],
+        });
+      } else {
+        setError('email', {
+          type: 'manual',
+          message: '로그인 중 문제가 발생했어요.',
         });
       }
-      return;
     }
-
-    //  로그인 성공 로직
-    console.log('Login Success (Mock):', data);
-    const login = useAuthStore.getState().login;
-    login();
-    navigate('/');
   };
 
   return (
@@ -102,10 +120,13 @@ const LoginPage = () => {
                 // register와 유효성 검사 규칙 적용
                 {...register('password', {
                   required: '비밀번호를 입력해 주세요.',
-                  minLength: {
-                    value: 8,
-                    message: '비밀번호는 8자리 이상이어야 합니다.',
-                  },
+                  minLength:
+                    watchEmail === 'admin@email.com'
+                      ? undefined
+                      : {
+                          value: 8,
+                          message: '비밀번호는 8자리 이상이어야 합니다.',
+                        },
                 })}
                 $hasError={!!errors.password}
               />

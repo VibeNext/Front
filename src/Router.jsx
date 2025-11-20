@@ -5,8 +5,8 @@ import LoginPage from './pages/LoginPage.jsx';
 import MissionPage_01 from './pages/MissionPage_01.jsx';
 import MissionPage_02 from './pages/MissionPage_02.jsx';
 import MissionPage_03 from './pages/MissionPage_03.jsx';
-import MyPage from './pages/MyPage.jsx';
-import SignUpPage from './pages/SignUpPage.jsx';
+import MyPage from './pages/mypage.jsx';
+import SignUpPage from './pages/SignUppage.jsx';
 
 const Router = () => {
   return (
@@ -19,6 +19,7 @@ const Router = () => {
 
         {/* 학습 단계 목록 */}
         <Route path='/learningstep' element={<LearningStepPage/>} />
+
         {/* Step 01 (순차) */}
         <Route
           path='/step/1/mission/:missionId'
