@@ -1,7 +1,7 @@
-import axios from 'axios';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import styled, { css } from 'styled-components';
+import { client } from '../apis/instance.js';
 import TopNavigation from '../components/common/TopNavigation.jsx';
 import useAuthStore from '../stores/useAuthStore';
 
@@ -22,22 +22,15 @@ const LoginPage = () => {
   const watchEmail = watch('email');
 
   //  API 호출
+  //  API 호출
   const onSubmit = async (data) => {
     try {
-      const response = await axios.post(
-        'https://nextvibe.up.railway.app/accounts/login',
-        {
-          email: data.email,
-          password: data.password,
-        },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        },
-      );
+      const response = await client.post('/accounts/login', {
+        email: data.email,
+        password: data.password,
+      });
 
-      // 요청 성공 → 토큰 저장
+      // 아래는 기존 로직 유지
       const { grant_type, access, refresh } = response.data;
 
       const login = useAuthStore.getState().login;
@@ -50,14 +43,12 @@ const LoginPage = () => {
         refreshExpireAt: refresh.expire_at,
       });
 
-      // 홈 화면으로 이동
       navigate('/');
     } catch (error) {
       console.error('로그인 실패:', error);
 
       const errorData = error.response?.data;
 
-      // 백엔드에서 내려주는 다양한 오류 케이스 처리
       if (errorData?.invalid_credentials) {
         setError('password', {
           type: 'manual',
