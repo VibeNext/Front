@@ -85,7 +85,7 @@ const CardContainer = styled.div`
 
 const MissionText = styled.p`
   font-family: DungGeunMo;
-  font-size: ${({ size }) => (size === 'large' ? '1.5rem' : '1.75rem')};
+  font-size: ${({ size }) => (size === 'large' ? '1.4rem' : '1.75rem')};
   color: ${({ themeType }) => (themeType === 'dark' ? '#7DB1FF' : '#5C9DFF')};
   font-weight: 400;
   line-height: normal;
@@ -95,7 +95,7 @@ const MissionText = styled.p`
 
 const Title = styled.h2`
   font-family: DungGeunMo;
-  font-size: ${({ size }) => (size === 'large' ? '1.75rem' : '1.5rem')};
+  font-size: ${({ size }) => (size === 'large' ? '1.75rem' : '1.35rem')};
   font-weight: 400;
   line-height: 1.4;
   color: ${({ themeType }) => (themeType === 'dark' ? '#646879' : '#191927')};
