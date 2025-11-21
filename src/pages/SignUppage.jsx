@@ -2,15 +2,14 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import styled, { css } from 'styled-components';
+import { signUpApi } from '../apis/auth';
 import CheckIcon from '../assets/icons/check.svg?react';
 import Dialog from '../components/common/Dialog.jsx';
 import TopNavigation from '../components/common/TopNavigation.jsx';
-import useAuthStore from '../stores/useAuthStore';
 
 const SignUpPage = () => {
   const navigate = useNavigate();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const registerUser = useAuthStore((s) => s.registerUser);
   const {
     register,
     handleSubmit,
@@ -22,28 +21,33 @@ const SignUpPage = () => {
   const password = watch('password');
 
   const onSubmit = async (data) => {
-    await new Promise((r) => setTimeout(r, 1000));
-
-    //  이메일 중복 검사 시뮬레이션
-    if (data.email === 'test@nextvibe.com') {
-      setError('email', {
-        type: 'manual',
-        message: '이미 등록된 이메일이에요.',
+    try {
+      // 회원가입 API 요청
+      await signUpApi({
+        email: data.email,
+        password: data.password,
+        name: data.name,
       });
-      return;
-    }
 
-    //  비밀번호 확인 불일치 검사
-    if (data.password !== data.passwordConfirm) {
-      setError('passwordConfirm', {
-        type: 'manual',
-        message: '비밀번호가 일치하지 않아요.',
-      });
-      return;
-    }
+      // 자동 로그인 제거
+      // 회원가입 성공 → 다이얼로그
+      setIsDialogOpen(true);
+    } catch (error) {
+      const err = error.response?.data;
 
-    registerUser({ name: data.name, email: data.email });
-    setIsDialogOpen(true);
+      if (err?.email)
+        setError('email', { type: 'manual', message: err.email[0] });
+      if (err?.password)
+        setError('password', { type: 'manual', message: err.password[0] });
+      if (err?.name) setError('name', { type: 'manual', message: err.name[0] });
+
+      if (!err) {
+        setError('email', {
+          type: 'manual',
+          message: '회원가입 중 문제가 발생했습니다.',
+        });
+      }
+    }
   };
 
   return (
@@ -188,6 +192,24 @@ const SWrapper = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
+
+  @media (max-width: 1600px) {
+    transform: scale(0.9);
+  }
+
+  @media (max-width: 1440px) {
+    transform: scale(0.85);
+  }
+
+  @media (max-width: 1280px) {
+    transform: scale(0.8);
+  }
+
+  @media (max-width: 1024px) {
+    transform: scale(0.7);
+  }
+
+  transform-origin: center;
 `;
 
 const SFormContainer = styled.div`
