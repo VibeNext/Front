@@ -22,27 +22,25 @@ const clientInterceptor = {
 const authClientInterceptor = {
   request: {
     onFulfilled: (config) => {
-      let token = localStorage.getItem("token");
-      if (token) {
-        token = JSON.parse(token);
-        config.headers.Authorization = `${token.grantType} ${token.accessToken}`;
+      const authStore = localStorage.getItem('auth-store');
+
+      if (authStore) {
+        const parsed = JSON.parse(authStore);
+        const user = parsed?.state?.user;
+
+        if (user?.accessToken && user?.grantType) {
+          config.headers.Authorization = `${user.grantType} ${user.accessToken}`;
+        }
       }
+
       return Promise.resolve(config);
     },
-    onRejected: (error) => {
-      return Promise.reject(error);
-    },
-    options: null,
+    onRejected: (error) => Promise.reject(error),
   },
   response: {
-    onFulfilled: (config) => {
-      return Promise.resolve(config);
-    },
-    onRejected: (error) => {
-      return Promise.reject(error);
-    },
-    options: null,
+    onFulfilled: (res) => Promise.resolve(res),
+    onRejected: (err) => Promise.reject(err),
   },
 };
 
-export { clientInterceptor, authClientInterceptor };
+export { authClientInterceptor, clientInterceptor };
