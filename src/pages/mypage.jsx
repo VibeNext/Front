@@ -20,7 +20,7 @@ const MyPage = () => {
         });
       } catch (error) {
         console.error('회원정보 조회 실패', error);
-        logout();
+        await logout();
         navigate('/login');
       }
     };
