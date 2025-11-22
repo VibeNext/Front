@@ -13,7 +13,7 @@ import LogoIcon from '../../assets/icons/서비스 로고.svg?react';
 const NAV_ITEMS = [
   { path: '/', label: '홈', Icon: HomeIcon },
   {
-    path: '/step/1/mission/1',
+    path: '/learningstep',
     basePath: '/step',
     label: '학습 단계',
     Icon: LearningIcon,
