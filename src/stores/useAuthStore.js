@@ -10,6 +10,14 @@ import avatar4 from '../assets/icons/profile/avatar4.svg';
 
 const avatars = [avatar1, avatar2, avatar3, avatar4];
 
+function getAvatarByEmail(email) {
+  let hash = 0;
+  for (let i = 0; i < email.length; i++) {
+    hash = (hash + email.charCodeAt(i)) % avatars.length;
+  }
+  return avatars[hash];
+}
+
 const useAuthStore = create(
   persist(
     (set, get) => ({
@@ -27,14 +35,13 @@ const useAuthStore = create(
 
       // 회원가입: 랜덤 아바타 배정
       registerUser: ({ name, email }) => {
-        const avatar = avatars[Math.floor(Math.random() * avatars.length)];
-
+        const avatar = getAvatarByEmail(email);
         set({
           user: {
             ...get().user,
             name,
             email,
-            avatar,
+            avatar, // 고정 아바타
           },
           isAuthenticated: false,
         });
