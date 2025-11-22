@@ -172,9 +172,26 @@ const SPageContainer = styled.div`
 const SWrapper = styled.div`
   flex: 1;
   display: flex;
-  align-items: flex-start;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
+
+  @media (max-width: 1600px) {
+    transform: scale(0.9);
+  }
+
+  @media (max-width: 1440px) {
+    transform: scale(0.85);
+  }
+
+  @media (max-width: 1280px) {
+    transform: scale(0.8);
+  }
+
+  @media (max-width: 1024px) {
+    transform: scale(0.7);
+  }
+
+  transform-origin: center;
 `;
 
 const SFormContainer = styled.div`
