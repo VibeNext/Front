@@ -10,6 +10,14 @@ import avatar4 from '../assets/icons/profile/avatar4.svg';
 
 const avatars = [avatar1, avatar2, avatar3, avatar4];
 
+function getAvatarByEmail(email) {
+  let hash = 0;
+  for (let i = 0; i < email.length; i++) {
+    hash = (hash + email.charCodeAt(i)) % avatars.length;
+  }
+  return avatars[hash];
+}
+
 const useAuthStore = create(
   persist(
     (set, get) => ({
@@ -27,32 +35,27 @@ const useAuthStore = create(
 
       // 회원가입: 랜덤 아바타 배정
       registerUser: ({ name, email }) => {
-        const avatar = avatars[Math.floor(Math.random() * avatars.length)];
-
+        const avatar = getAvatarByEmail(email);
         set({
           user: {
             ...get().user,
             name,
             email,
-            avatar,
+            avatar, // 고정 아바타
           },
           isAuthenticated: false,
         });
       },
 
-      // 로그인(API 응답 저장 + 랜덤 아바타 없는 경우 자동 생성)
       login: (payload) => {
-        const prevUser = get().user;
+        const email = payload.email;
 
-        // avatar 없으면 랜덤 생성
-        const avatar =
-          prevUser?.avatar ??
-          avatars[Math.floor(Math.random() * avatars.length)];
+        const avatar = getAvatarByEmail(email); //  이메일 기반 아바타 고정
 
         set({
           user: {
-            email: payload.email ?? prevUser.email,
-            name: prevUser.name, // 이름은 회원조회 API에서 갱신됨
+            email,
+            name: get().user.name,
             avatar,
             grantType: payload.grantType,
             accessToken: payload.accessToken,

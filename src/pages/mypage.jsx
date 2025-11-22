@@ -1,11 +1,32 @@
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
+import { getMyInfoApi } from '../apis/auth';
 import TopNavigation from '../components/common/TopNavigation';
 import useAuthStore from '../stores/useAuthStore';
 
 const MyPage = () => {
-  const { user, logout, isAuthenticated } = useAuthStore();
+  const { user, updateProfile, logout, isAuthenticated } = useAuthStore();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      try {
+        const res = await getMyInfoApi();
+
+        updateProfile({
+          name: res.data.name,
+          profile_image: res.data.profile_image,
+        });
+      } catch (error) {
+        console.error('회원정보 조회 실패', error);
+        await logout();
+        navigate('/login');
+      }
+    };
+
+    fetchUserInfo();
+  }, [logout, navigate, updateProfile]);
 
   if (!isAuthenticated) {
     navigate('/');
@@ -20,19 +41,21 @@ const MyPage = () => {
   return (
     <SPage>
       <TopNavigation />
-      <SContainer>
-        <SProfileSection>
-          <SProfileWrapper>
-            <SProfileImage src={user?.avatar} alt='프로필 이미지' />
-          </SProfileWrapper>
-        </SProfileSection>
+      <SWrapper>
+        <SContainer>
+          <SProfileSection>
+            <SProfileWrapper>
+              <SProfileImage src={user?.avatar} />
+            </SProfileWrapper>
+          </SProfileSection>
 
-        <SFormSection>
-          <SLabel>이름</SLabel>
-          <SInput type='text' value={user?.name ?? ''} readOnly />
-          <SButton onClick={handleLogout}>로그아웃</SButton>
-        </SFormSection>
-      </SContainer>
+          <SFormSection>
+            <SLabel>이름</SLabel>
+            <SInput value={user?.name ?? ''} readOnly />
+            <SButton onClick={handleLogout}>로그아웃</SButton>
+          </SFormSection>
+        </SContainer>
+      </SWrapper>
     </SPage>
   );
 };
@@ -54,8 +77,29 @@ const SContainer = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  padding-top: 7.75rem; /* TopNavigation 아래 여백 */
-  min-height: calc(100vh - 5rem); /* TopNavigation 높이 제외 영역 */
+  padding-top: 7.75rem;
+`;
+
+const SWrapper = styled.div`
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+
+  transform-origin: top center;
+
+  @media (max-width: 1600px) {
+    transform: scale(0.9);
+  }
+  @media (max-width: 1440px) {
+    transform: scale(0.85);
+  }
+  @media (max-width: 1280px) {
+    transform: scale(0.8);
+  }
+  @media (max-width: 1024px) {
+    transform: scale(0.7);
+  }
 `;
 
 const SProfileSection = styled.div`

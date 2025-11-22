@@ -2,6 +2,9 @@ import { createGlobalStyle } from 'styled-components';
 
 const GlobalStyle = createGlobalStyle`
 
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+
+
   @font-face {
     font-family: 'DungGeunMo';
     src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_six@1.0/DungGeunMo.woff') format('woff');
@@ -12,11 +15,13 @@ const GlobalStyle = createGlobalStyle`
 
   @font-face {
     font-family: 'EBSHunminjeongeumSB';
-    src: url('/src/assets/fonts/EBS_Hunminjeongeum_SB.ttf') format('truetype');
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_one@1.0/EBSHMJESaeronRA.woff') format('woff');
     font-weight: normal;
     font-style: normal;
     font-display: swap;
   }
+
+
 
 * {
   margin: 0;
@@ -103,6 +108,5 @@ input::-webkit-inner-spin-button {
      font-family: ${({ theme }) => theme.fonts.families.body};
   }
 `;
-
 
 export default GlobalStyle;
