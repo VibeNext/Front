@@ -8,8 +8,7 @@ import AnswerCheckContainer from '../components/common/AnswerCheckContainer/Answ
 import MissionDescription from '../components/common/MissionDescription.jsx';
 import MissionHeader from '../components/common/MissionHeader.jsx';
 import TopNavigation from '../components/common/TopNavigation.jsx';
-import useAuthStore from "../stores/useAuthStore";
-
+import useAuthStore from '../stores/useAuthStore';
 
 import bearImg from '../assets/icons/bear.png';
 import boilImg from '../assets/icons/boil.png';
@@ -22,12 +21,15 @@ import tomatoImg from '../assets/icons/tomato.png';
 import waterImg from '../assets/icons/water.png';
 
 import botIcon from '../assets/icons/bot.png';
+
+import defaultImg from '../assets/icons/missionpage_1/default1.svg';
+
 const MissionPage_01 = ({ onFinish }) => {
   const [status, setStatus] = useState('default');
   const { missionId } = useParams();
   const mission = Number(missionId);
 
-  const { accessToken } = useAuthStore();       // accessToken 정상 획득
+  const { accessToken } = useAuthStore(); // accessToken 정상 획득
   const API_BASE = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
@@ -38,23 +40,43 @@ const MissionPage_01 = ({ onFinish }) => {
   const saveSolution = async () => {
     try {
       const res = await fetch(`${API_BASE}/solutions`, {
-        method: "POST",
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
           Authorization: `Bearer ${accessToken}`,
         },
         body: JSON.stringify({
           mission_id: Number(missionId),
-          status: "success",
+          status: 'success',
         }),
       });
 
       const data = await res.json();
-      console.log("📌 풀이 저장 성공:", data);
-
+      console.log('📌 풀이 저장 성공:', data);
     } catch (err) {
-      console.error("❌ 풀이 저장 실패:", err);
+      console.error('❌ 풀이 저장 실패:', err);
     }
+  };
+
+  const images = {
+    1: {
+      default: defaultImg,
+      checking: defaultImg,
+      success: defaultImg,
+      fail: defaultImg,
+    },
+    2: {
+      default: defaultImg,
+      checking: defaultImg,
+      success: defaultImg,
+      fail: defaultImg,
+    },
+    3: {
+      default: defaultImg,
+      checking: defaultImg,
+      success: defaultImg,
+      fail: defaultImg,
+    },
   };
 
   const renderMissionContent = () => {
@@ -63,37 +85,45 @@ const MissionPage_01 = ({ onFinish }) => {
         return (
           <>
             <p>오늘은 내가 요리사!</p>
-            <p style={{ marginBottom: '1rem' }}>갓 따온 토마토를 이용해 맛있는 토마토 스프를 만들려고 해요.</p>
-            <p>아래에 섞여 있는 조리 단계를 참고해서 올바른 레시피를 작성해 주세요.</p>
-            <p>모든 과정을 순서대로 실행하면, 따뜻하고 맛있는 토마토 스프가 완성될 거예요!</p>
+            <p style={{ marginBottom: '1rem' }}>
+              갓 따온 토마토를 이용해 맛있는 토마토 스프를 만들려고 해요.
+            </p>
+            <p>
+              아래에 섞여 있는 조리 단계를 참고해서 올바른 레시피를 작성해
+              주세요.
+            </p>
+            <p>
+              모든 과정을 순서대로 실행하면, 따뜻하고 맛있는 토마토 스프가
+              완성될 거예요!
+            </p>
             <ImageRow>
               <ImageItem>
                 <small>불끄기</small>
-                <img src={fireOffImg} alt="불끄기" />
+                <img src={fireOffImg} alt='불끄기' />
               </ImageItem>
               <ImageItem>
                 <small>토마토 넣기</small>
-                <img src={tomatoImg} alt="토마토 넣기" />
+                <img src={tomatoImg} alt='토마토 넣기' />
               </ImageItem>
               <ImageItem>
                 <small>채소와 소금 넣기</small>
-                <img src={saltImg} alt="채소와 소금 넣기" />
+                <img src={saltImg} alt='채소와 소금 넣기' />
               </ImageItem>
               <ImageItem>
                 <small>완성된 스프 담기</small>
-                <img src={soupImg} alt="완성된 스프 담기" />
+                <img src={soupImg} alt='완성된 스프 담기' />
               </ImageItem>
               <ImageItem>
                 <small>불켜기</small>
-                <img src={fireOnImg} alt="불켜기" />
+                <img src={fireOnImg} alt='불켜기' />
               </ImageItem>
               <ImageItem>
                 <small>냄비에 물 붓기</small>
-                <img src={waterImg} alt="냄비에 물 붓기" />
+                <img src={waterImg} alt='냄비에 물 붓기' />
               </ImageItem>
               <ImageItem>
                 <small>물 끓이기</small>
-                <img src={boilImg} alt="물 끓이기" />
+                <img src={boilImg} alt='물 끓이기' />
               </ImageItem>
             </ImageRow>
           </>
@@ -103,37 +133,45 @@ const MissionPage_01 = ({ onFinish }) => {
         return (
           <>
             <p>오늘은 내가 요리사!</p>
-            <p style={{ marginBottom: '1rem' }}>갓 따온 토마토를 이용해 맛있는 토마토 스프를 만들려고 해요.</p>
-            <p>아래에 섞여 있는 조리 단계를 참고해서 올바른 레시피를 작성해 주세요.</p>
-            <p>모든 과정을 순서대로 실행하면, 따뜻하고 맛있는 토마토 스프가 완성될 거예요!</p>
+            <p style={{ marginBottom: '1rem' }}>
+              갓 따온 토마토를 이용해 맛있는 토마토 스프를 만들려고 해요.
+            </p>
+            <p>
+              아래에 섞여 있는 조리 단계를 참고해서 올바른 레시피를 작성해
+              주세요.
+            </p>
+            <p>
+              모든 과정을 순서대로 실행하면, 따뜻하고 맛있는 토마토 스프가
+              완성될 거예요!
+            </p>
             <ImageRow>
               <ImageItem>
                 <small>불끄기</small>
-                <img src={fireOffImg} alt="불끄기" />
+                <img src={fireOffImg} alt='불끄기' />
               </ImageItem>
               <ImageItem>
                 <small>버섯 넣기</small>
-                <img src={mushroomImg} alt="버섯 넣기" />
+                <img src={mushroomImg} alt='버섯 넣기' />
               </ImageItem>
               <ImageItem>
                 <small>채소와 소금 넣기</small>
-                <img src={saltImg} alt="채소와 소금 넣기" />
+                <img src={saltImg} alt='채소와 소금 넣기' />
               </ImageItem>
               <ImageItem>
                 <small>완성된 스프 담기</small>
-                <img src={soupImg} alt="완성된 스프 담기" />
+                <img src={soupImg} alt='완성된 스프 담기' />
               </ImageItem>
               <ImageItem>
                 <small>불켜기</small>
-                <img src={fireOnImg} alt="불켜기" />
+                <img src={fireOnImg} alt='불켜기' />
               </ImageItem>
               <ImageItem>
                 <small>냄비에 물 붓기</small>
-                <img src={waterImg} alt="냄비에 물 붓기" />
+                <img src={waterImg} alt='냄비에 물 붓기' />
               </ImageItem>
               <ImageItem>
                 <small>물 끓이기</small>
-                <img src={boilImg} alt="물 끓이기" />
+                <img src={boilImg} alt='물 끓이기' />
               </ImageItem>
             </ImageRow>
           </>
@@ -143,12 +181,31 @@ const MissionPage_01 = ({ onFinish }) => {
         return (
           <>
             <p>프로 요리사가 되기 위한 마지막 단계!</p>
-            <p style={{ marginBottom: '1rem' }}>바로 다른 사람들의 주문에 맞춰 요리를 만들어보는 것이에요. </p>
-            <p>아래 곰 손님은 “꿀이 들어가고, 허브가 뿌려진 스프” 를 원하고 있어요. </p>
-            <p>지금까지 배운 순차 개념과 레시피들을 응용해서 손님께 드릴 맛있는 스프를 만들어볼까요?</p>
-            <p style={{ color:'#5C9DFF' }}>* 스프에 요리사가 원하는 다양한 재료를 추가하면 더 맛있는 스프가 완성될거에요!</p>
+            <p style={{ marginBottom: '1rem' }}>
+              바로 다른 사람들의 주문에 맞춰 요리를 만들어보는 것이에요.{' '}
+            </p>
+            <p>
+              아래 곰 손님은 “꿀이 들어가고, 허브가 뿌려진 스프” 를 원하고
+              있어요.{' '}
+            </p>
+            <p>
+              지금까지 배운 순차 개념과 레시피들을 응용해서 손님께 드릴 맛있는
+              스프를 만들어볼까요?
+            </p>
+            <p style={{ color: '#5C9DFF' }}>
+              * 스프에 요리사가 원하는 다양한 재료를 추가하면 더 맛있는 스프가
+              완성될거에요!
+            </p>
             <ImageItem>
-                <img src={bearImg} alt="곰 말풍선" style={{ width: '38.9375rem', height:'5rem', marginTop: '2.44rem'}}/>
+              <img
+                src={bearImg}
+                alt='곰 말풍선'
+                style={{
+                  width: '38.9375rem',
+                  height: '5rem',
+                  marginTop: '2.44rem',
+                }}
+              />
             </ImageItem>
           </>
         );
@@ -167,12 +224,14 @@ const MissionPage_01 = ({ onFinish }) => {
         {/* 헤더 (Step, Mission 제목) */}
         <MissionHeader
           stepId={1}
-          stepNumber="01 순차"
-          title={mission === 1
-            ? '요리사의 레시피: 토마토 스프'
-            : mission === 2
-            ? '요리사의 레시피: 버섯 스프'
-            : '요리사의 레시피: 손님의 스프'}
+          stepNumber='01 순차'
+          title={
+            mission === 1
+              ? '요리사의 레시피: 토마토 스프'
+              : mission === 2
+                ? '요리사의 레시피: 버섯 스프'
+                : '요리사의 레시피: 손님의 스프'
+          }
           initialStep={mission}
           status={status}
         />
@@ -185,7 +244,41 @@ const MissionPage_01 = ({ onFinish }) => {
 
             {/* 정답 확인 영역 - 상태 연동 */}
             <AnswerCheckContainer status={status}>
-              {/* 여기에 정답 이미지는 나중에 children으로 들어감 */}
+              {status === 'default' && (
+                <div style={{ textAlign: 'center' }}>
+                  <img
+                    src={images[mission].default}
+                    alt='기본 이미지'
+                    style={{
+                      width: 'auto',
+                      height: 'auto',
+                      maxWidth: '60%',
+                      maxHeight: '60%',
+                      objectFit: 'contain',
+                      display: 'block',
+                      margin: '0 auto',
+                    }}
+                  />
+                  <p
+                    style={{
+                      color: '#868BA3',
+                      fontFamily: 'Pretendard',
+                      fontWeight: 500,
+                      fontSize: '1rem',
+                      marginTop: '1rem',
+                    }}
+                  >
+                    프롬포트 입력시 결과 확인이 가능합니다.
+                  </p>
+                </div>
+              )}
+
+              {status !== 'default' && (
+                <img
+                  src={images[mission][status]}
+                  alt={`${mission}번 미션 ${status} 이미지`}
+                />
+              )}
             </AnswerCheckContainer>
           </LeftPanel>
 
@@ -202,18 +295,21 @@ const MissionPage_01 = ({ onFinish }) => {
                       correctMessage={`<strong style="color:#37AF00;">정답입니다!</strong><br><br>따뜻하고 맛있는 <b>토마토 스프</b>가 완성되었어요.<br>요리사로서의 첫걸음을 성공적으로 내딛었네요!<br><span style="color:#868ba3; font-weight:500;">레시피가 순차적으로 작동했다면 정답으로 인정됩니다.</span>`}
                       wrongMessage={`<strong style="color:#FF644F;">오답입니다!</strong><br><br>레시피 순서를 다시 확인해주세요!<br><span style="color:#868ba3; font-weight:500;">예: 불을 켜야만 물을 끓일 수 있겠죠?</span>`}
                       status={status}
-                      setStatus={async(v) => {
+                      setStatus={async (v) => {
                         setStatus(v);
 
-                        if (v === "success") {
+                        if (v === 'success') {
                           setTimeout(async () => {
                             await saveSolution();
-                            localStorage.setItem("shouldRefreshMissions", "true");
+                            localStorage.setItem(
+                              'shouldRefreshMissions',
+                              'true',
+                            );
                             onFinish(true);
                           }, 1200); // 메시지 자연스럽게 보이게 1.2초
                         }
 
-                        if (v === "fail") {
+                        if (v === 'fail') {
                           setTimeout(() => {
                             onFinish(false);
                           }, 1200); // ⬅ 1.2초 메시지 유지
@@ -231,18 +327,21 @@ const MissionPage_01 = ({ onFinish }) => {
                       correctMessage={`<strong style="color:#37AF00;">정답입니다!</strong><br><br>잘못된 레시피를 적절하게 고치는 방법까지 터득하셨네요! 이제 프로 요리사가 되기 위한 마지막 단계로 가볼까요?<br><span style="color:#868ba3; font-weight:500;">1. 잘못된 레시피를 정확하게 찾으셨다면, 정답으로 인정됩니다. </span><br><span style="color:#868ba3; font-weight:500;">2. 레시피가 잘못된 이유를 순차적인 개념과 함께 타당하게 제시하였다면, 정답으로 인정됩니다.  </span>`}
                       wrongMessage={`<strong style="color:#FF644F;">오답입니다!</strong><br><br>레시피를 다시 점검해주세요.<br><span style="color:#868ba3; font-weight:500;">1. 잘피드백 문장 (레시피의 전후 관계를 다시 확인해주세요! 예를 들어, 불을 먼저 켜야만 나중에 끌 수 있겠죠?) </span><br><span style="color:#868ba3; font-weight:500;">2. 피드백 문장 (해당 레시피가 왜 잘못되었을까요? 순차적인 개념과 함께 생각해봅시다.)  </span>`}
                       status={status}
-                      setStatus={async(v) => {
+                      setStatus={async (v) => {
                         setStatus(v);
 
-                        if (v === "success") {
+                        if (v === 'success') {
                           setTimeout(async () => {
                             await saveSolution();
-                            localStorage.setItem("shouldRefreshMissions", "true");
+                            localStorage.setItem(
+                              'shouldRefreshMissions',
+                              'true',
+                            );
                             onFinish(true);
                           }, 1200); // 메시지 자연스럽게 보이게 1.2초
                         }
 
-                        if (v === "fail") {
+                        if (v === 'fail') {
                           setTimeout(() => {
                             onFinish(false);
                           }, 1200); // ⬅ 1.2초 메시지 유지
@@ -260,18 +359,21 @@ const MissionPage_01 = ({ onFinish }) => {
                       correctMessage={`<strong style="color:#37AF00;">버섯과 꿀이 들어가고 허브가 뿌려진</strong><br><strong style="color:#37AF00;">매우 맛있는 스프가 완성되었어요!</strong><br><br>손님의 주문에 맞춰 매우 맛있는 스프를 요리해낸 당신! 프로 요리사로서, 이제 어떤 스프든 맛있게 만들어낼 수 있을 거에요!<br><span style="color:#868ba3; font-weight:500;">손님의 주문에 맞춰 레시피가 논리에 문제 없이 순차적으로 작동한다면, 정답으로 인정됩니다. </span>`}
                       wrongMessage={`<strong style="color:#FF644F;">맛이 밍밍한</strong><br><strong style="color:#FF644F;">아쉬운 스프가 완성되었어요!</strong><br><br>레시피를 다시 점검해주세요.<br><span style="color:#868ba3; font-weight:500;">* 피드백 문장 (곰 손님의 주문을 다시 확인해보고, 순차적으로 문제 없도록 요리에 적용해보세요!)</span>`}
                       status={status}
-                      setStatus={async(v) => {
+                      setStatus={async (v) => {
                         setStatus(v);
 
-                        if (v === "success") {
+                        if (v === 'success') {
                           setTimeout(async () => {
                             await saveSolution();
-                            localStorage.setItem("shouldRefreshMissions", "true");
+                            localStorage.setItem(
+                              'shouldRefreshMissions',
+                              'true',
+                            );
                             onFinish(true);
                           }, 1200); // 메시지 자연스럽게 보이게 1.2초
                         }
 
-                        if (v === "fail") {
+                        if (v === 'fail') {
                           setTimeout(() => {
                             onFinish(false);
                           }, 1200); // ⬅ 1.2초 메시지 유지
@@ -285,7 +387,6 @@ const MissionPage_01 = ({ onFinish }) => {
               }
             })()}
           </RightPanel>
-
         </MainLayout>
       </ContentWrap>
     </Wrapper>
@@ -355,7 +456,6 @@ const ImageItem = styled.div`
     font-weight: 500;
     line-height: 150%; /* 1.01981rem */
     margin-bottom: 0.5rem;
-
   }
 
   img {
