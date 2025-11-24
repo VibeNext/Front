@@ -21,7 +21,7 @@ import waterImg from '../assets/icons/water.png';
 
 import botIcon from '../assets/icons/bot.png';
 
-const MissionPage_01 = () => {
+const MissionPage_01 = ({ solutionId, onFinish }) => {
   const [status, setStatus] = useState('default'); // default,success,fail
   const { missionId } = useParams();
   const mission = Number(missionId);
@@ -174,7 +174,11 @@ const MissionPage_01 = () => {
                       correctMessage={`<strong style="color:#37AF00;">정답입니다!</strong><br><br>따뜻하고 맛있는 <b>토마토 스프</b>가 완성되었어요.<br>요리사로서의 첫걸음을 성공적으로 내딛었네요!<br><span style="color:#868ba3; font-weight:500;">레시피가 순차적으로 작동했다면 정답으로 인정됩니다.</span>`}
                       wrongMessage={`<strong style="color:#FF644F;">오답입니다!</strong><br><br>레시피 순서를 다시 확인해주세요!<br><span style="color:#868ba3; font-weight:500;">예: 불을 켜야만 물을 끓일 수 있겠죠?</span>`}
                       status={status}
-                      setStatus={setStatus}
+                      setStatus={(v) => {
+                        setStatus(v);
+                        if (v === "success") onFinish(true);
+                        if (v === "fail") onFinish(false);
+                      }}
                     />
                   );
 
@@ -187,7 +191,11 @@ const MissionPage_01 = () => {
                       correctMessage={`<strong style="color:#37AF00;">정답입니다!</strong><br><br>잘못된 레시피를 적절하게 고치는 방법까지 터득하셨네요! 이제 프로 요리사가 되기 위한 마지막 단계로 가볼까요?<br><span style="color:#868ba3; font-weight:500;">1. 잘못된 레시피를 정확하게 찾으셨다면, 정답으로 인정됩니다. </span><br><span style="color:#868ba3; font-weight:500;">2. 레시피가 잘못된 이유를 순차적인 개념과 함께 타당하게 제시하였다면, 정답으로 인정됩니다.  </span>`}
                       wrongMessage={`<strong style="color:#FF644F;">오답입니다!</strong><br><br>레시피를 다시 점검해주세요.<br><span style="color:#868ba3; font-weight:500;">1. 잘피드백 문장 (레시피의 전후 관계를 다시 확인해주세요! 예를 들어, 불을 먼저 켜야만 나중에 끌 수 있겠죠?) </span><br><span style="color:#868ba3; font-weight:500;">2. 피드백 문장 (해당 레시피가 왜 잘못되었을까요? 순차적인 개념과 함께 생각해봅시다.)  </span>`}
                       tatus={status}
-                      setStatus={setStatus}
+                      setStatus={(v) => {
+                        setStatus(v);
+                        if (v === "success") onFinish(true);
+                        if (v === "fail") onFinish(false);
+                      }}
                     />
                   );
 
@@ -200,7 +208,11 @@ const MissionPage_01 = () => {
                       correctMessage={`<strong style="color:#37AF00;">버섯과 꿀이 들어가고 허브가 뿌려진</strong><br><strong style="color:#37AF00;">매우 맛있는 스프가 완성되었어요!</strong><br><br>손님의 주문에 맞춰 매우 맛있는 스프를 요리해낸 당신! 프로 요리사로서, 이제 어떤 스프든 맛있게 만들어낼 수 있을 거에요!<br><span style="color:#868ba3; font-weight:500;">손님의 주문에 맞춰 레시피가 논리에 문제 없이 순차적으로 작동한다면, 정답으로 인정됩니다. </span>`}
                       wrongMessage={`<strong style="color:#FF644F;">맛이 밍밍한</strong><br><strong style="color:#FF644F;">아쉬운 스프가 완성되었어요!</strong><br><br>레시피를 다시 점검해주세요.<br><span style="color:#868ba3; font-weight:500;">* 피드백 문장 (곰 손님의 주문을 다시 확인해보고, 순차적으로 문제 없도록 요리에 적용해보세요!)</span>`}
                       status={status}
-                      setStatus={setStatus}
+                      setStatus={(v) => {
+                        setStatus(v);
+                        if (v === "success") onFinish(true);
+                        if (v === "fail") onFinish(false);
+                      }}
                     />
                   );
 
@@ -288,6 +300,3 @@ const ImageItem = styled.div`
     object-fit: contain;
   }
 `;
-
-
-
