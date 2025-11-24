@@ -12,6 +12,7 @@ const MissionCard = ({
   //01, 02, 03 형태로 포맷팅
   const formattedNumber = String(missionNumber).padStart(2, "0");
 
+
   return (
     <CardContainer size={size} themeType={theme}>
       <MissionText size={size} themeType={theme}>
@@ -46,7 +47,7 @@ const CardContainer = styled.div`
   justify-content: center;
   text-align: center;
 
-  transition: all 0.45s cubic-bezier(0.22, 0.61, 0.36, 1); //애니메이션 추가함 
+  transition: all 0.45s cubic-bezier(0.22, 0.61, 0.36, 1); //애니메이션 추가함
 
   ${({ size }) =>
     size === 'large'
@@ -103,14 +104,14 @@ const Title = styled.h2`
   font-weight: 400;
   line-height: 1.4;
   color: ${({ themeType }) => (themeType === 'dark' ? '#646879' : '#191927')};
-  margin-bottom: ${({ size }) => (size === 'large' ? '1.25rem' : '0.75rem')};
+  margin-bottom: ${({ size }) => (size === 'large' ? '1.rem' : '0.75rem')};
   text-align: center;
 `;
 
 const ImageWrapper = styled.div`
   width: ${({ size }) => (size === 'large' ? '11.25rem' : '7rem')};
   height: ${({ size }) => (size === 'large' ? '11.25rem' : '7rem')};
-  margin-bottom: ${({ size }) => (size === 'large' ? '1.25rem' : '1rem')};
+  margin-bottom: ${({ size }) => (size === 'large' ? '0rem' : '0.75rem')};
 
   img {
     width: 100%;
@@ -127,7 +128,7 @@ const Description = styled.p`
     themeType === 'dark' ? 'var(--Gray-2, #868ba3)' : 'var(--Gray-1, #646879)'};
   text-align: center;
   line-height: 1.5;
-  margin-top: ${({ size }) => (size === 'large' ? '0.5rem' : '0.25rem')};
+  margin-top: ${({ size }) => (size === 'large' ? '0rem' : '0.25rem')};
   max-width: 80%;
   white-space: pre-line;
 `;
