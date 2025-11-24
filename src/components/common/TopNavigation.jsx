@@ -209,6 +209,16 @@ const SLabel = styled.span`
 
   font-weight: ${({ $active }) => ($active ? 600 : 500)};
   transition: color 0.2s ease;
+
+  @media (max-width: 900px) {
+    font-size: 1.1rem;
+  }
+  @media (max-width: 768px) {
+    font-size: 1rem;
+  }
+  @media (max-width: 640px) {
+    font-size: 0.9rem;
+  }
 `;
 
 /* before-login 우측 버튼 스타일 재사용 */
@@ -244,6 +254,19 @@ const SButton = styled.button`
 
   cursor: pointer;
   transition: all 0.2s ease;
+
+  @media (max-width: 900px) {
+    font-size: 1.1rem;
+  }
+  @media (max-width: 768px) {
+    font-size: 1rem;
+  }
+  @media (max-width: 640px) {
+    font-size: 0.9rem;
+  }
+  @media (max-width: 480px) {
+    font-size: 0.7rem;
+  }
 `;
 
 const ProfileBtn = styled.button`
