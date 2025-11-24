@@ -3,7 +3,6 @@ import styled from 'styled-components';
 import useAuthStore from '../../stores/useAuthStore';
 
 import LogoTextIcon from '../../assets/icons/NEXTVIBE.svg?react';
-import BadgeIcon from '../../assets/icons/badge.svg?react';
 import LearningIcon from '../../assets/icons/book-open.svg?react';
 import HomeIcon from '../../assets/icons/home.svg?react';
 import UserIcon from '../../assets/icons/user.svg?react';
@@ -18,7 +17,6 @@ const NAV_ITEMS = [
     label: '학습 단계',
     Icon: LearningIcon,
   },
-  { path: '/badge', label: '학습 뱃지', Icon: BadgeIcon },
 ];
 
 const TopNavigation = () => {
@@ -116,7 +114,6 @@ const SHeaderWrap = styled.div`
 const SBar = styled.header`
   height: 5rem;
   display: flex;
-  grid-template-columns: 1fr auto 1fr;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
@@ -183,6 +180,8 @@ const SRight = styled.div`
   align-items: center;
   gap: 10px;
   justify-self: end;
+  width: 200px;
+  justify-content: flex-end;
 `;
 
 const SIcon = styled.span`
