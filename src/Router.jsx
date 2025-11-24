@@ -1,5 +1,4 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
-import ComingSoon from './pages/ComingSoon.jsx';
 import Home from './pages/HomePage.jsx';
 import LearningStepPage from './pages/LearningStepPage.jsx';
 import LoginPage from './pages/LoginPage.jsx';
@@ -17,7 +16,6 @@ const Router = () => {
         <Route path='/signup' element={<SignUpPage />} />
         <Route path='/login' element={<LoginPage />} />
         <Route path='/mypage' element={<MyPage />} />
-        <Route path='/badge' element={<ComingSoon />} />
 
         {/* 학습 단계 목록 */}
         <Route path='/learningstep' element={<LearningStepPage />} />
