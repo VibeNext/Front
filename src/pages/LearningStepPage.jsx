@@ -38,37 +38,42 @@ const LearningStepPage = () => {
     const min = String(d.getMinutes()).padStart(2, "0");
     return `${month}.${day} ${hour}:${min}`;
   };
-
-  // 미션 목록 + 챕터 정보 가져오기
-  useEffect(() => {
-    const fetchMissions = async () => {
-      try {
-        const headers = {};
-        if (accessToken) {
-          headers["Authorization"] = `Bearer ${accessToken}`;
-        }
-
-        const API_BASE = import.meta.env.VITE_API_URL;
-
-        const res = await fetch(`${API_BASE}/missions`, { headers });
-        const data = await res.json();
-
-        const filteredChapters = data.chapter.filter((c) => c.id !== 3);
-        const filteredMissions = data.mission.filter((m) => m.chapter !== 3);
-
-        setChapters(filteredChapters);
-        setMissions(filteredMissions);
-
-        if (filteredChapters.length > 0) {
-          setSelectedChapter(filteredChapters[0].id);
-        }
-      } catch (err) {
-        console.error("❌ Failed to fetch missions:", err);
+  
+  const fetchMissions = async () => {
+    try {
+      const headers = {};
+      if (accessToken) {
+        headers["Authorization"] = `Bearer ${accessToken}`;
       }
-    };
 
+      const API_BASE = import.meta.env.VITE_API_URL;
+
+      const res = await fetch(`${API_BASE}/missions`, { headers });
+      const data = await res.json();
+
+      const filteredChapters = data.chapter.filter((c) => c.id !== 3);
+      const filteredMissions = data.mission.filter((m) => m.chapter !== 3);
+
+      setChapters(filteredChapters);
+      setMissions(filteredMissions);
+
+      if (filteredChapters.length > 0) {
+        setSelectedChapter(filteredChapters[0].id);
+      }
+    } catch (err) {
+      console.error("❌ Failed to fetch missions:", err);
+    }
+  };
+
+  useEffect(() => {
     fetchMissions();
   }, [accessToken]);
+
+  useEffect(() => {
+    const handler = () => fetchMissions();
+    window.addEventListener("focus", handler);
+    return () => window.removeEventListener("focus", handler);
+  }, []);
 
   // 선택된 챕터의 미션 목록
   const chapterMissions = missions.filter((m) => m.chapter === selectedChapter);
@@ -76,7 +81,8 @@ const LearningStepPage = () => {
   const getChapterLocked = (chapterId) => {
     const ms = missions.filter((m) => m.chapter === chapterId);
 
-    if (!user) return true;
+    if (!accessToken) return true;
+
     return ms.every((m) => m.is_unlocked === false);
   };
 
@@ -105,24 +111,25 @@ const LearningStepPage = () => {
   }, [currentMission]);
 
   const clickMission = (m) => {
-    if (!user) {
+    // 로그인 여부는 accessToken으로 체크
+    if (!accessToken) {
       setLoginDialog(true);
       return;
     }
 
-  // Step01-Mission01은 항상 unlock
-  const alwaysOpen = m.chapter === 1 && Number(m.number) === 1;
+    // Step01-Mission01은 항상 unlock
+    const alwaysOpen = m.chapter === 1 && Number(m.number) === 1;
 
-  const unlocked = alwaysOpen ? true : (m.is_unlocked ?? false);
+    const unlocked = alwaysOpen ? true : (m.is_unlocked ?? false);
 
-  if (!unlocked) {
-    setLockDialog(true);
-    return;
-  }
-
+    if (!unlocked) {
+      setLockDialog(true);
+      return;
+    }
 
     navigate(`/step/${m.chapter}/mission/${m.number}`);
   };
+
 
   const selectedMissionData = missions.find(
     (m) => m.id === currentMission
