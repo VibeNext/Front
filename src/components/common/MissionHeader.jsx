@@ -15,28 +15,24 @@ const MissionHeader = ({ stepNumber, title, stepId, status }) => {
     navigate(`/step/${stepId}/mission/${index + 1}`);
   };
 
-  // “다음으로” 버튼 클릭 시 이동
+  // “다음으로 / 학습 완료” 버튼 클릭 시 이동
   const handleNext = () => {
     if (status !== 'success') return;
 
     const currentMission = Number(missionId);
-    const currentStep = Number(stepId);
 
-    // step3의 mission3이면 이동 막기
-    if (currentStep === 3 && currentMission === 3) return;
-
-    if (currentMission < 3) {
-      // 같은 step 내에서 다음 mission으로 이동
-      navigate(`/step/${currentStep}/mission/${currentMission + 1}`);
-    } else {
-      // mission3 → 다음 step으로 이동
-      navigate(`/step/${currentStep + 1}/mission/1`);
+    // mission3 → 학습 완료 → /learningstep 이동
+    if (currentMission === 3) {
+      navigate('/learningstep');
+      return;
     }
+
+    // mission1 → 2, mission2 → 3
+    navigate(`/step/${stepId}/mission/${currentMission + 1}`);
   };
 
-  // 버튼 비활성화 조건
-  const isLastMission = Number(stepId) === 3 && Number(missionId) === 3;
-  const isDisabled = status !== 'success' || isLastMission;
+  // mission3이면 버튼 이름 변경
+  const buttonLabel = Number(missionId) === 3 ? '학습 완료' : '다음으로';
 
   return (
     <Wrapper>
@@ -70,8 +66,8 @@ const MissionHeader = ({ stepNumber, title, stepId, status }) => {
       {/* 하단 제목 + 버튼 */}
       <BottomRow>
         <Title>{title}</Title>
-        <NextButton disabled={isDisabled} onClick={handleNext}>
-          다음으로
+        <NextButton disabled={status !== 'success'} onClick={handleNext}>
+          {buttonLabel}
         </NextButton>
       </BottomRow>
     </Wrapper>
@@ -80,7 +76,8 @@ const MissionHeader = ({ stepNumber, title, stepId, status }) => {
 
 export default MissionHeader;
 
-// styled-components
+/* ---------------- styles ---------------- */
+
 const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
