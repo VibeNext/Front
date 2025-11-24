@@ -30,16 +30,6 @@ const LearningStepPage = () => {
   const itemRefs = useRef({});
   const [hoverId, setHoverId] = useState(null);
 
-  // 날짜 포맷 함수
-  const formatDate = (dateString) => {
-    const d = new Date(dateString);
-    const month = String(d.getMonth() + 1).padStart(2, "0");
-    const day = String(d.getDate()).padStart(2, "0");
-    const hour = String(d.getHours()).padStart(2, "0");
-    const min = String(d.getMinutes()).padStart(2, "0");
-    return `${month}.${day} ${hour}:${min}`;
-  };
-  
   const fetchMissions = async () => {
     try {
       const headers = {};
@@ -66,6 +56,18 @@ const LearningStepPage = () => {
     }
   };
 
+  // 날짜 포맷 함수
+  const formatDate = (dateString) => {
+    const d = new Date(dateString);
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    const hour = String(d.getHours()).padStart(2, "0");
+    const min = String(d.getMinutes()).padStart(2, "0");
+    return `${month}.${day} ${hour}:${min}`;
+  };
+  
+
+  // 최초 1회 미션 불러오기
   useEffect(() => {
     fetchMissions();
   }, [accessToken]);
@@ -159,6 +161,15 @@ const LearningStepPage = () => {
 
     fetchHistory();
   }, [selectedMissionData, accessToken]);
+  
+  useEffect(() => {
+      const shouldRefresh = localStorage.getItem("shouldRefreshMissions");
+
+      if (shouldRefresh === "true") {
+        fetchMissions();                      // 미션 정보 최신화
+        localStorage.removeItem("shouldRefreshMissions");
+      }
+    }, []);
 
   return (
     <SPageContainer>
@@ -258,11 +269,16 @@ const LearningStepPage = () => {
         {solutionHistory.length > 0 && (
           <RecordBox>
             {solutionHistory.map((h, idx) => (
-              <p key={h.id}>
+              <p 
+                key={h.id} 
+                onClick={() => navigate(`/solution-history/${h.id}`)}
+                style={{cursor: "pointer"}}
+              >
                 풀이 기록 {idx + 1} : {formatDate(h.created_at)}
               </p>
             ))}
           </RecordBox>
+
         )}
       </SWrapper>
     </SPageContainer>

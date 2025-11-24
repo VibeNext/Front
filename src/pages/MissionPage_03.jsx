@@ -153,7 +153,10 @@ const MissionPage_03 = ({solutionId, onFinish }) => {
                       status={status}
                       setStatus={(v) => {
                         setStatus(v);
-                        if (v === "success") onFinish(true);
+                        if (v === "success") {
+                          localStorage.setItem("shouldRefreshMissions", "true"); // ⭐ 추가
+                          onFinish(true);
+                        }
                         if (v === "fail") onFinish(false);
                       }}
                     />
@@ -170,7 +173,10 @@ const MissionPage_03 = ({solutionId, onFinish }) => {
                       tatus={status}
                       setStatus={(v) => {
                         setStatus(v);
-                        if (v === "success") onFinish(true);
+                        if (v === "success") {
+                          localStorage.setItem("shouldRefreshMissions", "true"); // ⭐ 추가
+                          onFinish(true);
+                        }
                         if (v === "fail") onFinish(false);
                       }}
                     />
@@ -187,7 +193,10 @@ const MissionPage_03 = ({solutionId, onFinish }) => {
                       status={status}
                       setStatus={(v) => {
                         setStatus(v);
-                        if (v === "success") onFinish(true);
+                        if (v === "success") {
+                          localStorage.setItem("shouldRefreshMissions", "true"); // ⭐ 추가
+                          onFinish(true);
+                        }
                         if (v === "fail") onFinish(false);
                       }}
                     />
