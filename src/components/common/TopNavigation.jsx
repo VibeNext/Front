@@ -180,7 +180,7 @@ const SRight = styled.div`
   align-items: center;
   gap: 10px;
   justify-self: end;
-  width: 200px; /* 너희 디자인 기준 맞게 조정 가능 */
+  width: 200px;
   justify-content: flex-end;
 `;
 
