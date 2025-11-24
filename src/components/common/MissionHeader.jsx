@@ -60,7 +60,7 @@ const MissionHeader = ({ stepNumber, title, stepId, status }) => {
                     ? nextBlack
                     : nextGray
                 }
-                alt="arrow"
+                alt='arrow'
               />
             )}
           </React.Fragment>
@@ -70,9 +70,9 @@ const MissionHeader = ({ stepNumber, title, stepId, status }) => {
       {/* 하단 제목 + 버튼 */}
       <BottomRow>
         <Title>{title}</Title>
-        <Button disabled={isDisabled} onClick={handleNext}>
+        <NextButton disabled={isDisabled} onClick={handleNext}>
           다음으로
-        </Button>
+        </NextButton>
       </BottomRow>
     </Wrapper>
   );
@@ -95,7 +95,7 @@ const TopRow = styled.div`
 `;
 
 const StepBox = styled.div`
-  background-color: #7DB1FF;
+  background-color: #7db1ff;
   color: #fff;
   font-family: 'DungGeunMo', sans-serif;
   padding: 6px 18px;
@@ -135,4 +135,14 @@ const Title = styled.h2`
   color: #191927;
   font-weight: 400;
   margin: 0;
+`;
+
+const NextButton = styled(Button)`
+  display: inline-flex;
+  padding: 0.75rem 1.25rem;
+  font-size: 1.25rem;
+  font-weight: 400;
+  border-radius: 1rem;
+  height: 3.375rem;
+  width: 7.5rem;
 `;
