@@ -10,51 +10,82 @@ import useAuthStore from "../stores/useAuthStore";
 import AlertIcon from "../assets/icons/alert.png";
 import LineIcon from "../assets/icons/line2.png";
 
-/* ------ MOCK DATA ------ */
-const mockData = {
-  chapter: [
-    { id: 1, title: "순차", subtitle: "요리사의 레시피" },
-    { id: 2, title: "조건", subtitle: "건축가의 잠금장치" }
-  ],
-  mission: [
-    { id: 11, chapter: 1, number: "01", title: "토마토 스프", isUnlocked: true },
-    { id: 12, chapter: 1, number: "02", title: "버섯 스프", isUnlocked: true },
-    { id: 13, chapter: 1, number: "03", title: "손님의 스프", isUnlocked: true },
-
-    { id: 21, chapter: 2, number: "01", title: "하나의 열쇠로만", isUnlocked: true },
-    { id: 22, chapter: 2, number: "02", title: "고장난 잠금장치", isUnlocked: false },
-    { id: 23, chapter: 2, number: "03", title: "이중 잠금", isUnlocked: false },
-  ]
-};
-
-
-// 특정 chapter가 잠긴 상태인지 반환
-const isChapterLocked = (chapterId) => {
-  const missions = mockData.mission.filter((m) => m.chapter === chapterId);
-  return missions.every((m) => !m.isUnlocked);
-};
-
 const LearningStepPage = () => {
   const navigate = useNavigate();
-  const { user } = useAuthStore();
+  const { user, accessToken } = useAuthStore();
 
-  const [selectedChapter, setSelectedChapter] = useState(1);
+  const [chapters, setChapters] = useState([]);
+  const [missions, setMissions] = useState([]);
+
+  const [selectedChapter, setSelectedChapter] = useState(null);
   const [currentMission, setCurrentMission] = useState(null);
 
   const [loginDialog, setLoginDialog] = useState(false);
   const [lockDialog, setLockDialog] = useState(false);
 
+  const [solutionHistory, setSolutionHistory] = useState([]);
+
   const containerRef = useRef(null);
   const itemRefs = useRef({});
-
-  const missions = mockData.mission.filter((m) => m.chapter === selectedChapter);
-
   const [hoverId, setHoverId] = useState(null);
 
-  useEffect(() => {
-    setCurrentMission(missions[0]?.id);
-  }, [selectedChapter]);
+  // 날짜 포맷 함수
+  const formatDate = (dateString) => {
+    const d = new Date(dateString);
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    const hour = String(d.getHours()).padStart(2, "0");
+    const min = String(d.getMinutes()).padStart(2, "0");
+    return `${month}.${day} ${hour}:${min}`;
+  };
 
+  // 미션 목록 + 챕터 정보 가져오기
+  useEffect(() => {
+    const fetchMissions = async () => {
+      try {
+        const headers = {};
+        if (accessToken) {
+          headers["Authorization"] = `Bearer ${accessToken}`;
+        }
+
+        const res = await fetch("/missions", { headers });
+        const data = await res.json();
+
+        const filteredChapters = data.chapter.filter((c) => c.id !== 3);
+        const filteredMissions = data.mission.filter((m) => m.chapter !== 3);
+
+        setChapters(filteredChapters);
+        setMissions(filteredMissions);
+
+        if (filteredChapters.length > 0) {
+          setSelectedChapter(filteredChapters[0].id);
+        }
+      } catch (err) {
+        console.error("❌ Failed to fetch missions:", err);
+      }
+    };
+
+    fetchMissions();
+  }, [accessToken]);
+
+  // 선택된 챕터의 미션 목록
+  const chapterMissions = missions.filter((m) => m.chapter === selectedChapter);
+
+  const getChapterLocked = (chapterId) => {
+    const ms = missions.filter((m) => m.chapter === chapterId);
+
+    if (!user) return true;
+    return ms.every((m) => m.is_unlocked === false);
+  };
+
+  // 챕터 바뀌면 첫 번째 미션 선택
+  useEffect(() => {
+    if (chapterMissions.length > 0) {
+      setCurrentMission(chapterMissions[0].id);
+    }
+  }, [selectedChapter, chapterMissions]);
+
+  // 현재 미션 중앙으로 스크롤 이동
   useEffect(() => {
     const timer = setTimeout(() => {
       const container = containerRef.current;
@@ -71,60 +102,89 @@ const LearningStepPage = () => {
     return () => clearTimeout(timer);
   }, [currentMission]);
 
-
-const clickMission = (m) => {
-    // 1) 비로그인
+  const clickMission = (m) => {
     if (!user) {
       setLoginDialog(true);
       return;
     }
 
-    // 2) 로그인했지만 잠김
-    if (!m.isUnlocked) {
-      setLockDialog(true);
-      return;
-    }
+  // Step01-Mission01은 항상 unlock
+  const alwaysOpen = m.chapter === 1 && Number(m.number) === 1;
 
-    // 3) 로그인 + 열림 → 학습 페이지 이동
-    navigate(`/learning/${m.id}`);
+  const unlocked = alwaysOpen ? true : (m.is_unlocked ?? false);
+
+  if (!unlocked) {
+    setLockDialog(true);
+    return;
+  }
+
+
+    navigate(`/step/${m.chapter}/mission/${m.number}`);
   };
 
+  const selectedMissionData = missions.find(
+    (m) => m.id === currentMission
+  );
 
-  const selectedMissionData = missions.find((m) => m.id === currentMission);
+  // 풀이기록 조회 GET /solutions/{mission_id}
+  useEffect(() => {
+    if (!selectedMissionData || !accessToken) return;
+
+    const fetchHistory = async () => {
+      try {
+        const res = await fetch(`/solutions/${selectedMissionData.id}`, {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        });
+
+        const data = await res.json();
+        setSolutionHistory(data || []);
+      } catch (err) {
+        console.error("❌ Failed to fetch solution history:", err);
+      }
+    };
+
+    fetchHistory();
+  }, [selectedMissionData, accessToken]);
 
   return (
     <SPageContainer>
       <TopNavigation />
 
+      {/* 로그인 필요 */}
       <Dialog
         isOpen={loginDialog}
         title="로그인이 필요해요!"
-        description={"학습을 시작하기 위해서\n회원가입 또는 로그인을 먼저 진행해주세요."}
+        description={`학습을 시작하기 위해서
+        회원가입 또는 로그인을 먼저 진행해주세요.`}
         buttonText="로그인하러 가기"
         onButtonClick={() => navigate("/login")}
         onClose={() => setLoginDialog(false)}
-        icon={<img src={AlertIcon} alt="alert" style={{ width: "3rem", height: "3rem", marginTop: "1.5rem" }} />}
+        icon={<img src={AlertIcon} alt="alert" style={{ width: "3rem" }} />}
       />
 
+      {/* 미션 잠김 */}
       <Dialog
         isOpen={lockDialog}
         title="미션이 현재 잠겨 있어요!"
-        description="해당 미션을 진행하려면\n이전 학습 단계를 먼저 완료해주세요."
+        description={`해당 미션을 진행하려면
+        이전 학습 단계를 먼저 완료해주세요.`}
         buttonText="확인"
         onButtonClick={() => setLockDialog(false)}
         onClose={() => setLockDialog(false)}
-        icon={<img src={AlertIcon} alt="alert" style={{ width: "3rem", height: "3rem" }} />}
+        icon={<img src={AlertIcon} alt="alert" style={{ width: "3rem" }} />}
       />
 
       <SWrapper>
+        {/* 챕터 탭 */}
         <ChapterTabs>
-          {mockData.chapter.map((c, idx) => {
-            const locked = isChapterLocked(c.id);
+          {chapters.map((c, idx) => {
+            const locked = getChapterLocked(c.id);
             const active = selectedChapter === c.id;
 
             return (
               <div key={c.id} style={{ display: "flex", alignItems: "center" }}>
-                {/* 챕터 텍스트 */}
                 <ChapterTab
                   active={active}
                   locked={locked}
@@ -133,21 +193,19 @@ const clickMission = (m) => {
                   {c.title}
                 </ChapterTab>
 
-                {idx === 0 && mockData.chapter.length > 1 && (
-                  <LineImg
-                    src={LineIcon} alt="line"
-                  />
+                {idx === 0 && chapters.length > 1 && (
+                  <LineImg src={LineIcon} alt="line" />
                 )}
               </div>
             );
           })}
         </ChapterTabs>
 
-
-        <div style={{ display: "flex", gap: "11.25rem", marginTop: "3.13rem" }}>
-          {mockData.chapter.map((c) => {
+        {/* 챕터 소제목 */}
+        <div style={{ display: "flex", gap: "11rem", marginTop: "3rem" }}>
+          {chapters.map((c) => {
             const active = selectedChapter === c.id;
-            const locked = isChapterLocked(c.id);
+            const locked = getChapterLocked(c.id);
 
             return (
               <SubTitle
@@ -155,7 +213,6 @@ const clickMission = (m) => {
                 active={active}
                 locked={locked}
                 onClick={() => setSelectedChapter(c.id)}
-                style={{ cursor: "pointer" }}
               >
                 {c.subtitle}
               </SubTitle>
@@ -163,40 +220,36 @@ const clickMission = (m) => {
           })}
         </div>
 
-
-
+        {/* 미션 카드 */}
         <MissionContainer ref={containerRef}>
-          {missions.map((m) => {
-            return (
-              <MissionWrapper
+          {chapterMissions.map((m) => (
+            <MissionWrapper
               key={m.id}
               onMouseEnter={() => setHoverId(m.id)}
-              onMouseLeave={() => {
-                if (!loginDialog && !lockDialog) {
-                  setHoverId(null);
-                }
-              }}
+              onMouseLeave={() => setHoverId(null)}
               onClick={() => clickMission(m)}
+              ref={(el) => (itemRefs.current[m.id] = el)}
             >
               <MissionCard
                 size={hoverId === m.id ? "large" : "small"}
-                theme={m.isUnlocked ? "light" : "dark"}
+                theme={m.is_unlocked ? "light" : "dark"}
                 missionNumber={m.number}
                 title={m.title}
                 description={m.description}
                 imageSrc={m.image}
               />
             </MissionWrapper>
-
-            );
-          })}
+          ))}
         </MissionContainer>
 
-        {/* 풀이 기록 */}
-        {selectedMissionData?.history && (
+        {/* 풀이기록 */}
+        {solutionHistory.length > 0 && (
           <RecordBox>
-            <p>풀이 기록 1 : 11.03 18:23</p>
-            <p>풀이 기록 2 : 11.03 20:23</p>
+            {solutionHistory.map((h, idx) => (
+              <p key={h.id}>
+                풀이 기록 {idx + 1} : {formatDate(h.created_at)}
+              </p>
+            ))}
           </RecordBox>
         )}
       </SWrapper>

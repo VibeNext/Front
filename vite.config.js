@@ -1,8 +1,26 @@
-import react from '@vitejs/plugin-react';
-import { defineConfig } from 'vite';
+import react from "@vitejs/plugin-react";
+import { defineConfig } from "vite";
 import svgr from 'vite-plugin-svgr';
 
-// https://vite.dev/config/
 export default defineConfig({
-  plugins: [react(), svgr()],
+  plugins: [react(), svgr(), ],
+  server: {
+    proxy: {
+      "/missions": {
+        target: "https://nextvibe.up.railway.app",
+        changeOrigin: true,
+        secure: false,
+      },
+      "/solutions": {
+        target: "https://nextvibe.up.railway.app",
+        changeOrigin: true,
+        secure: false,
+      },
+      "/users": {
+        target: "https://nextvibe.up.railway.app",
+        changeOrigin: true,
+        secure: false,
+      },
+    },
+  },
 });
