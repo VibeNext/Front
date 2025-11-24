@@ -12,7 +12,6 @@ const MissionCard = ({
   //01, 02, 03 형태로 포맷팅
   const formattedNumber = String(missionNumber).padStart(2, "0");
 
-
   return (
     <CardContainer size={size} themeType={theme}>
       <MissionText size={size} themeType={theme}>

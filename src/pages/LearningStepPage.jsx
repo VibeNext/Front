@@ -12,7 +12,8 @@ import LineIcon from "../assets/icons/line2.png";
 
 const LearningStepPage = () => {
   const navigate = useNavigate();
-  const { user, accessToken } = useAuthStore();
+  const { user, accessToken, isAuthenticated } = useAuthStore();
+
 
   const [chapters, setChapters] = useState([]);
   const [missions, setMissions] = useState([]);
@@ -112,7 +113,7 @@ const LearningStepPage = () => {
 
   const clickMission = (m) => {
     // 로그인 여부는 accessToken으로 체크
-    if (!accessToken) {
+    if (!isAuthenticated) {
       setLoginDialog(true);
       return;
     }
