@@ -222,16 +222,23 @@ const STitle = styled.h1`
   color: var(--Black, #191927);
   font-family: Pretendard;
   font-size: 2.25rem;
+  font-style: normal;
   font-weight: 700;
+  line-height: normal;
   margin-bottom: 1.25rem;
 `;
 
 const SDescription = styled.p`
   color: var(--Gray-2, #868ba3);
+  font-feature-settings:
+    'liga' off,
+    'clig' off;
   font-family: Pretendard;
   font-size: 1rem;
+  font-style: normal;
   font-weight: 500;
-  line-height: 1.5rem;
+  line-height: 1.5rem; /* 150% */
+  text-align: left;
   margin-bottom: 1.5rem;
 `;
 
@@ -244,10 +251,15 @@ const SForm = styled.form`
 
 const SLabel = styled.label`
   color: var(--Gray-1, #646879);
+  font-feature-settings:
+    'liga' off,
+    'clig' off;
   font-family: Pretendard;
   font-size: 1rem;
+  font-style: normal;
   font-weight: 700;
   line-height: 1.5rem; /* 150% */
+  text-align: left;
   display: block;
   margin-bottom: 0.5rem;
 `;
@@ -262,24 +274,35 @@ const SInput = styled.input`
   background: var(--Gray-5, #f5f5f7);
   transition: all 0.2s ease;
 
+  &::placeholder {
+    color: #a0a3aa;
+  }
+
+  /*  1. 기본 스타일: 오류 없을 때와 오류 있을 때의 기본 테두리 */
   ${({ $hasError }) =>
     $hasError &&
     css`
+      /* 오류가 있을 때 기본 테두리 색상 */
       border-color: #ff9a8c;
     `}
 
+  /* 2. 포커스 스타일*/
   &:focus {
     outline: none;
+
     ${({ $hasError }) =>
       !$hasError
         ? css`
+            /* 에러 없을 때 포커스: #eff5ff  */
             background-color: #eff5ff;
             border-color: #5c9dff;
             box-shadow: 0 0 0 2px rgba(81, 113, 255, 0.15);
           `
         : css`
+            /* 에러 있을 때 포커스: 오류 스타일 유지 */
             border-color: #ff9a8c;
             box-shadow: 0 0 0 2px rgba(255, 92, 92, 0.2);
+            background-color: #f5f5f7;
           `}
   }
 
