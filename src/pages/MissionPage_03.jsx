@@ -179,14 +179,22 @@ const MissionPage_03 = ({ onFinish }) => {
                       correctMessage={`<strong style="color:#37AF00;">정답입니다!</strong><br><br>훌륭한 개발이었어요! 로봇 청소기가 모든 쓰레기를 깨끗하게 청소했어요.<br><span style="color:#868ba3; font-weight:500;">'(앞으로 이동하고, 청소하기)를 5번 반복한다’는 내용을 포함한다면 정답으로 인정됩니다.</span>`}
                       wrongMessage={`<strong style="color:#FF644F;">오답입니다!</strong><br><br>반복문을 다시 점검해주세요.<br><span style="color:#868ba3; font-weight:500;">* 피드백 문장 (해당 반복문이 왜 잘못되었을까요? 반복문을 작성할 때는 반복할 행동과 횟수가 모두 정확해야 한다는 사실을 기억해요!)</span>`}
                       status={status}
-                      setStatus={async (v) => {
+                      setStatus={async(v) => {
                         setStatus(v);
+
                         if (v === "success") {
-                          await saveSolution();
-                          localStorage.setItem("shouldRefreshMissions", "true");
-                          onFinish(true);
+                          setTimeout(async () => {
+                            await saveSolution();
+                            localStorage.setItem("shouldRefreshMissions", "true");
+                            onFinish(true);
+                          }, 1200); // 메시지 자연스럽게 보이게 1.2초
                         }
-                        if (v === "fail") onFinish(false);
+
+                        if (v === "fail") {
+                          setTimeout(() => {
+                            onFinish(false);
+                          }, 1200); // ⬅ 1.2초 메시지 유지
+                        }
                       }}
                     />
                   );
@@ -200,14 +208,22 @@ const MissionPage_03 = ({ onFinish }) => {
                       correctMessage={`<strong style="color:#37AF00;">정답입니다!</strong><br><br>와! 로봇 청소기가 다시 정상적으로 작동하고 있어요. 그럼 마지막 단계로 넘어가서 개발의 고수가 되어볼까요?<br><span style="color:#868ba3; font-weight:500;">1. 반복문이 잘못된 이유를 정확히 찾아 설명한다면 정답으로 인정됩니다.</span><br><span style="color:#868ba3; font-weight:500;">2. 로봇 청소기가 모든 쓰레기를 청소하도록 새로운 조건문을 작성한다면 정답으로 인정됩니다. </span>`}
                       wrongMessage={`<strong style="color:#FF644F;">오답입니다!</strong><br><br>작성한 답변을 다시 점검해주세요.<br><span style="color:#868ba3; font-weight:500;">1. 피드백 문장 (반복문을 작성할 때는 반복할 행동과 횟수뿐만 아니라, 방향까지 모두 정확해야 한다는 사실을 기억해요!)</span><br><span style="color:#868ba3; font-weight:500;">2. 피드백 문장 (해당 반복문이 왜 잘못되었을까요? 반복문을 작성할 때는 반복할 행동과 횟수뿐만 아니라, 방향까지 모두 정확해야 한다는 사실을 기억해요!)</span>`}
                       status={status}
-                      setStatus={async (v) => {
+                      setStatus={async(v) => {
                         setStatus(v);
+
                         if (v === "success") {
-                          await saveSolution();
-                          localStorage.setItem("shouldRefreshMissions", "true");
-                          onFinish(true);
+                          setTimeout(async () => {
+                            await saveSolution();
+                            localStorage.setItem("shouldRefreshMissions", "true");
+                            onFinish(true);
+                          }, 1200); // 메시지 자연스럽게 보이게 1.2초
                         }
-                        if (v === "fail") onFinish(false);
+
+                        if (v === "fail") {
+                          setTimeout(() => {
+                            onFinish(false);
+                          }, 1200); // ⬅ 1.2초 메시지 유지
+                        }
                       }}
                     />
                   );
@@ -221,14 +237,22 @@ const MissionPage_03 = ({ onFinish }) => {
                       correctMessage={`<strong style="color:#37AF00;">지그재그로 놓여있던 모든 쓰레기가 완벽히 청소되었어요!</strong><br><br>로봇 청소기의 반복된 동작과 횟수, 방향까지 완벽히 컨트롤할 수 있는 당신은 개발의 고수!<br><span style="color:#868ba3; font-weight:500;">‘(앞으로 이동하고, 청소하고, 오른쪽(또는 왼쪽)으로 회전하고, 앞으로 이동하고, 청소하고, 반대 방향으로 회전하기)를 3번 반복한다'는 내용을 포함한다면 정답으로 인정됩니다.</span>`}
                       wrongMessage={`<strong style="color:#FF644F;">아직 쓰레기가 모두 치워지지 않았어요!</strong><br><br>반복문을 다시 점검해주세요.<br><span style="color:#868ba3; font-weight:500;">* 피드백 문장 (해당 반복문이 왜 잘못되었을까요? 반복문을 작성할 때는 반복할 동작과 횟수뿐만 아니라, 방향까지 모두 정확해야 한다는 사실을 기억해요!)</span>`}
                       status={status}
-                      setStatus={async (v) => {
+                      setStatus={async(v) => {
                         setStatus(v);
+
                         if (v === "success") {
-                          await saveSolution();
-                          localStorage.setItem("shouldRefreshMissions", "true");
-                          onFinish(true);
+                          setTimeout(async () => {
+                            await saveSolution();
+                            localStorage.setItem("shouldRefreshMissions", "true");
+                            onFinish(true);
+                          }, 1200); // 메시지 자연스럽게 보이게 1.2초
                         }
-                        if (v === "fail") onFinish(false);
+
+                        if (v === "fail") {
+                          setTimeout(() => {
+                            onFinish(false);
+                          }, 1200); // ⬅ 1.2초 메시지 유지
+                        }
                       }}
                     />
                   );

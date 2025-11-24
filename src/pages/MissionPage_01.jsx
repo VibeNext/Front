@@ -204,27 +204,20 @@ const MissionPage_01 = ({ onFinish }) => {
                       status={status}
                       setStatus={async(v) => {
                         setStatus(v);
+
                         if (v === "success") {
-                          const res = await fetch(`${API_BASE}/solutions`, {
-                            method: "POST",
-                            headers: {
-                              "Content-Type": "application/json",
-                              Authorization: `Bearer ${accessToken}`
-                            },
-                            body: JSON.stringify({
-                              mission_id: Number(missionId),
-                              status: "success"
-                            })
-                          });
-
-                          const data = await res.json();
-                          console.log("📌 풀이 저장 성공:", data);
-
-                          localStorage.setItem("shouldRefreshMissions", "true");
-                          onFinish(true);
+                          setTimeout(async () => {
+                            await saveSolution();
+                            localStorage.setItem("shouldRefreshMissions", "true");
+                            onFinish(true);
+                          }, 1200); // 메시지 자연스럽게 보이게 1.2초
                         }
 
-                        if (v === "fail") onFinish(false);
+                        if (v === "fail") {
+                          setTimeout(() => {
+                            onFinish(false);
+                          }, 1200); // ⬅ 1.2초 메시지 유지
+                        }
                       }}
                     />
                   );
@@ -240,11 +233,20 @@ const MissionPage_01 = ({ onFinish }) => {
                       status={status}
                       setStatus={async(v) => {
                         setStatus(v);
+
                         if (v === "success") {
-                          localStorage.setItem("shouldRefreshMissions", "true"); // ⭐ 추가
-                          onFinish(true);
+                          setTimeout(async () => {
+                            await saveSolution();
+                            localStorage.setItem("shouldRefreshMissions", "true");
+                            onFinish(true);
+                          }, 1200); // 메시지 자연스럽게 보이게 1.2초
                         }
-                        if (v === "fail") onFinish(false);
+
+                        if (v === "fail") {
+                          setTimeout(() => {
+                            onFinish(false);
+                          }, 1200); // ⬅ 1.2초 메시지 유지
+                        }
                       }}
                     />
                   );
@@ -260,11 +262,20 @@ const MissionPage_01 = ({ onFinish }) => {
                       status={status}
                       setStatus={async(v) => {
                         setStatus(v);
+
                         if (v === "success") {
-                          localStorage.setItem("shouldRefreshMissions", "true"); // ⭐ 추가
-                          onFinish(true);
+                          setTimeout(async () => {
+                            await saveSolution();
+                            localStorage.setItem("shouldRefreshMissions", "true");
+                            onFinish(true);
+                          }, 1200); // 메시지 자연스럽게 보이게 1.2초
                         }
-                        if (v === "fail") onFinish(false);
+
+                        if (v === "fail") {
+                          setTimeout(() => {
+                            onFinish(false);
+                          }, 1200); // ⬅ 1.2초 메시지 유지
+                        }
                       }}
                     />
                   );

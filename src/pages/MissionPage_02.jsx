@@ -407,12 +407,20 @@ const MissionPage_02 = ({ onFinish }) => {
                       status={status}
                       setStatus={async(v) => {
                         setStatus(v);
+
                         if (v === "success") {
-                          await saveSolution();   
-                          localStorage.setItem("shouldRefreshMissions", "true");
-                          onFinish(true);
+                          setTimeout(async () => {
+                            await saveSolution();
+                            localStorage.setItem("shouldRefreshMissions", "true");
+                            onFinish(true);
+                          }, 1200); // 메시지 자연스럽게 보이게 1.2초
                         }
-                        if (v === "fail") onFinish(false);
+
+                        if (v === "fail") {
+                          setTimeout(() => {
+                            onFinish(false);
+                          }, 1200); // ⬅ 1.2초 메시지 유지
+                        }
                       }}
                     />
                   );
@@ -428,12 +436,20 @@ const MissionPage_02 = ({ onFinish }) => {
                       status={status}
                       setStatus={async(v) => {
                         setStatus(v);
+
                         if (v === "success") {
-                          await saveSolution();   
-                          localStorage.setItem("shouldRefreshMissions", "true");
-                          onFinish(true);
+                          setTimeout(async () => {
+                            await saveSolution();
+                            localStorage.setItem("shouldRefreshMissions", "true");
+                            onFinish(true);
+                          }, 1200); // 메시지 자연스럽게 보이게 1.2초
                         }
-                        if (v === "fail") onFinish(false);
+
+                        if (v === "fail") {
+                          setTimeout(() => {
+                            onFinish(false);
+                          }, 1200); // ⬅ 1.2초 메시지 유지
+                        }
                       }}
                     />
                   );
@@ -449,12 +465,20 @@ const MissionPage_02 = ({ onFinish }) => {
                       status={status}
                       setStatus={async(v) => {
                         setStatus(v);
+
                         if (v === "success") {
-                          await saveSolution();  
-                          localStorage.setItem("shouldRefreshMissions", "true");
-                          onFinish(true);
+                          setTimeout(async () => {
+                            await saveSolution();
+                            localStorage.setItem("shouldRefreshMissions", "true");
+                            onFinish(true);
+                          }, 1200); // 메시지 자연스럽게 보이게 1.2초
                         }
-                        if (v === "fail") onFinish(false);
+
+                        if (v === "fail") {
+                          setTimeout(() => {
+                            onFinish(false);
+                          }, 1200); // ⬅ 1.2초 메시지 유지
+                        }
                       }}
                     />
                   );
