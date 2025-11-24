@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import lineIcon from '../../../assets/icons/Line23.png';
 import forwardIcon from '../../../assets/icons/forward.svg';
 
 const AnswerCheckContainer = ({ status = 'default', children }) => {
@@ -8,7 +9,7 @@ const AnswerCheckContainer = ({ status = 'default', children }) => {
         <Icon src={forwardIcon} alt='forward icon' />
         <Title>정답 확인</Title>
       </Header>
-      <Divider />
+      <Line src={lineIcon} alt='divider' />
       <Content>
         <ImageWrapper>{children}</ImageWrapper>
       </Content>
@@ -39,7 +40,7 @@ const Header = styled.header`
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  padding: 1.25rem 1.5rem;
+  padding: 1.25rem 1.5rem 0.5rem 1.5rem;
 `;
 
 const Icon = styled.img`
@@ -53,10 +54,10 @@ const Title = styled.span`
   font-size: 1.25rem;
 `;
 
-const Divider = styled.hr`
-  width: 43.625rem;
-  border: 1px solid var(--Gray-3, #c4c7d3);
-  margin: 0 auto;
+const Line = styled.img`
+  width: 700px;
+  padding-left: 24px;
+  height: 0.09rem;
 `;
 
 const Content = styled.div`
