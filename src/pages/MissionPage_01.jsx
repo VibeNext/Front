@@ -26,8 +26,10 @@ const MissionPage_01 = ({ solutionId, onFinish }) => {
   const { missionId } = useParams();
   const mission = Number(missionId);
   useEffect(() => {
-    setStatus('default'); 
+    setStatus('default');
   }, [missionId]);
+
+  const [videoList, setVideoList] = useState(null);
 
   const renderMissionContent = () => {
     switch (mission) {
@@ -35,37 +37,45 @@ const MissionPage_01 = ({ solutionId, onFinish }) => {
         return (
           <>
             <p>오늘은 내가 요리사!</p>
-            <p style={{ marginBottom: '1rem' }}>갓 따온 토마토를 이용해 맛있는 토마토 스프를 만들려고 해요.</p>
-            <p>아래에 섞여 있는 조리 단계를 참고해서 올바른 레시피를 작성해 주세요.</p>
-            <p>모든 과정을 순서대로 실행하면, 따뜻하고 맛있는 토마토 스프가 완성될 거예요!</p>
+            <p style={{ marginBottom: '1rem' }}>
+              갓 따온 토마토를 이용해 맛있는 토마토 스프를 만들려고 해요.
+            </p>
+            <p>
+              아래에 섞여 있는 조리 단계를 참고해서 올바른 레시피를 작성해
+              주세요.
+            </p>
+            <p>
+              모든 과정을 순서대로 실행하면, 따뜻하고 맛있는 토마토 스프가
+              완성될 거예요!
+            </p>
             <ImageRow>
               <ImageItem>
                 <small>불끄기</small>
-                <img src={fireOffImg} alt="불끄기" />
+                <img src={fireOffImg} alt='불끄기' />
               </ImageItem>
               <ImageItem>
                 <small>토마토 넣기</small>
-                <img src={tomatoImg} alt="토마토 넣기" />
+                <img src={tomatoImg} alt='토마토 넣기' />
               </ImageItem>
               <ImageItem>
                 <small>채소와 소금 넣기</small>
-                <img src={saltImg} alt="채소와 소금 넣기" />
+                <img src={saltImg} alt='채소와 소금 넣기' />
               </ImageItem>
               <ImageItem>
                 <small>완성된 스프 담기</small>
-                <img src={soupImg} alt="완성된 스프 담기" />
+                <img src={soupImg} alt='완성된 스프 담기' />
               </ImageItem>
               <ImageItem>
                 <small>불켜기</small>
-                <img src={fireOnImg} alt="불켜기" />
+                <img src={fireOnImg} alt='불켜기' />
               </ImageItem>
               <ImageItem>
                 <small>냄비에 물 붓기</small>
-                <img src={waterImg} alt="냄비에 물 붓기" />
+                <img src={waterImg} alt='냄비에 물 붓기' />
               </ImageItem>
               <ImageItem>
                 <small>물 끓이기</small>
-                <img src={boilImg} alt="물 끓이기" />
+                <img src={boilImg} alt='물 끓이기' />
               </ImageItem>
             </ImageRow>
           </>
@@ -75,37 +85,45 @@ const MissionPage_01 = ({ solutionId, onFinish }) => {
         return (
           <>
             <p>오늘은 내가 요리사!</p>
-            <p style={{ marginBottom: '1rem' }}>갓 따온 토마토를 이용해 맛있는 토마토 스프를 만들려고 해요.</p>
-            <p>아래에 섞여 있는 조리 단계를 참고해서 올바른 레시피를 작성해 주세요.</p>
-            <p>모든 과정을 순서대로 실행하면, 따뜻하고 맛있는 토마토 스프가 완성될 거예요!</p>
+            <p style={{ marginBottom: '1rem' }}>
+              갓 따온 토마토를 이용해 맛있는 토마토 스프를 만들려고 해요.
+            </p>
+            <p>
+              아래에 섞여 있는 조리 단계를 참고해서 올바른 레시피를 작성해
+              주세요.
+            </p>
+            <p>
+              모든 과정을 순서대로 실행하면, 따뜻하고 맛있는 토마토 스프가
+              완성될 거예요!
+            </p>
             <ImageRow>
               <ImageItem>
                 <small>불끄기</small>
-                <img src={fireOffImg} alt="불끄기" />
+                <img src={fireOffImg} alt='불끄기' />
               </ImageItem>
               <ImageItem>
                 <small>버섯 넣기</small>
-                <img src={mushroomImg} alt="버섯 넣기" />
+                <img src={mushroomImg} alt='버섯 넣기' />
               </ImageItem>
               <ImageItem>
                 <small>채소와 소금 넣기</small>
-                <img src={saltImg} alt="채소와 소금 넣기" />
+                <img src={saltImg} alt='채소와 소금 넣기' />
               </ImageItem>
               <ImageItem>
                 <small>완성된 스프 담기</small>
-                <img src={soupImg} alt="완성된 스프 담기" />
+                <img src={soupImg} alt='완성된 스프 담기' />
               </ImageItem>
               <ImageItem>
                 <small>불켜기</small>
-                <img src={fireOnImg} alt="불켜기" />
+                <img src={fireOnImg} alt='불켜기' />
               </ImageItem>
               <ImageItem>
                 <small>냄비에 물 붓기</small>
-                <img src={waterImg} alt="냄비에 물 붓기" />
+                <img src={waterImg} alt='냄비에 물 붓기' />
               </ImageItem>
               <ImageItem>
                 <small>물 끓이기</small>
-                <img src={boilImg} alt="물 끓이기" />
+                <img src={boilImg} alt='물 끓이기' />
               </ImageItem>
             </ImageRow>
           </>
@@ -115,12 +133,31 @@ const MissionPage_01 = ({ solutionId, onFinish }) => {
         return (
           <>
             <p>프로 요리사가 되기 위한 마지막 단계!</p>
-            <p style={{ marginBottom: '1rem' }}>바로 다른 사람들의 주문에 맞춰 요리를 만들어보는 것이에요. </p>
-            <p>아래 곰 손님은 “꿀이 들어가고, 허브가 뿌려진 스프” 를 원하고 있어요. </p>
-            <p>지금까지 배운 순차 개념과 레시피들을 응용해서 손님께 드릴 맛있는 스프를 만들어볼까요?</p>
-            <p style={{ color:'#5C9DFF' }}>* 스프에 요리사가 원하는 다양한 재료를 추가하면 더 맛있는 스프가 완성될거에요!</p>
+            <p style={{ marginBottom: '1rem' }}>
+              바로 다른 사람들의 주문에 맞춰 요리를 만들어보는 것이에요.{' '}
+            </p>
+            <p>
+              아래 곰 손님은 “꿀이 들어가고, 허브가 뿌려진 스프” 를 원하고
+              있어요.{' '}
+            </p>
+            <p>
+              지금까지 배운 순차 개념과 레시피들을 응용해서 손님께 드릴 맛있는
+              스프를 만들어볼까요?
+            </p>
+            <p style={{ color: '#5C9DFF' }}>
+              * 스프에 요리사가 원하는 다양한 재료를 추가하면 더 맛있는 스프가
+              완성될거에요!
+            </p>
             <ImageItem>
-                <img src={bearImg} alt="곰 말풍선" style={{ width: '38.9375rem', height:'5rem', marginTop: '2.44rem'}}/>
+              <img
+                src={bearImg}
+                alt='곰 말풍선'
+                style={{
+                  width: '38.9375rem',
+                  height: '5rem',
+                  marginTop: '2.44rem',
+                }}
+              />
             </ImageItem>
           </>
         );
@@ -139,12 +176,14 @@ const MissionPage_01 = ({ solutionId, onFinish }) => {
         {/* 헤더 (Step, Mission 제목) */}
         <MissionHeader
           stepId={1}
-          stepNumber="01 순차"
-          title={mission === 1
-            ? '요리사의 레시피: 토마토 스프'
-            : mission === 2
-            ? '요리사의 레시피: 버섯 스프'
-            : '요리사의 레시피: 손님의 스프'}
+          stepNumber='01 순차'
+          title={
+            mission === 1
+              ? '요리사의 레시피: 토마토 스프'
+              : mission === 2
+                ? '요리사의 레시피: 버섯 스프'
+                : '요리사의 레시피: 손님의 스프'
+          }
           initialStep={mission}
           status={status}
         />
@@ -156,9 +195,7 @@ const MissionPage_01 = ({ solutionId, onFinish }) => {
             <MissionDescription>{renderMissionContent()}</MissionDescription>
 
             {/* 정답 확인 영역 - 상태 연동 */}
-            <AnswerCheckContainer status={status}>
-              {/* 여기에 정답 이미지는 나중에 children으로 들어감 */}
-            </AnswerCheckContainer>
+            <AnswerCheckContainer status={status} videoList={videoList} />
           </LeftPanel>
 
           {/* 오른쪽: 문제 풀이 */}
@@ -176,8 +213,8 @@ const MissionPage_01 = ({ solutionId, onFinish }) => {
                       status={status}
                       setStatus={(v) => {
                         setStatus(v);
-                        if (v === "success") onFinish(true);
-                        if (v === "fail") onFinish(false);
+                        if (v === 'success') onFinish(true);
+                        if (v === 'fail') onFinish(false);
                       }}
                     />
                   );
@@ -193,8 +230,8 @@ const MissionPage_01 = ({ solutionId, onFinish }) => {
                       tatus={status}
                       setStatus={(v) => {
                         setStatus(v);
-                        if (v === "success") onFinish(true);
-                        if (v === "fail") onFinish(false);
+                        if (v === 'success') onFinish(true);
+                        if (v === 'fail') onFinish(false);
                       }}
                     />
                   );
@@ -210,8 +247,8 @@ const MissionPage_01 = ({ solutionId, onFinish }) => {
                       status={status}
                       setStatus={(v) => {
                         setStatus(v);
-                        if (v === "success") onFinish(true);
-                        if (v === "fail") onFinish(false);
+                        if (v === 'success') onFinish(true);
+                        if (v === 'fail') onFinish(false);
                       }}
                     />
                   );
@@ -221,7 +258,6 @@ const MissionPage_01 = ({ solutionId, onFinish }) => {
               }
             })()}
           </RightPanel>
-
         </MainLayout>
       </ContentWrap>
     </Wrapper>
@@ -291,7 +327,6 @@ const ImageItem = styled.div`
     font-weight: 500;
     line-height: 150%; /* 1.01981rem */
     margin-bottom: 0.5rem;
-
   }
 
   img {

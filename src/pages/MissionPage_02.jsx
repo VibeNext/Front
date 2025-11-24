@@ -43,6 +43,8 @@ const MissionPage_02 = ({ solutionId, onFinish }) => {
     setStatus('default');
   }, [missionId]);
 
+  const [videoList, setVideoList] = useState(null);
+
   const images = {
     1: {
       default: defaultImg,
@@ -325,43 +327,7 @@ const MissionPage_02 = ({ solutionId, onFinish }) => {
             <MissionDescription>{renderMissionContent()}</MissionDescription>
 
             {/* 정답 확인 영역 - 상태 연동 */}
-            <AnswerCheckContainer status={status} sandboxed={true}>
-              {status === 'default' && (
-                <div style={{ textAlign: 'center' }}>
-                  <img
-                    src={images[mission].default}
-                    alt='기본 이미지'
-                    style={{
-                      width: 'auto',
-                      height: 'auto',
-                      maxWidth: '60%',
-                      maxHeight: '60%',
-                      objectFit: 'contain',
-                      display: 'block',
-                      margin: '0 auto',
-                    }}
-                  />
-                  <p
-                    style={{
-                      color: '#868BA3',
-                      fontFamily: 'Pretendard',
-                      fontWeight: 500,
-                      fontSize: '1rem',
-                      marginTop: '1rem',
-                    }}
-                  >
-                    프롬포트 입력시 결과 확인이 가능합니다.
-                  </p>
-                </div>
-              )}
-
-              {status !== 'default' && (
-                <img
-                  src={images[mission][status]}
-                  alt={`${mission}번 미션 ${status} 이미지`}
-                />
-              )}
-            </AnswerCheckContainer>
+            <AnswerCheckContainer status={status} videoList={videoList} />
           </LeftPanel>
 
           {/* 오른쪽: 문제 풀이 */}
@@ -379,8 +345,8 @@ const MissionPage_02 = ({ solutionId, onFinish }) => {
                       status={status}
                       setStatus={(v) => {
                         setStatus(v);
-                        if (v === "success") onFinish(true);
-                        if (v === "fail") onFinish(false);
+                        if (v === 'success') onFinish(true);
+                        if (v === 'fail') onFinish(false);
                       }}
                     />
                   );
@@ -396,8 +362,8 @@ const MissionPage_02 = ({ solutionId, onFinish }) => {
                       status={status}
                       setStatus={(v) => {
                         setStatus(v);
-                        if (v === "success") onFinish(true);
-                        if (v === "fail") onFinish(false);
+                        if (v === 'success') onFinish(true);
+                        if (v === 'fail') onFinish(false);
                       }}
                     />
                   );
@@ -413,8 +379,8 @@ const MissionPage_02 = ({ solutionId, onFinish }) => {
                       status={status}
                       setStatus={(v) => {
                         setStatus(v);
-                        if (v === "success") onFinish(true);
-                        if (v === "fail") onFinish(false);
+                        if (v === 'success') onFinish(true);
+                        if (v === 'fail') onFinish(false);
                       }}
                     />
                   );

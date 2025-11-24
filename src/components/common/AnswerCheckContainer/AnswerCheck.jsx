@@ -1,7 +1,8 @@
 import styled from 'styled-components';
 import forwardIcon from '../../../assets/icons/forward.svg';
+import VideoPlayer from './VideoPlayer';
 
-const AnswerCheckContainer = ({ status = 'default', children }) => {
+const AnswerCheckContainer = ({ status = 'default', videoList }) => {
   return (
     <Container status={status}>
       <Header>
@@ -10,7 +11,10 @@ const AnswerCheckContainer = ({ status = 'default', children }) => {
       </Header>
       <Divider />
       <Content>
-        <ImageWrapper>{children}</ImageWrapper>
+        <ImageWrapper>
+          {/* videoList를 받으면 재생 */}
+          {videoList && <VideoPlayer videos={videoList} />}
+        </ImageWrapper>
       </Content>
     </Container>
   );

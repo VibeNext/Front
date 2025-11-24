@@ -16,15 +16,15 @@ import botIcon from '../assets/icons/bot3.png';
 import mission2Img from '../assets/icons/missionpage_3/3-2.svg';
 import mission3Img from '../assets/icons/missionpage_3/3-3.svg';
 
-
-const MissionPage_03 = ({solutionId, onFinish }) => {
+const MissionPage_03 = ({ solutionId, onFinish }) => {
   const [status, setStatus] = useState('default'); // default,success,fail
   const { missionId } = useParams();
   const mission = Number(missionId);
   useEffect(() => {
-    setStatus('default'); 
+    setStatus('default');
   }, [missionId]);
 
+  const [videoList, setVideoList] = useState(null);
 
   const renderMissionContent = () => {
     switch (mission) {
@@ -133,9 +133,7 @@ const MissionPage_03 = ({solutionId, onFinish }) => {
             <MissionDescription>{renderMissionContent()}</MissionDescription>
 
             {/* 정답 확인 영역 - 상태 연동 */}
-            <AnswerCheckContainer status={status}>
-              {/* 여기에 정답 이미지는 나중에 children으로 들어감 */}
-            </AnswerCheckContainer>
+            <AnswerCheckContainer status={status} videoList={videoList} />
           </LeftPanel>
 
           {/* 오른쪽: 문제 풀이 */}
@@ -153,8 +151,8 @@ const MissionPage_03 = ({solutionId, onFinish }) => {
                       status={status}
                       setStatus={(v) => {
                         setStatus(v);
-                        if (v === "success") onFinish(true);
-                        if (v === "fail") onFinish(false);
+                        if (v === 'success') onFinish(true);
+                        if (v === 'fail') onFinish(false);
                       }}
                     />
                   );
@@ -170,8 +168,8 @@ const MissionPage_03 = ({solutionId, onFinish }) => {
                       tatus={status}
                       setStatus={(v) => {
                         setStatus(v);
-                        if (v === "success") onFinish(true);
-                        if (v === "fail") onFinish(false);
+                        if (v === 'success') onFinish(true);
+                        if (v === 'fail') onFinish(false);
                       }}
                     />
                   );
@@ -187,8 +185,8 @@ const MissionPage_03 = ({solutionId, onFinish }) => {
                       status={status}
                       setStatus={(v) => {
                         setStatus(v);
-                        if (v === "success") onFinish(true);
-                        if (v === "fail") onFinish(false);
+                        if (v === 'success') onFinish(true);
+                        if (v === 'fail') onFinish(false);
                       }}
                     />
                   );
