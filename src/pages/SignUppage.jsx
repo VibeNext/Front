@@ -258,6 +258,7 @@ const SInput = styled.input`
   padding: 0.5rem 1rem;
   border: 1px solid #e0e2eb;
   border-radius: 0.5rem;
+  font-size: 1rem;
   background: var(--Gray-5, #f5f5f7);
   transition: all 0.2s ease;
 
