@@ -5,12 +5,12 @@ import lineIcon from '../../assets/icons/Line23.png';
 import sendIcon from '../../assets/icons/send.png';
 
 const AnswerChat = ({
-  botIcon, // 시스템 캐릭터 이미지
-  initialMessage, // 첫 안내 메시지
-  correctMessage, // 정답일 때 시스템 메시지
-  wrongMessage, // 오답일 때 시스템 메시지 (현재는 미사용)
+  botIcon,
+  initialMessage,
+  correctMessage,
+  wrongMessage,
   status,
-  setStatus,
+  setStatus, // 부모에서 async로 전달됨
 }) => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
@@ -23,7 +23,7 @@ const AnswerChat = ({
     }
   }, [initialMessage]);
 
-  // 채팅 새로 보내면 스크롤 아래로 자동 이동
+  // 스크롤 맨 아래로 이동
   useEffect(() => {
     if (chatRef.current) {
       chatRef.current.scrollTo({
@@ -33,17 +33,18 @@ const AnswerChat = ({
     }
   }, [messages]);
 
-  const handleSend = () => {
+  // 🔥 핵심: async 추가
+  const handleSend = async () => {
     if (!input.trim()) return;
 
     const userMsg = { id: Date.now(), role: 'user', text: input };
     setMessages((prev) => [...prev, userMsg]);
     setInput('');
 
-    // "정답 확인 중" 상태로 변경
-    setStatus('checking');
+    // checking 상태
+    await setStatus('checking');
 
-    // "정답을 확인 중입니다..." 메시지 추가
+    // 체크 중 메시지 추가
     const checkingMsg = {
       id: Date.now() + 1,
       role: 'ai',
@@ -51,9 +52,12 @@ const AnswerChat = ({
     };
     setMessages((prev) => [...prev, checkingMsg]);
 
-    // 1.5초 뒤 실제 정답 / 오답 판단
-    setTimeout(() => {
-      const isCorrect = input.includes('정답'); // 예시 판별 (나중에 로직 연결 가능)
+    // 1.5초 지연
+    setTimeout(async () => {
+      const isCorrect = input.includes('정답'); // 임시 정답 로직
+
+      // 🔥 정답이면 부모 비동기 콜백(await setStatus)이 먼저 실행됨
+      await setStatus(isCorrect ? 'success' : 'fail');
 
       const resultMsg = {
         id: Date.now() + 2,
@@ -62,13 +66,12 @@ const AnswerChat = ({
       };
 
       setMessages((prev) => [...prev, resultMsg]);
-      setStatus(isCorrect ? 'success' : 'fail');
     }, 1500);
   };
+
   return (
     <>
       <Wrapper>
-        {/* 헤더 */}
         <Header>
           <HeaderIcon src={editIcon} />
           <HeaderText>문제 풀이</HeaderText>
@@ -76,18 +79,13 @@ const AnswerChat = ({
 
         <Line src={lineIcon} alt='divider' />
 
-        {/* 채팅 영역 */}
         <ChatContainer ref={chatRef}>
           {messages.map((msg) => (
             <MessageRow key={msg.id} $role={msg.role}>
               {msg.role === 'ai' && botIcon && (
                 <ProfileImg src={botIcon} alt='bot' />
               )}
-              <MessageBubble
-                $role={msg.role}
-                $status={status}
-                $isResult={msg.text.startsWith('정답입니다')}
-              >
+              <MessageBubble $role={msg.role}>
                 <div
                   dangerouslySetInnerHTML={{
                     __html: msg.text.replace(/\n/g, '<br />'),
@@ -98,7 +96,6 @@ const AnswerChat = ({
           ))}
         </ChatContainer>
 
-        {/* 입력창 */}
         <InputArea>
           <Input
             type='text'
@@ -117,6 +114,7 @@ const AnswerChat = ({
 };
 
 export default AnswerChat;
+
 
 //styled-components
 const Wrapper = styled.div`
