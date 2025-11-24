@@ -1,3 +1,5 @@
+//local서버에서만 작동
+
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 import svgr from 'vite-plugin-svgr';

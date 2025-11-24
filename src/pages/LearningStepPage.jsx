@@ -48,7 +48,9 @@ const LearningStepPage = () => {
           headers["Authorization"] = `Bearer ${accessToken}`;
         }
 
-        const res = await fetch("/missions", { headers });
+        const API_BASE = import.meta.env.VITE_API_URL;
+
+        const res = await fetch(`${API_BASE}/missions`, { headers });
         const data = await res.json();
 
         const filteredChapters = data.chapter.filter((c) => c.id !== 3);
@@ -132,7 +134,9 @@ const LearningStepPage = () => {
 
     const fetchHistory = async () => {
       try {
-        const res = await fetch(`/solutions/${selectedMissionData.id}`, {
+        const API_BASE = import.meta.env.VITE_API_URL;
+
+        const res = await fetch(`${API_BASE}/solutions/${selectedMissionData.id}`, {
           headers: {
             Authorization: `Bearer ${accessToken}`,
           },
