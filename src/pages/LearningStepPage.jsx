@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import styled from "styled-components";
 
 import Dialog from "../components/common/Dialog.jsx";
@@ -12,6 +12,7 @@ import LineIcon from "../assets/icons/line2.png";
 
 const LearningStepPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, accessToken, isAuthenticated } = useAuthStore();
 
 
@@ -163,13 +164,13 @@ const LearningStepPage = () => {
   }, [selectedMissionData, accessToken]);
   
   useEffect(() => {
-      const shouldRefresh = localStorage.getItem("shouldRefreshMissions");
+    const shouldRefresh = localStorage.getItem("shouldRefreshMissions");
 
-      if (shouldRefresh === "true") {
-        fetchMissions();                      // 미션 정보 최신화
-        localStorage.removeItem("shouldRefreshMissions");
-      }
-    }, []);
+    if (shouldRefresh === "true") {
+      fetchMissions();
+      localStorage.removeItem("shouldRefreshMissions");
+    }
+  }, [location.pathname]);
 
   return (
     <SPageContainer>
