@@ -7,36 +7,37 @@ import Button from '../../components/common/Button.jsx';
 
 const MissionHeader = ({ stepNumber, title, stepId, status }) => {
   const navigate = useNavigate();
-  const { missionId } = useParams();
+  const { missionId } = useParams(); // URL에서 온 ID (예: 11, 12, 13)
   const steps = ['Mission 01', 'Mission 02', 'Mission 03'];
 
-  // 미션 클릭 시 이동
+  // 1️⃣ 현재 미션의 '순서 번호' 구하기 (11 -> 1, 12 -> 2, 13 -> 3)
+  const currentId = Number(missionId);
+  const currentNumber = currentId % 10;
+
+  // 2️⃣ 미션 탭 클릭 시 이동 (예: Step 1, Index 0 -> 11번으로 이동)
   const handleClick = (index) => {
-    navigate(`/step/${stepId}/mission/${index + 1}`);
+    // stepId가 1이면 -> 10 + (0+1) = 11
+    // stepId가 2이면 -> 20 + (0+1) = 21
+    const targetId = Number(stepId) * 10 + (index + 1);
+    navigate(`/step/${stepId}/mission/${targetId}`);
   };
 
-  // “다음으로” 버튼 클릭 시 이동
+  // 3️⃣ “다음으로 / 학습 완료” 버튼 클릭 시 이동
   const handleNext = () => {
     if (status !== 'success') return;
 
-    const currentMission = Number(missionId);
-    const currentStep = Number(stepId);
-
-    // step3의 mission3이면 이동 막기
-    if (currentStep === 3 && currentMission === 3) return;
-
-    if (currentMission < 3) {
-      // 같은 step 내에서 다음 mission으로 이동
-      navigate(`/step/${currentStep}/mission/${currentMission + 1}`);
-    } else {
-      // mission3 → 다음 step으로 이동
-      navigate(`/step/${currentStep + 1}/mission/1`);
+    // 마지막 미션(3번)이면 학습 완료 페이지로
+    if (currentNumber === 3) {
+      navigate('/learningstep');
+      return;
     }
+
+    // 아니면 다음 ID로 이동 (11 -> 12, 12 -> 13)
+    navigate(`/step/${stepId}/mission/${currentId + 1}`);
   };
 
-  // 버튼 비활성화 조건
-  const isLastMission = Number(stepId) === 3 && Number(missionId) === 3;
-  const isDisabled = status !== 'success' || isLastMission;
+  // 버튼 라벨 (3번 미션일 때만 '학습 완료')
+  const buttonLabel = currentNumber === 3 ? '학습 완료' : '다음으로';
 
   return (
     <Wrapper>
@@ -47,7 +48,8 @@ const MissionHeader = ({ stepNumber, title, stepId, status }) => {
         {steps.map((label, index) => (
           <React.Fragment key={index}>
             <StepItem
-              active={Number(missionId) === index + 1}
+              // 현재 번호(1,2,3)와 인덱스+1이 같으면 활성화
+              active={currentNumber === index + 1}
               onClick={() => handleClick(index)}
             >
               {label}
@@ -55,12 +57,12 @@ const MissionHeader = ({ stepNumber, title, stepId, status }) => {
             {index < steps.length - 1 && (
               <Arrow
                 src={
-                  Number(missionId) === index + 1 ||
-                  Number(missionId) === index + 2
+                  // 화살표 색상 로직도 1의 자리 숫자로 비교
+                  currentNumber === index + 1 || currentNumber === index + 2
                     ? nextBlack
                     : nextGray
                 }
-                alt="arrow"
+                alt='arrow'
               />
             )}
           </React.Fragment>
@@ -70,9 +72,9 @@ const MissionHeader = ({ stepNumber, title, stepId, status }) => {
       {/* 하단 제목 + 버튼 */}
       <BottomRow>
         <Title>{title}</Title>
-        <Button disabled={isDisabled} onClick={handleNext}>
-          다음으로
-        </Button>
+        <NextButton disabled={status !== 'success'} onClick={handleNext}>
+          {buttonLabel}
+        </NextButton>
       </BottomRow>
     </Wrapper>
   );
@@ -80,7 +82,7 @@ const MissionHeader = ({ stepNumber, title, stepId, status }) => {
 
 export default MissionHeader;
 
-// styled-components
+/* ---------------- styles (기존과 동일) ---------------- */
 const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
@@ -95,7 +97,7 @@ const TopRow = styled.div`
 `;
 
 const StepBox = styled.div`
-  background-color: #7DB1FF;
+  background-color: #7db1ff;
   color: #fff;
   font-family: 'DungGeunMo', sans-serif;
   padding: 6px 18px;
@@ -135,4 +137,14 @@ const Title = styled.h2`
   color: #191927;
   font-weight: 400;
   margin: 0;
+`;
+
+const NextButton = styled(Button)`
+  display: inline-flex;
+  padding: 0.75rem 1.25rem;
+  font-size: 1.25rem;
+  font-weight: 400;
+  border-radius: 1rem;
+  height: 3.375rem;
+  width: 7.5rem;
 `;

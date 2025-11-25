@@ -4,26 +4,23 @@ import editIcon from '../../assets/icons/edit.png';
 import lineIcon from '../../assets/icons/Line23.png';
 import sendIcon from '../../assets/icons/send.png';
 
+import useAuthStore from '../../stores/useAuthStore';
+
 const AnswerChat = ({
   botIcon,
   initialMessage,
-  correctMessage,
-  wrongMessage,
   status,
-  setStatus, // 부모에서 async로 전달됨
+  setStatus,
+  setImage,
+  historyId,
 }) => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const chatRef = useRef(null);
+  const [socket, setSocket] = useState(null);
+  const accessToken = useAuthStore((state) => state.user.accessToken);
 
-  // 초기 안내 메시지
-  useEffect(() => {
-    if (initialMessage) {
-      setMessages([{ id: 0, role: 'ai', text: initialMessage }]);
-    }
-  }, [initialMessage]);
-
-  // 스크롤 맨 아래로 이동
+  /* -------------------- 스크롤 자동 이동 -------------------- */
   useEffect(() => {
     if (chatRef.current) {
       chatRef.current.scrollTo({
@@ -33,106 +30,211 @@ const AnswerChat = ({
     }
   }, [messages]);
 
-  // 🔥 핵심: async 추가
-  const handleSend = async () => {
+  /* -------------------- 초기 메시지 -------------------- */
+  useEffect(() => {
+    if (initialMessage) {
+      setMessages([{ id: 0, role: 'ai', text: initialMessage }]);
+    }
+  }, [initialMessage]);
+
+  /* -------------------- WebSocket 연결 -------------------- */
+
+  useEffect(() => {
+    if (!historyId) return; // id 없으면 연결 안 함
+
+    const ws = new WebSocket(
+      `wss://nextvibe.up.railway.app/ws/solutions/${historyId}/chat/?token=${accessToken}`,
+    );
+
+    ws.onopen = () => {
+      console.log('🎉 WS Connected! 드디어 연결 성공!');
+      setSocket(ws);
+    };
+
+    ws.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+
+      switch (data.type) {
+        case 'system':
+          console.log('system:', data.message);
+          break;
+
+        // ✅ [수정 1] 말풍선 중복 생성 방지
+        case 'message':
+          setMessages((prev) => {
+            const lastMsg = prev[prev.length - 1];
+
+            // 방금 AI가 작성 중이던 메시지(streaming)가 완성된 내용과 같다면
+            // 새로 추가하지 말고 기존 걸 유지 (또는 덮어쓰기)
+            if (
+              lastMsg &&
+              lastMsg.role === 'ai' &&
+              (lastMsg.text === data.message ||
+                data.message.includes(lastMsg.text))
+            ) {
+              // 굳이 추가 안 해도 이미 delta로 다 그려졌으므로 무시
+              return prev;
+            }
+
+            // 중복 아니면 추가
+            return [
+              ...prev,
+              {
+                id: Date.now(),
+                role: data.user === 'ai' ? 'ai' : 'user',
+                text: data.message,
+              },
+            ];
+          });
+          break;
+
+        case 'ai_thinking':
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: Date.now(),
+              role: 'ai',
+              text: 'AI가 생각중...',
+            },
+          ]);
+          break;
+
+        // ✅ [수정 2] 텍스트 반복 증식(Mutation) 해결!
+        case 'ai_delta':
+          setMessages((prev) => {
+            const newList = [...prev]; // 배열 복사
+            const lastIndex = newList.length - 1;
+            const lastMsg = newList[lastIndex];
+
+            // 마지막 메시지가 AI이고, '생각중'이 아니라면 이어붙이기
+            if (
+              lastMsg &&
+              lastMsg.role === 'ai' &&
+              lastMsg.text !== 'AI가 생각중...'
+            ) {
+              // ⚠️ 중요: 직접 수정(+=)하지 않고, 새로운 객체로 교체해야 2배 증식을 막음
+              newList[lastIndex] = {
+                ...lastMsg,
+                text: lastMsg.text + data.delta,
+              };
+            } else if (lastMsg && lastMsg.text === 'AI가 생각중...') {
+              // '생각중' 메시지를 실제 답변으로 교체
+              newList[lastIndex] = {
+                ...lastMsg,
+                text: data.delta,
+              };
+            } else {
+              // 없으면 새로 추가
+              newList.push({
+                id: Date.now(),
+                role: 'ai',
+                text: data.delta,
+              });
+            }
+            return newList;
+          });
+          break;
+
+        case 'ai_done':
+          console.log('AI 답변 완료');
+          break;
+
+        default:
+          console.log('Unknown message type:', data);
+      }
+    };
+
+    ws.onerror = (e) => {
+      console.error('WS error', e);
+    };
+
+    ws.onclose = (e) => {
+      console.log('WS Closed', e.code, e.reason);
+      setSocket(null);
+    };
+
+    return () => {
+      ws.close();
+    };
+  }, [historyId, accessToken]);
+
+  /* -------------------- 메시지 전송 -------------------- */
+  /* AnswerChat.jsx 수정 */
+
+  const handleSend = () => {
     if (!input.trim()) return;
 
-    const userMsg = { id: Date.now(), role: 'user', text: input };
-    setMessages((prev) => [...prev, userMsg]);
+    //  [유지] 서버로 전송만 합니다.
+    if (socket && socket.readyState === WebSocket.OPEN) {
+      socket.send(JSON.stringify({ message: input }));
+    } else {
+      console.log('WS not connected');
+    }
+
     setInput('');
-
-    // checking 상태
-    await setStatus('checking');
-
-    // 체크 중 메시지 추가
-    const checkingMsg = {
-      id: Date.now() + 1,
-      role: 'ai',
-      text: '결과 확인 중.',
-    };
-    setMessages((prev) => [...prev, checkingMsg]);
-
-    // 1.5초 지연
-    setTimeout(async () => {
-      const isCorrect = input.includes('정답'); // 임시 정답 로직
-
-      // 🔥 정답이면 부모 비동기 콜백(await setStatus)이 먼저 실행됨
-      await setStatus(isCorrect ? 'success' : 'fail');
-
-      const resultMsg = {
-        id: Date.now() + 2,
-        role: 'ai',
-        text: isCorrect ? correctMessage : wrongMessage,
-      };
-
-      setMessages((prev) => [...prev, resultMsg]);
-    }, 1500);
   };
 
   return (
-    <>
-      <Wrapper>
-        <Header>
-          <HeaderIcon src={editIcon} />
-          <HeaderText>문제 풀이</HeaderText>
-        </Header>
+    <Wrapper>
+      <Header>
+        <HeaderIcon src={editIcon} />
+        <HeaderText>문제 풀이</HeaderText>
+      </Header>
 
-        <Line src={lineIcon} alt='divider' />
+      <Line src={lineIcon} />
 
-        <ChatContainer ref={chatRef}>
-          {messages.map((msg) => (
-            <MessageRow key={msg.id} $role={msg.role}>
-              {msg.role === 'ai' && botIcon && (
-                <ProfileImg src={botIcon} alt='bot' />
-              )}
-              <MessageBubble $role={msg.role}>
-                <div
-                  dangerouslySetInnerHTML={{
-                    __html: msg.text.replace(/\n/g, '<br />'),
-                  }}
-                />
-              </MessageBubble>
-            </MessageRow>
-          ))}
-        </ChatContainer>
+      <ChatContainer ref={chatRef}>
+        {messages.map((msg) => (
+          <MessageRow key={msg.id} $role={msg.role}>
+            {msg.role === 'ai' && botIcon && <ProfileImg src={botIcon} />}
 
-        <InputArea>
-          <Input
-            type='text'
-            placeholder='정답 프롬프트를 입력해주세요.'
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-          />
-          <SendButton onClick={handleSend}>
-            <SendImg src={sendIcon} alt='send' />
-          </SendButton>
-        </InputArea>
-      </Wrapper>
-    </>
+            <MessageBubble $role={msg.role}>
+              <div
+                dangerouslySetInnerHTML={{
+                  __html: msg.text.replace(/\n/g, '<br/>'),
+                }}
+              />
+            </MessageBubble>
+          </MessageRow>
+        ))}
+      </ChatContainer>
+
+      {/* 입력창 */}
+      <InputArea>
+        <Input
+          placeholder='정답 프롬프트를 입력해주세요.'
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+        />
+        <SendButton onClick={handleSend}>
+          <SendImg src={sendIcon} />
+        </SendButton>
+      </InputArea>
+    </Wrapper>
   );
 };
 
 export default AnswerChat;
 
+/* -------------------- 스타일 -------------------- */
 
-//styled-components
 const Wrapper = styled.div`
   width: 748px;
   height: 776px;
-  display: flex;
-  flex-direction: column;
-  background-color: #fff;
+  background: #fff;
   border-radius: 16px;
   border: 1.5px solid var(--Gray-3, #c4c7d3);
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
 `;
 
 const Header = styled.div`
   display: flex;
   align-items: center;
-  padding: 20px 24px;
   gap: 12px;
+  padding: 20px 24px;
 `;
 
 const HeaderIcon = styled.img`
@@ -141,10 +243,9 @@ const HeaderIcon = styled.img`
 `;
 
 const HeaderText = styled.h2`
-  color: #191927;
-  font-family: DungGeunMo;
   font-size: 20px;
-  font-weight: 400;
+  font-family: DungGeunMo;
+  color: #191927;
 `;
 
 const Line = styled.img`
@@ -155,20 +256,18 @@ const Line = styled.img`
 
 const ChatContainer = styled.div`
   flex: 1;
-  overflow-y: auto;
   padding: 28px 24px;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 16px;
-  background-color: #fff;
 `;
 
 const MessageRow = styled.div`
   display: flex;
-  align-items: flex-start;
-  gap: 10px;
   justify-content: ${({ $role }) =>
     $role === 'user' ? 'flex-end' : 'flex-start'};
+  gap: 10px;
 `;
 
 const ProfileImg = styled.img`
@@ -177,49 +276,32 @@ const ProfileImg = styled.img`
 `;
 
 const MessageBubble = styled.div`
-  display: inline-block;
-  background-color: ${({ $role }) =>
-    $role === 'user' ? '#DEEBFF' : '#FFFFFF'};
-
-  border: ${({ $role }) =>
-    $role === 'user' ? '#FFF' : '1.5px solid var(--Brand-2, #7DB1FF);'};
-
+  max-width: 40rem;
   padding: 16px 20px;
   border-radius: ${({ $role }) =>
     $role === 'ai' ? '0 24px 24px 24px' : '24px 24px 0 24px'};
-  // 내용 길이 따라 말풍선 크기 조정
-  width: fit-content;
-  max-width: 40rem;
-  word-break: break-word;
-  white-space: pre-wrap;
+  background: ${({ $role }) => ($role === 'user' ? '#DEEBFF' : '#FFFFFF')};
+  border: ${({ $role }) =>
+    $role === 'user' ? 'none' : '1.5px solid var(--Brand-2, #7DB1FF)'};
 
-  color: var(--Black, #191927);
+  word-break: break-word;
   font-family: Pretendard;
   font-size: 0.95rem;
-  font-style: normal;
-  font-weight: 500;
-  line-height: 150%;
-  white-space: pre-wrap;
 `;
 
 const InputArea = styled.div`
+  background: #f5f5f7;
   display: flex;
   align-items: center;
-  background: #f5f5f7;
 `;
 
 const Input = styled.input`
   flex: 1;
-  border: none;
-  outline: none;
   padding: 24px 23px;
   background: #f5f5f7;
-  color: #191927;
+  border: none;
+  outline: none;
   font-size: 20px;
-  font-weight: 500;
-  &::placeholder {
-    color: #a3a3a3;
-  }
 `;
 
 const SendButton = styled.button`
