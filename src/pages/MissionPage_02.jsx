@@ -22,72 +22,113 @@ import keyCXImg from '../assets/icons/key_c_x.png';
 
 import botIcon from '../assets/icons/bot2.png';
 
+import { authClient } from '../apis/instance';
+
 import defaultImg from '../assets/icons/missionpage_2/default.svg';
 
-import img1_checking from '../assets/icons/missionpage_2/1_checking.svg';
-import img1_fail from '../assets/icons/missionpage_2/1_fail.svg';
-import img1_success from '../assets/icons/missionpage_2/1_success.svg';
 
-import img2_checking from '../assets/icons/missionpage_2/2_checking.svg';
-import img2_fail from '../assets/icons/missionpage_2/2_fail.svg';
-import img2_success from '../assets/icons/missionpage_2/2_success.svg';
 
-import img3_checking from '../assets/icons/missionpage_2/3_checking.svg';
-import img3_fail from '../assets/icons/missionpage_2/3_fail.svg';
-import img3_success from '../assets/icons/missionpage_2/3_success.svg';
 
 const MissionPage_02 = ({ onFinish }) => {
   const [status, setStatus] = useState('default');
+
+  // ✅ 백엔드에서 오는 "진짜 mission id" -> 화면에서 쓸 번호(1/2/3) 매핑
+  const missionNumberMap = {
+    21: 1,
+    22: 2,
+    23: 3,
+  };
+
+
   const { missionId } = useParams();
-  const mission = Number(missionId);
+  const missionBackendId = Number(missionId); // 11 / 12 / 13
+  const mission = missionNumberMap[missionBackendId]; // 1 / 2 / 3
 
-  const { accessToken } = useAuthStore();
-  const API_BASE = import.meta.env.VITE_API_URL;
+  // ✅ [수정됨] 토큰 가져오는 올바른 방법
+  const accessToken = useAuthStore((state) => state.user.accessToken);
 
+  const [historyId, setHistoryId] = useState(null);
+
+  
+  /* -------------------- 풀이 기록 생성 (POST /solutions/{id}/) -------------------- */
   useEffect(() => {
-    setStatus('default');
-  }, [missionId]);
+    // 1. 미션 ID나 토큰이 없으면 아예 시도하지 않음
+    if (!missionBackendId || !accessToken) return;
 
-  // ⭐ 풀이 저장 함수 (POST /solutions)
+    const createHistory = async () => {
+      try {
+        console.log(`📡 요청 시작: POST /solutions/${missionBackendId}/`);
+
+        // ✅ [수정됨] 404/Redirect 문제 해결을 위한 완벽한 요청 코드
+        const res = await authClient.post(
+          `/solutions/${missionBackendId}/`, // ⭐ 중요: 끝에 슬래시(/) 필수
+          {}, // Body는 빈 객체
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`, // 헤더 강제 주입
+            },
+          },
+        );
+
+        console.log('📌 서버 응답 성공:', res.data);
+
+        // 서버가 주는 ID 필드명 찾기 (id, solution_id, history_id 등)
+        const receivedId =
+          res.data.id || res.data.solution_id || res.data.history_id;
+
+        if (receivedId) {
+          setHistoryId(receivedId);
+          console.log('🎉 ID 획득 성공! 웹소켓 연결 준비 완료:', receivedId);
+        } else {
+          console.warn(
+            '⚠️ 생성은 됐는데 ID가 안 보입니다. 응답 확인 필요:',
+            res.data,
+          );
+        }
+      } catch (err) {
+        // 에러 내용을 더 자세히 보기
+        console.error(
+          '❌ createHistory 실패:',
+          err.response?.data || err.message,
+        );
+      }
+    };
+
+    createHistory();
+  }, [missionBackendId, accessToken]);
+
+  /* -------------------- 풀이 완료 저장 (POST /solutions/) -------------------- */
   const saveSolution = async () => {
     try {
-      const res = await fetch(`${API_BASE}/solutions`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${accessToken}`,
-        },
-        body: JSON.stringify({
-          mission_id: Number(missionId),
-          status: 'success',
-        }),
+      const res = await authClient.post(`/solutions/`, {
+        mission_id: missionBackendId, // 11 / 12 / 13
+        status: 'success',
       });
 
-      const data = await res.json();
-      console.log('📌 Step02 풀이 저장 성공:', data);
+      console.log('📌 풀이 저장 성공:', res.data);
     } catch (err) {
-      console.error('❌ Step02 풀이 저장 실패:', err);
+      console.error('❌ 풀이 저장 실패:', err);
     }
   };
 
   const images = {
     1: {
       default: defaultImg,
-      checking: img1_checking,
-      success: img1_success,
-      fail: img1_fail,
+      checking: defaultImg,
+      success: defaultImg,
+      fail: defaultImg,
     },
     2: {
       default: defaultImg,
-      checking: img2_checking,
-      success: img2_success,
-      fail: img2_fail,
+      checking: defaultImg,
+      success: defaultImg,
+      fail: defaultImg,
     },
     3: {
       default: defaultImg,
-      checking: img3_checking,
-      success: img3_success,
-      fail: img3_fail,
+      checking: defaultImg,
+      success: defaultImg,
+      fail: defaultImg,
     },
   };
 
@@ -324,6 +365,18 @@ const MissionPage_02 = ({ onFinish }) => {
     }
   };
 
+  // mission 매핑 실패하면 바로 리턴
+  if (!mission) {
+    return (
+      <Wrapper>
+        <TopNavigation />
+        <ContentWrap>
+          <p>잘못된 미션 ID 입니다. (missionId: {missionBackendId})</p>
+        </ContentWrap>
+      </Wrapper>
+    );
+  }
+
   return (
     <Wrapper>
       {/* 상단 네비게이션 */}
@@ -398,12 +451,13 @@ const MissionPage_02 = ({ onFinish }) => {
                 case 1:
                   return (
                     <AnswerChat
-                      key={missionId}
+                      key={missionBackendId}
                       botIcon={botIcon}
                       initialMessage={`조건문은 다음과 같은 형식으로 작성해주세요!<br><span style="color:#868ba3;">예시) “만약 ○○라면, △△한다. 그렇지 않다면, ▽▽한다.”</span>`}
                       correctMessage={`<strong style="color:#37AF00;">정답입니다!</strong><br><br>단 하나의 열쇠로만 열리는 잠금장치가 완성되었어요. 조건이 명확하게 작동하고 있네요!!<br><span style="color:#868ba3; font-weight:500;">‘하나의 열쇠로만 문이 열리고, 나머지 열쇠로는 문이 열리지 않는다’는 내용을 포함한다면 정답으로 인정됩니다.</span>`}
                       wrongMessage={`<strong style="color:#FF644F;">오답입니다!</strong><br><br>조건문을 다시 점검해주세요.<br><span style="color:#868ba3; font-weight:500;">* 피드백 문장 (해당 조건문이 왜 잘못되었을까요? 조건의 범위는 넓거나 중복되지 않도록 구성해야 한다는 사실을 기억해주세요!)</span>`}
                       status={status}
+                      historyId={historyId}
                       setStatus={async (v) => {
                         setStatus(v);
 
@@ -430,12 +484,13 @@ const MissionPage_02 = ({ onFinish }) => {
                 case 2:
                   return (
                     <AnswerChat
-                      key={missionId}
+                      key={missionBackendId}
                       botIcon={botIcon}
                       initialMessage={`잠금장치에서 무엇이 잘못되었는지와 새로운 조건문을 모두 작성해주세요.<br><br>1.잠금장치에서 무엇이 잘못되었는지는 다음과 같은 형식으로 작성해볼 수 있어요!<br><span style="color:#868ba3;">    예시) “지금은 ~라서 잠금장치가 제대로 작동하지 않아요.”</span><br><br>2. 조건문은 다음과 같은 형식으로 작성해주세요!<br><span style="color:#868ba3;">    예시) “만약 ○○라면, △△한다. 그렇지 않다면, ▽▽한다.”</span>`}
                       correctMessage={`<strong style="color:#37AF00;">정답입니다!</strong><br><br>잠금장치의 문제를 정확히 찾아냈어요! 이제 더욱 멋진 건축가가 되기 위한 마지막 단계로 가볼까요?<br><span style="color:#868ba3; font-weight:500;">1. 잠금장치에서 무엇이 잘못되었는지 논리적으로 찾아 설명한다면 정답으로 인정됩니다.</span><br><span style="color:#868ba3; font-weight:500;">2. 한 가지 열쇠로만 문이 열리도록 새로운 조건문을 적절하게 작성한다면 정답으로 인정됩니다.</span>`}
                       wrongMessage={`<strong style="color:#FF644F;">오답입니다!</strong><br><br>작성한 답변을 다시 점검해주세요.<br><span style="color:#868ba3; font-weight:500;">1. 피드백 문장 (Mission01에서 만들었던 잠금장치가 몇 개의 열쇠로 열렸는지 기억해보아요!) </span><br><span style="color:#868ba3; font-weight:500;">2. 피드백 문장 (해당 조건문이 왜 잘못되었을까요? 조건의 범위는 넓거나 중복되지 않도록 구성해야 한다는 사실을 기억해요!)   </span>`}
                       status={status}
+                      historyId={historyId}
                       setStatus={async (v) => {
                         setStatus(v);
 
@@ -462,12 +517,13 @@ const MissionPage_02 = ({ onFinish }) => {
                 case 3:
                   return (
                     <AnswerChat
-                      key={missionId}
+                      key={missionBackendId}
                       botIcon={botIcon}
                       initialMessage={`2가지의 조건이 모두 반영되도록 새로운 조건문을 작성해주세요. <br><br>조건문은 다음과 같은 형식으로 작성해주세요!<br><span style="color:#868ba3; font-weight:500;">예시) “만약 ○○라면, △△한다. 그렇지 않다면, ▽▽한다.”</span>`}
                       correctMessage={`<strong style="color:#37AF00;">주어진 조건을 모두 반영하여, 보안이 철저한 잠금장치가 완성되었어요!</strong><br><br>이중 잠금으로 보안이 철저한 잠금장치를 만들어낸 당신은 진정한 건축의 달인이에요!<br><span style="color:#868ba3; font-weight:500;">‘첫 번째 잠금장치와 두번째 잠금장치가 하나의 열쇠로만 열리고 다른 열쇠로는 열리지 않으며, 2가지의 조건을 동시에 만족한다’는 내용을 포함한다면 정답으로 인정됩니다.</span>`}
                       wrongMessage={`<strong style="color:#FF644F;">주어진 조건을 반영하지 못하여, 보안이 느슨한 잠금장치가 완성되었어요!</strong><br><br>조건문을 다시 점검해주세요.<br><span style="color:#868ba3; font-weight:500;">* 피드백 문장 (해당 조건문이 왜 잘못되었을까요? 조건의 범위는 넓거나 중복되지 않도록 구성해야 한다는 사실을 기억해요!)</span>`}
                       status={status}
+                      historyId={historyId}
                       setStatus={async (v) => {
                         setStatus(v);
 
