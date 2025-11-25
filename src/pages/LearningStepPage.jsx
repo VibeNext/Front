@@ -1,20 +1,19 @@
-import { useEffect, useRef, useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import styled from "styled-components";
+import { useEffect, useRef, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import styled from 'styled-components';
 
-import Dialog from "../components/common/Dialog.jsx";
-import MissionCard from "../components/common/MissionCard";
-import TopNavigation from "../components/common/TopNavigation";
-import useAuthStore from "../stores/useAuthStore";
+import Dialog from '../components/common/Dialog.jsx';
+import MissionCard from '../components/common/MissionCard';
+import TopNavigation from '../components/common/TopNavigation';
+import useAuthStore from '../stores/useAuthStore';
 
-import AlertIcon from "../assets/icons/alert.png";
-import LineIcon from "../assets/icons/line2.png";
+import AlertIcon from '../assets/icons/alert.png';
+import LineIcon from '../assets/icons/line2.png';
 
 const LearningStepPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, accessToken, isAuthenticated } = useAuthStore();
-
 
   const [chapters, setChapters] = useState([]);
   const [missions, setMissions] = useState([]);
@@ -35,7 +34,7 @@ const LearningStepPage = () => {
     try {
       const headers = {};
       if (accessToken) {
-        headers["Authorization"] = `Bearer ${accessToken}`;
+        headers['Authorization'] = `Bearer ${accessToken}`;
       }
 
       const API_BASE = import.meta.env.VITE_API_URL;
@@ -53,20 +52,19 @@ const LearningStepPage = () => {
         setSelectedChapter(filteredChapters[0].id);
       }
     } catch (err) {
-      console.error("❌ Failed to fetch missions:", err);
+      console.error('❌ Failed to fetch missions:', err);
     }
   };
 
   // 날짜 포맷 함수
   const formatDate = (dateString) => {
     const d = new Date(dateString);
-    const month = String(d.getMonth() + 1).padStart(2, "0");
-    const day = String(d.getDate()).padStart(2, "0");
-    const hour = String(d.getHours()).padStart(2, "0");
-    const min = String(d.getMinutes()).padStart(2, "0");
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    const hour = String(d.getHours()).padStart(2, '0');
+    const min = String(d.getMinutes()).padStart(2, '0');
     return `${month}.${day} ${hour}:${min}`;
   };
-  
 
   // 최초 1회 미션 불러오기
   useEffect(() => {
@@ -75,8 +73,8 @@ const LearningStepPage = () => {
 
   useEffect(() => {
     const handler = () => fetchMissions();
-    window.addEventListener("focus", handler);
-    return () => window.removeEventListener("focus", handler);
+    window.addEventListener('focus', handler);
+    return () => window.removeEventListener('focus', handler);
   }, []);
 
   // 선택된 챕터의 미션 목록
@@ -108,7 +106,7 @@ const LearningStepPage = () => {
       const centerPos =
         el.offsetLeft - container.clientWidth / 2 + el.clientWidth / 2;
 
-      container.scrollTo({ left: centerPos, behavior: "smooth" });
+      container.scrollTo({ left: centerPos, behavior: 'smooth' });
     }, 100);
 
     return () => clearTimeout(timer);
@@ -131,13 +129,10 @@ const LearningStepPage = () => {
       return;
     }
 
-    navigate(`/step/${m.chapter}/mission/${m.number}`);
+    navigate(`/step/${m.chapter}/mission/${m.id}`);
   };
 
-
-  const selectedMissionData = missions.find(
-    (m) => m.id === currentMission
-  );
+  const selectedMissionData = missions.find((m) => m.id === currentMission);
 
   // 풀이기록 조회 GET /solutions/{mission_id}
   useEffect(() => {
@@ -147,28 +142,31 @@ const LearningStepPage = () => {
       try {
         const API_BASE = import.meta.env.VITE_API_URL;
 
-        const res = await fetch(`${API_BASE}/solutions/${selectedMissionData.id}`, {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
+        const res = await fetch(
+          `${API_BASE}/solutions/${selectedMissionData.id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
           },
-        });
+        );
 
         const data = await res.json();
         setSolutionHistory(data || []);
       } catch (err) {
-        console.error("❌ Failed to fetch solution history:", err);
+        console.error('❌ Failed to fetch solution history:', err);
       }
     };
 
     fetchHistory();
   }, [selectedMissionData, accessToken]);
-  
-  useEffect(() => {
-    const shouldRefresh = localStorage.getItem("shouldRefreshMissions");
 
-    if (shouldRefresh === "true") {
+  useEffect(() => {
+    const shouldRefresh = localStorage.getItem('shouldRefreshMissions');
+
+    if (shouldRefresh === 'true') {
       fetchMissions();
-      localStorage.removeItem("shouldRefreshMissions");
+      localStorage.removeItem('shouldRefreshMissions');
     }
   }, [location.pathname]);
 
@@ -179,25 +177,25 @@ const LearningStepPage = () => {
       {/* 로그인 필요 */}
       <Dialog
         isOpen={loginDialog}
-        title="로그인이 필요해요!"
+        title='로그인이 필요해요!'
         description={`학습을 시작하기 위해서
         회원가입 또는 로그인을 먼저 진행해주세요.`}
-        buttonText="로그인하러 가기"
-        onButtonClick={() => navigate("/login")}
+        buttonText='로그인하러 가기'
+        onButtonClick={() => navigate('/login')}
         onClose={() => setLoginDialog(false)}
-        icon={<img src={AlertIcon} alt="alert" style={{ width: "3rem" }} />}
+        icon={<img src={AlertIcon} alt='alert' style={{ width: '3rem' }} />}
       />
 
       {/* 미션 잠김 */}
       <Dialog
         isOpen={lockDialog}
-        title="미션이 현재 잠겨 있어요!"
+        title='미션이 현재 잠겨 있어요!'
         description={`해당 미션을 진행하려면
         이전 학습 단계를 먼저 완료해주세요.`}
-        buttonText="확인"
+        buttonText='확인'
         onButtonClick={() => setLockDialog(false)}
         onClose={() => setLockDialog(false)}
-        icon={<img src={AlertIcon} alt="alert" style={{ width: "3rem" }} />}
+        icon={<img src={AlertIcon} alt='alert' style={{ width: '3rem' }} />}
       />
 
       <SWrapper>
@@ -208,7 +206,7 @@ const LearningStepPage = () => {
             const active = selectedChapter === c.id;
 
             return (
-              <div key={c.id} style={{ display: "flex", alignItems: "center" }}>
+              <div key={c.id} style={{ display: 'flex', alignItems: 'center' }}>
                 <ChapterTab
                   active={active}
                   locked={locked}
@@ -218,7 +216,7 @@ const LearningStepPage = () => {
                 </ChapterTab>
 
                 {idx === 0 && chapters.length > 1 && (
-                  <LineImg src={LineIcon} alt="line" />
+                  <LineImg src={LineIcon} alt='line' />
                 )}
               </div>
             );
@@ -226,7 +224,7 @@ const LearningStepPage = () => {
         </ChapterTabs>
 
         {/* 챕터 소제목 */}
-        <div style={{ display: "flex", gap: "11rem", marginTop: "3rem" }}>
+        <div style={{ display: 'flex', gap: '11rem', marginTop: '3rem' }}>
           {chapters.map((c) => {
             const active = selectedChapter === c.id;
             const locked = getChapterLocked(c.id);
@@ -255,8 +253,8 @@ const LearningStepPage = () => {
               ref={(el) => (itemRefs.current[m.id] = el)}
             >
               <MissionCard
-                size={hoverId === m.id ? "large" : "small"}
-                theme={m.is_unlocked ? "light" : "dark"}
+                size={hoverId === m.id ? 'large' : 'small'}
+                theme={m.is_unlocked ? 'light' : 'dark'}
                 missionNumber={m.number}
                 title={m.title}
                 description={m.description}
@@ -270,16 +268,15 @@ const LearningStepPage = () => {
         {solutionHistory.length > 0 && (
           <RecordBox>
             {solutionHistory.map((h, idx) => (
-              <p 
-                key={h.id} 
+              <p
+                key={h.id}
                 onClick={() => navigate(`/solution-history/${h.id}`)}
-                style={{cursor: "pointer"}}
+                style={{ cursor: 'pointer' }}
               >
                 풀이 기록 {idx + 1} : {formatDate(h.created_at)}
               </p>
             ))}
           </RecordBox>
-
         )}
       </SWrapper>
     </SPageContainer>
@@ -287,7 +284,6 @@ const LearningStepPage = () => {
 };
 
 export default LearningStepPage;
-
 
 const SPageContainer = styled.div`
   background: linear-gradient(180deg, #fff 0%, #b1d0ff 100%);
@@ -317,12 +313,12 @@ const ChapterTab = styled.button`
   margin-left: 4.5rem;
   margin-right: 4.5rem;
 
-  color: ${({ active }) => (active ? "#191927" : "#646879")};
+  color: ${({ active }) => (active ? '#191927' : '#646879')};
 `;
 
 const SubTitle = styled.div`
   display: flex;
-  color: #FFF;
+  color: #fff;
   font-family: Pretendard;
   font-size: 1.75rem;
   font-style: normal;
@@ -333,12 +329,11 @@ const SubTitle = styled.div`
   border-radius: 1rem;
   border: none;
   background-color: ${({ locked, active }) => {
-    if (locked) return "rgba(196, 199, 211, 0.75)";                // 모두 잠김 (회색)
-    if (active) return "var(--Brand-2, #7DB1FF)";                  // 하나라도 열림 + 선택됨 (파랑)
-    return "var(--Brand-4, #B1D0FF)";                              // 하나라도 열림 + 선택 안 됨 (밝은 파랑)
+    if (locked) return 'rgba(196, 199, 211, 0.75)'; // 모두 잠김 (회색)
+    if (active) return 'var(--Brand-2, #7DB1FF)'; // 하나라도 열림 + 선택됨 (파랑)
+    return 'var(--Brand-4, #B1D0FF)'; // 하나라도 열림 + 선택 안 됨 (밝은 파랑)
   }};
 `;
-
 
 const MissionContainer = styled.div`
   margin-top: 3rem;
@@ -349,7 +344,6 @@ const MissionContainer = styled.div`
   overflow-x: scroll;
   scrollbar-width: none;
   overflow: visible;
-  
 
   padding: 2rem 0;
 
@@ -379,7 +373,6 @@ const MissionWrapper = styled.div`
     transform: scale(1.15);
   }
 `;
-
 
 const RecordBox = styled.div`
   margin: auto;

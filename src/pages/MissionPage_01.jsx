@@ -22,37 +22,84 @@ import waterImg from '../assets/icons/water.png';
 
 import botIcon from '../assets/icons/bot.png';
 
+import { authClient } from '../apis/instance';
 import defaultImg from '../assets/icons/missionpage_1/default1.svg';
 
 const MissionPage_01 = ({ onFinish }) => {
   const [status, setStatus] = useState('default');
-  const { missionId } = useParams();
-  const mission = Number(missionId);
 
-  const { accessToken } = useAuthStore(); // accessToken 정상 획득
-  const API_BASE = import.meta.env.VITE_API_URL;
+  // ✅ 백엔드에서 오는 "진짜 mission id" -> 화면에서 쓸 번호(1/2/3) 매핑
+  const missionNumberMap = {
+    11: 1,
+    12: 2,
+    13: 3,
+  };
 
+  const { missionId } = useParams(); // URL의 미션 id (예: 11, 12, 13)
+  const missionBackendId = Number(missionId); // 11 / 12 / 13
+  const mission = missionNumberMap[missionBackendId]; // 1 / 2 / 3
+
+  // ✅ [수정됨] 토큰 가져오는 올바른 방법
+  const accessToken = useAuthStore((state) => state.user.accessToken);
+
+  const [historyId, setHistoryId] = useState(null);
+
+  /* -------------------- 풀이 기록 생성 (POST /solutions/{id}/) -------------------- */
   useEffect(() => {
-    setStatus('default');
-  }, [missionId]);
+    // 1. 미션 ID나 토큰이 없으면 아예 시도하지 않음
+    if (!missionBackendId || !accessToken) return;
 
-  // ⭐ 풀이 저장 함수 (POST /solutions)
+    const createHistory = async () => {
+      try {
+        console.log(`📡 요청 시작: POST /solutions/${missionBackendId}/`);
+
+        // ✅ [수정됨] 404/Redirect 문제 해결을 위한 완벽한 요청 코드
+        const res = await authClient.post(
+          `/solutions/${missionBackendId}/`, // ⭐ 중요: 끝에 슬래시(/) 필수
+          {}, // Body는 빈 객체
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`, // 헤더 강제 주입
+            },
+          },
+        );
+
+        console.log('📌 서버 응답 성공:', res.data);
+
+        // 서버가 주는 ID 필드명 찾기 (id, solution_id, history_id 등)
+        const receivedId =
+          res.data.id || res.data.solution_id || res.data.history_id;
+
+        if (receivedId) {
+          setHistoryId(receivedId);
+          console.log('🎉 ID 획득 성공! 웹소켓 연결 준비 완료:', receivedId);
+        } else {
+          console.warn(
+            '⚠️ 생성은 됐는데 ID가 안 보입니다. 응답 확인 필요:',
+            res.data,
+          );
+        }
+      } catch (err) {
+        // 에러 내용을 더 자세히 보기
+        console.error(
+          '❌ createHistory 실패:',
+          err.response?.data || err.message,
+        );
+      }
+    };
+
+    createHistory();
+  }, [missionBackendId, accessToken]);
+
+  /* -------------------- 풀이 완료 저장 (POST /solutions/) -------------------- */
   const saveSolution = async () => {
     try {
-      const res = await fetch(`${API_BASE}/solutions`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${accessToken}`,
-        },
-        body: JSON.stringify({
-          mission_id: Number(missionId),
-          status: 'success',
-        }),
+      const res = await authClient.post(`/solutions/`, {
+        mission_id: missionBackendId, // 11 / 12 / 13
+        status: 'success',
       });
 
-      const data = await res.json();
-      console.log('📌 풀이 저장 성공:', data);
+      console.log('📌 풀이 저장 성공:', res.data);
     } catch (err) {
       console.error('❌ 풀이 저장 실패:', err);
     }
@@ -182,11 +229,11 @@ const MissionPage_01 = ({ onFinish }) => {
           <>
             <p>프로 요리사가 되기 위한 마지막 단계!</p>
             <p style={{ marginBottom: '1rem' }}>
-              바로 다른 사람들의 주문에 맞춰 요리를 만들어보는 것이에요.{' '}
+              바로 다른 사람들의 주문에 맞춰 요리를 만들어보는 것이에요.
             </p>
             <p>
               아래 곰 손님은 “꿀이 들어가고, 허브가 뿌려진 스프” 를 원하고
-              있어요.{' '}
+              있어요.
             </p>
             <p>
               지금까지 배운 순차 개념과 레시피들을 응용해서 손님께 드릴 맛있는
@@ -214,6 +261,18 @@ const MissionPage_01 = ({ onFinish }) => {
         return <p>미션 설명을 불러올 수 없습니다.</p>;
     }
   };
+
+  // mission 매핑 실패하면 바로 리턴
+  if (!mission) {
+    return (
+      <Wrapper>
+        <TopNavigation />
+        <ContentWrap>
+          <p>잘못된 미션 ID 입니다. (missionId: {missionBackendId})</p>
+        </ContentWrap>
+      </Wrapper>
+    );
+  }
 
   return (
     <Wrapper>
@@ -289,12 +348,13 @@ const MissionPage_01 = ({ onFinish }) => {
                 case 1:
                   return (
                     <AnswerChat
-                      key={missionId}
+                      key={missionBackendId}
                       botIcon={botIcon}
                       initialMessage={`레시피는 다음과 같은 형식으로 작성해주세요!<br><span style="color:#868ba3;">예시) “1. 00하기 / 2. 00하기”</span>`}
                       correctMessage={`<strong style="color:#37AF00;">정답입니다!</strong><br><br>따뜻하고 맛있는 <b>토마토 스프</b>가 완성되었어요.<br>요리사로서의 첫걸음을 성공적으로 내딛었네요!<br><span style="color:#868ba3; font-weight:500;">레시피가 순차적으로 작동했다면 정답으로 인정됩니다.</span>`}
                       wrongMessage={`<strong style="color:#FF644F;">오답입니다!</strong><br><br>레시피 순서를 다시 확인해주세요!<br><span style="color:#868ba3; font-weight:500;">예: 불을 켜야만 물을 끓일 수 있겠죠?</span>`}
                       status={status}
+                      historyId={historyId}
                       setStatus={async (v) => {
                         setStatus(v);
 
@@ -306,13 +366,13 @@ const MissionPage_01 = ({ onFinish }) => {
                               'true',
                             );
                             onFinish(true);
-                          }, 1200); // 메시지 자연스럽게 보이게 1.2초
+                          }, 1200);
                         }
 
                         if (v === 'fail') {
                           setTimeout(() => {
                             onFinish(false);
-                          }, 1200); // ⬅ 1.2초 메시지 유지
+                          }, 1200);
                         }
                       }}
                     />
@@ -321,12 +381,13 @@ const MissionPage_01 = ({ onFinish }) => {
                 case 2:
                   return (
                     <AnswerChat
-                      key={missionId}
+                      key={missionBackendId}
                       botIcon={botIcon}
                       initialMessage={`1. 잘못된 레시피<br>레시피는 다음과 같은 형식으로 작성해주세요!<br><span style="color:#868ba3;">예시) “ 1. 00하기 / 2. 00하기 ”</span><br><br>2. 레시피가 잘못된 이유<br>잘못된 이유는 다음과 같이 서술형으로 작성해 주세요!<br><span style="color:#868ba3;">예시) “ ~라서 레시피가 순차적으로 적합하지 않아요. ”</span>`}
                       correctMessage={`<strong style="color:#37AF00;">정답입니다!</strong><br><br>잘못된 레시피를 적절하게 고치는 방법까지 터득하셨네요! 이제 프로 요리사가 되기 위한 마지막 단계로 가볼까요?<br><span style="color:#868ba3; font-weight:500;">1. 잘못된 레시피를 정확하게 찾으셨다면, 정답으로 인정됩니다. </span><br><span style="color:#868ba3; font-weight:500;">2. 레시피가 잘못된 이유를 순차적인 개념과 함께 타당하게 제시하였다면, 정답으로 인정됩니다.  </span>`}
                       wrongMessage={`<strong style="color:#FF644F;">오답입니다!</strong><br><br>레시피를 다시 점검해주세요.<br><span style="color:#868ba3; font-weight:500;">1. 잘피드백 문장 (레시피의 전후 관계를 다시 확인해주세요! 예를 들어, 불을 먼저 켜야만 나중에 끌 수 있겠죠?) </span><br><span style="color:#868ba3; font-weight:500;">2. 피드백 문장 (해당 레시피가 왜 잘못되었을까요? 순차적인 개념과 함께 생각해봅시다.)  </span>`}
                       status={status}
+                      historyId={historyId} // ✅ WebSocket용 id
                       setStatus={async (v) => {
                         setStatus(v);
 
@@ -338,13 +399,13 @@ const MissionPage_01 = ({ onFinish }) => {
                               'true',
                             );
                             onFinish(true);
-                          }, 1200); // 메시지 자연스럽게 보이게 1.2초
+                          }, 1200);
                         }
 
                         if (v === 'fail') {
                           setTimeout(() => {
                             onFinish(false);
-                          }, 1200); // ⬅ 1.2초 메시지 유지
+                          }, 1200);
                         }
                       }}
                     />
@@ -353,12 +414,13 @@ const MissionPage_01 = ({ onFinish }) => {
                 case 3:
                   return (
                     <AnswerChat
-                      key={missionId}
+                      key={missionBackendId}
                       botIcon={botIcon}
                       initialMessage={`레시피는 다음과 같은 형식으로 작성해주세요!<br>예시) “1. 00하기 / 2. 00하기”`}
                       correctMessage={`<strong style="color:#37AF00;">버섯과 꿀이 들어가고 허브가 뿌려진</strong><br><strong style="color:#37AF00;">매우 맛있는 스프가 완성되었어요!</strong><br><br>손님의 주문에 맞춰 매우 맛있는 스프를 요리해낸 당신! 프로 요리사로서, 이제 어떤 스프든 맛있게 만들어낼 수 있을 거에요!<br><span style="color:#868ba3; font-weight:500;">손님의 주문에 맞춰 레시피가 논리에 문제 없이 순차적으로 작동한다면, 정답으로 인정됩니다. </span>`}
                       wrongMessage={`<strong style="color:#FF644F;">맛이 밍밍한</strong><br><strong style="color:#FF644F;">아쉬운 스프가 완성되었어요!</strong><br><br>레시피를 다시 점검해주세요.<br><span style="color:#868ba3; font-weight:500;">* 피드백 문장 (곰 손님의 주문을 다시 확인해보고, 순차적으로 문제 없도록 요리에 적용해보세요!)</span>`}
                       status={status}
+                      historyId={historyId}
                       setStatus={async (v) => {
                         setStatus(v);
 
@@ -370,13 +432,13 @@ const MissionPage_01 = ({ onFinish }) => {
                               'true',
                             );
                             onFinish(true);
-                          }, 1200); // 메시지 자연스럽게 보이게 1.2초
+                          }, 1200);
                         }
 
                         if (v === 'fail') {
                           setTimeout(() => {
                             onFinish(false);
-                          }, 1200); // ⬅ 1.2초 메시지 유지
+                          }, 1200);
                         }
                       }}
                     />
@@ -395,7 +457,7 @@ const MissionPage_01 = ({ onFinish }) => {
 
 export default MissionPage_01;
 
-//styled-components
+/* -------------------- styled-components -------------------- */
 
 const Wrapper = styled.div`
   width: 100%;
@@ -432,7 +494,6 @@ const RightPanel = styled.div`
   flex-direction: column;
 `;
 
-// 문제설명 밑 이미지 (step1)
 const ImageRow = styled.div`
   display: flex;
   justify-content: center;
@@ -454,7 +515,7 @@ const ImageItem = styled.div`
     font-size: 0.67988rem;
     font-style: normal;
     font-weight: 500;
-    line-height: 150%; /* 1.01981rem */
+    line-height: 150%;
     margin-bottom: 0.5rem;
   }
 

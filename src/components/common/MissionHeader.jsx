@@ -7,32 +7,37 @@ import Button from '../../components/common/Button.jsx';
 
 const MissionHeader = ({ stepNumber, title, stepId, status }) => {
   const navigate = useNavigate();
-  const { missionId } = useParams();
+  const { missionId } = useParams(); // URL에서 온 ID (예: 11, 12, 13)
   const steps = ['Mission 01', 'Mission 02', 'Mission 03'];
 
-  // 미션 클릭 시 이동
+  // 1️⃣ 현재 미션의 '순서 번호' 구하기 (11 -> 1, 12 -> 2, 13 -> 3)
+  const currentId = Number(missionId);
+  const currentNumber = currentId % 10;
+
+  // 2️⃣ 미션 탭 클릭 시 이동 (예: Step 1, Index 0 -> 11번으로 이동)
   const handleClick = (index) => {
-    navigate(`/step/${stepId}/mission/${index + 1}`);
+    // stepId가 1이면 -> 10 + (0+1) = 11
+    // stepId가 2이면 -> 20 + (0+1) = 21
+    const targetId = Number(stepId) * 10 + (index + 1);
+    navigate(`/step/${stepId}/mission/${targetId}`);
   };
 
-  // “다음으로 / 학습 완료” 버튼 클릭 시 이동
+  // 3️⃣ “다음으로 / 학습 완료” 버튼 클릭 시 이동
   const handleNext = () => {
     if (status !== 'success') return;
 
-    const currentMission = Number(missionId);
-
-    // mission3 → 학습 완료 → /learningstep 이동
-    if (currentMission === 3) {
+    // 마지막 미션(3번)이면 학습 완료 페이지로
+    if (currentNumber === 3) {
       navigate('/learningstep');
       return;
     }
 
-    // mission1 → 2, mission2 → 3
-    navigate(`/step/${stepId}/mission/${currentMission + 1}`);
+    // 아니면 다음 ID로 이동 (11 -> 12, 12 -> 13)
+    navigate(`/step/${stepId}/mission/${currentId + 1}`);
   };
 
-  // mission3이면 버튼 이름 변경
-  const buttonLabel = Number(missionId) === 3 ? '학습 완료' : '다음으로';
+  // 버튼 라벨 (3번 미션일 때만 '학습 완료')
+  const buttonLabel = currentNumber === 3 ? '학습 완료' : '다음으로';
 
   return (
     <Wrapper>
@@ -43,7 +48,8 @@ const MissionHeader = ({ stepNumber, title, stepId, status }) => {
         {steps.map((label, index) => (
           <React.Fragment key={index}>
             <StepItem
-              active={Number(missionId) === index + 1}
+              // 현재 번호(1,2,3)와 인덱스+1이 같으면 활성화
+              active={currentNumber === index + 1}
               onClick={() => handleClick(index)}
             >
               {label}
@@ -51,8 +57,8 @@ const MissionHeader = ({ stepNumber, title, stepId, status }) => {
             {index < steps.length - 1 && (
               <Arrow
                 src={
-                  Number(missionId) === index + 1 ||
-                  Number(missionId) === index + 2
+                  // 화살표 색상 로직도 1의 자리 숫자로 비교
+                  currentNumber === index + 1 || currentNumber === index + 2
                     ? nextBlack
                     : nextGray
                 }
@@ -76,8 +82,7 @@ const MissionHeader = ({ stepNumber, title, stepId, status }) => {
 
 export default MissionHeader;
 
-/* ---------------- styles ---------------- */
-
+/* ---------------- styles (기존과 동일) ---------------- */
 const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
