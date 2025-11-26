@@ -63,15 +63,21 @@ const MissionPage_02 = ({ onFinish }) => {
 
         console.log('📌 서버 응답 성공:', res.data);
 
-        const data = Array.isArray(res.data) ? res.data[0] : res.data;
+        const data = Array.isArray(res.data) ? res.data : [res.data];
 
-        const receivedId = data.id;
+        if (data.length === 0) {
+          console.warn('⚠️ 응답 배열이 비어 있음:', res.data);
+          return;
+        }
+        // 최신 기록 = 가장 마지막 요소
+        const latest = data[data.length - 1];
+        const receivedId = latest.id || latest.solution_id || latest.history_id;
 
         if (receivedId) {
           setHistoryId(receivedId);
           console.log('🎉 ID 획득 성공:', receivedId);
         } else {
-          console.warn('⚠️ ID를 찾을 수 없습니다:', res.data);
+          console.warn('⚠️ ID를 찾을 수 없습니다:', latest);
         }
       } catch (err) {
         console.error(
