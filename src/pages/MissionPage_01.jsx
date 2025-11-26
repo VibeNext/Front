@@ -44,7 +44,6 @@ const MissionPage_01 = ({ onFinish }) => {
 
   /* -------------------- 풀이 기록 생성 (POST /solutions/{id}/) -------------------- */
   useEffect(() => {
-    // 1. 미션 ID나 토큰이 없으면 아예 시도하지 않음
     if (!missionBackendId || !accessToken) return;
 
     const createHistory = async () => {
@@ -63,21 +62,17 @@ const MissionPage_01 = ({ onFinish }) => {
 
         console.log('📌 서버 응답 성공:', res.data);
 
-        // 서버가 주는 ID 필드명 찾기 (id, solution_id, history_id 등)
-        const receivedId =
-          res.data.id || res.data.solution_id || res.data.history_id;
+        const data = Array.isArray(res.data) ? res.data[0] : res.data;
+
+        const receivedId = data.id;
 
         if (receivedId) {
           setHistoryId(receivedId);
-          console.log('🎉 ID 획득 성공! 웹소켓 연결 준비 완료:', receivedId);
+          console.log('🎉 ID 획득 성공:', receivedId);
         } else {
-          console.warn(
-            '⚠️ 생성은 됐는데 ID가 안 보입니다. 응답 확인 필요:',
-            res.data,
-          );
+          console.warn('⚠️ ID를 찾을 수 없습니다:', res.data);
         }
       } catch (err) {
-        // 에러 내용을 더 자세히 보기
         console.error(
           '❌ createHistory 실패:',
           err.response?.data || err.message,

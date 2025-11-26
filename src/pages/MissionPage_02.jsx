@@ -68,12 +68,9 @@ const MissionPage_02 = ({ onFinish }) => {
 
         if (receivedId) {
           setHistoryId(receivedId);
-          console.log('🎉 ID 획득 성공! 웹소켓 연결 준비 완료:', receivedId);
+          console.log('🎉 ID 획득 성공:', receivedId);
         } else {
-          console.warn(
-            '⚠️ 생성은 됐는데 ID가 안 보입니다. 응답 확인 필요:',
-            res.data,
-          );
+          console.warn('⚠️ ID를 찾을 수 없습니다:', res.data);
         }
       } catch (err) {
         console.error(
