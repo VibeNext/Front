@@ -61,9 +61,10 @@ const MissionPage_02 = ({ onFinish }) => {
           },
         );
 
-        console.log('📌 서버 응답 성공:', res.data);
+        console.log('📌 서버 응답 RAW:', JSON.stringify(res.data, null, 2));
 
         const data = Array.isArray(res.data) ? res.data : [res.data];
+        console.log('📌 data 배열화:', JSON.stringify(data, null, 2));
 
         if (data.length === 0) {
           console.warn('⚠️ 응답 배열이 비어 있음:', res.data);
@@ -71,7 +72,10 @@ const MissionPage_02 = ({ onFinish }) => {
         }
         // 최신 기록 = 가장 마지막 요소
         const latest = data[data.length - 1];
+        console.log('📌 latest 요소:', JSON.stringify(latest, null, 2));
+
         const receivedId = latest.id || latest.solution_id || latest.history_id;
+        console.log('📌 추출된 receivedId:', receivedId);
 
         if (receivedId) {
           setHistoryId(receivedId);
