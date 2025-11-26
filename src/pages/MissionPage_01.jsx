@@ -357,94 +357,100 @@ const MissionPage_01 = ({ onFinish }) => {
                 /* --------------------- CASE 1 --------------------- */
                 case 1:
                   return (
-                    <AnswerChat
-                      key={missionBackendId}
-                      botIcon={botIcon}
-                      initialMessage={`레시피는 다음과 같은 형식으로 작성해주세요!<br><span style="color:#868ba3;">예시) “1. 00하기 / 2. 00하기”</span>`}
-                      correctMessage={`<strong style="color:#37AF00;">정답입니다!</strong><br><br>따뜻하고 맛있는 <b>토마토 스프</b>가 완성되었어요.<br>요리사로서의 첫걸음을 성공적으로 내딛었네요!<br><span style="color:#868ba3; font-weight:500;">레시피가 순차적으로 작동했다면 정답으로 인정됩니다.</span>`}
-                      wrongMessage={`<strong style="color:#FF644F;">오답입니다!</strong><br><br>레시피 순서를 다시 확인해주세요!<br><span style="color:#868ba3; font-weight:500;">예: 불을 켜야만 물을 끓일 수 있겠죠?</span>`}
-                      status={status}
-                      historyId={historyId}
-                      setStatus={async (v) => {
-                        setStatus(v);
+                    hisrotyId && (
+                      <AnswerChat
+                        key={missionBackendId}
+                        botIcon={botIcon}
+                        initialMessage={`레시피는 다음과 같은 형식으로 작성해주세요!<br><span style="color:#868ba3;">예시) “1. 00하기 / 2. 00하기”</span>`}
+                        correctMessage={`<strong style="color:#37AF00;">정답입니다!</strong><br><br>따뜻하고 맛있는 <b>토마토 스프</b>가 완성되었어요.<br>요리사로서의 첫걸음을 성공적으로 내딛었네요!<br><span style="color:#868ba3; font-weight:500;">레시피가 순차적으로 작동했다면 정답으로 인정됩니다.</span>`}
+                        wrongMessage={`<strong style="color:#FF644F;">오답입니다!</strong><br><br>레시피 순서를 다시 확인해주세요!<br><span style="color:#868ba3; font-weight:500;">예: 불을 켜야만 물을 끓일 수 있겠죠?</span>`}
+                        status={status}
+                        historyId={historyId}
+                        setStatus={async (v) => {
+                          setStatus(v);
 
-                        if (v === 'success') {
-                          setTimeout(async () => {
-                            await saveSolution(true);
-                            onFinish(true);
-                          }, 1200);
-                        }
+                          if (v === 'success') {
+                            setTimeout(async () => {
+                              await saveSolution(true);
+                              onFinish(true);
+                            }, 1200);
+                          }
 
-                        if (v === 'fail') {
-                          setTimeout(async () => {
-                            await saveSolution(false);
-                            onFinish(false);
-                          }, 1200);
-                        }
-                      }}
-                    />
+                          if (v === 'fail') {
+                            setTimeout(async () => {
+                              await saveSolution(false);
+                              onFinish(false);
+                            }, 1200);
+                          }
+                        }}
+                      />
+                    )
                   );
 
                 /* --------------------- CASE 2 --------------------- */
                 case 2:
                   return (
-                    <AnswerChat
-                      key={missionBackendId}
-                      botIcon={botIcon}
-                      initialMessage={`1. 잘못된 레시피<br>레시피는 다음과 같은 형식으로 작성해주세요!<br><span style="color:#868ba3;">예시) “ 1. 00하기 / 2. 00하기 ”</span><br><br>2. 레시피가 잘못된 이유<br>잘못된 이유는 다음과 같이 서술형으로 작성해 주세요!`}
-                      correctMessage={`<strong style="color:#37AF00;">정답입니다!</strong><br><br>잘못된 레시피를 적절하게 고치는 방법까지 터득하셨네요!`}
-                      wrongMessage={`<strong style="color:#FF644F;">오답입니다!</strong><br><br>레시피의 전후 관계를 다시 확인해주세요!`}
-                      status={status}
-                      historyId={historyId}
-                      setStatus={async (v) => {
-                        setStatus(v);
+                    hisrotyId && (
+                      <AnswerChat
+                        key={missionBackendId}
+                        botIcon={botIcon}
+                        initialMessage={`1. 잘못된 레시피<br>레시피는 다음과 같은 형식으로 작성해주세요!<br><span style="color:#868ba3;">예시) “ 1. 00하기 / 2. 00하기 ”</span><br><br>2. 레시피가 잘못된 이유<br>잘못된 이유는 다음과 같이 서술형으로 작성해 주세요!`}
+                        correctMessage={`<strong style="color:#37AF00;">정답입니다!</strong><br><br>잘못된 레시피를 적절하게 고치는 방법까지 터득하셨네요!`}
+                        wrongMessage={`<strong style="color:#FF644F;">오답입니다!</strong><br><br>레시피의 전후 관계를 다시 확인해주세요!`}
+                        status={status}
+                        historyId={historyId}
+                        setStatus={async (v) => {
+                          setStatus(v);
 
-                        if (v === 'success') {
-                          setTimeout(async () => {
-                            await saveSolution(true);
-                            onFinish(true);
-                          }, 1200);
-                        }
+                          if (v === 'success') {
+                            setTimeout(async () => {
+                              await saveSolution(true);
+                              onFinish(true);
+                            }, 1200);
+                          }
 
-                        if (v === 'fail') {
-                          setTimeout(async () => {
-                            await saveSolution(false);
-                            onFinish(false);
-                          }, 1200);
-                        }
-                      }}
-                    />
+                          if (v === 'fail') {
+                            setTimeout(async () => {
+                              await saveSolution(false);
+                              onFinish(false);
+                            }, 1200);
+                          }
+                        }}
+                      />
+                    )
                   );
 
                 /* --------------------- CASE 3 --------------------- */
                 case 3:
                   return (
-                    <AnswerChat
-                      key={missionBackendId}
-                      botIcon={botIcon}
-                      initialMessage={`레시피는 다음과 같은 형식으로 작성해주세요!<br>예시) “1. 00하기 / 2. 00하기”`}
-                      correctMessage={`<strong style="color:#37AF00;">버섯과 꿀이 들어간 스프가 완성되었어요!</strong>`}
-                      wrongMessage={`<strong style="color:#FF644F;">아쉬운 스프가 완성되었어요!</strong>`}
-                      status={status}
-                      historyId={historyId}
-                      setStatus={async (v) => {
-                        setStatus(v);
+                    hisrotyId && (
+                      <AnswerChat
+                        key={missionBackendId}
+                        botIcon={botIcon}
+                        initialMessage={`레시피는 다음과 같은 형식으로 작성해주세요!<br>예시) “1. 00하기 / 2. 00하기”`}
+                        correctMessage={`<strong style="color:#37AF00;">버섯과 꿀이 들어간 스프가 완성되었어요!</strong>`}
+                        wrongMessage={`<strong style="color:#FF644F;">아쉬운 스프가 완성되었어요!</strong>`}
+                        status={status}
+                        historyId={historyId}
+                        setStatus={async (v) => {
+                          setStatus(v);
 
-                        if (v === 'success') {
-                          setTimeout(async () => {
-                            await saveSolution(true);
-                            onFinish(true);
-                          }, 1200);
-                        }
+                          if (v === 'success') {
+                            setTimeout(async () => {
+                              await saveSolution(true);
+                              onFinish(true);
+                            }, 1200);
+                          }
 
-                        if (v === 'fail') {
-                          setTimeout(async () => {
-                            await saveSolution(false);
-                            onFinish(false);
-                          }, 1200);
-                        }
-                      }}
-                    />
+                          if (v === 'fail') {
+                            setTimeout(async () => {
+                              await saveSolution(false);
+                              onFinish(false);
+                            }, 1200);
+                          }
+                        }}
+                      />
+                    )
                   );
 
                 default:
