@@ -1,3 +1,4 @@
+//풀이 기록 조회
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import styled from 'styled-components';
