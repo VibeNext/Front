@@ -43,7 +43,7 @@ const AnswerChat = ({
     if (!historyId) return; // id 없으면 연결 안 함
 
     const ws = new WebSocket(
-      `wss://nextvibe.up.railway.app/ws/solutions/${historyId}/chat/?token=${accessToken}`,
+      `wss://nextvibe.up.railway.app/ws/solutions/chat/${historyId}?token=${accessToken}`,
     );
 
     ws.onopen = () => {
@@ -59,7 +59,6 @@ const AnswerChat = ({
           console.log('system:', data.message);
           break;
 
-        // ✅ [수정 1] 말풍선 중복 생성 방지
         case 'message':
           setMessages((prev) => {
             const lastMsg = prev[prev.length - 1];
@@ -99,7 +98,6 @@ const AnswerChat = ({
           ]);
           break;
 
-        // ✅ [수정 2] 텍스트 반복 증식(Mutation) 해결!
         case 'ai_delta':
           setMessages((prev) => {
             const newList = [...prev]; // 배열 복사
