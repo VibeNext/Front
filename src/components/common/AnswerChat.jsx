@@ -43,7 +43,7 @@ const AnswerChat = ({
     if (!historyId) return; // id 없으면 연결 안 함
 
     const ws = new WebSocket(
-      `wss://nextvibe.up.railway.app/ws/solutions/chat/${historyId}`,
+      `wss://nextvibe.up.railway.app/ws/solutions/${historyId}/chat/`,
     );
 
     ws.onopen = () => {
