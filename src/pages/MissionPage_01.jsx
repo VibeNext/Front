@@ -28,7 +28,6 @@ import defaultImg from '../assets/icons/missionpage_1/default1.svg';
 const MissionPage_01 = ({ onFinish }) => {
   const [status, setStatus] = useState('default');
 
-  // ✅ 백엔드에서 오는 "진짜 mission id" -> 화면에서 쓸 번호(1/2/3) 매핑
   const missionNumberMap = {
     11: 1,
     12: 2,
@@ -39,7 +38,6 @@ const MissionPage_01 = ({ onFinish }) => {
   const missionBackendId = Number(missionId); // 11 / 12 / 13
   const mission = missionNumberMap[missionBackendId]; // 1 / 2 / 3
 
-  // ✅ [수정됨] 토큰 가져오는 올바른 방법
   const accessToken = useAuthStore((state) => state.user.accessToken);
 
   const [historyId, setHistoryId] = useState(null);
@@ -51,15 +49,14 @@ const MissionPage_01 = ({ onFinish }) => {
 
     const createHistory = async () => {
       try {
-        console.log(`📡 요청 시작: POST /solutions/${missionBackendId}/`);
+        const { accessToken, grantType } = useAuthStore.getState().user;
 
-        // ✅ [수정됨] 404/Redirect 문제 해결을 위한 완벽한 요청 코드
         const res = await authClient.post(
-          `/solutions/${missionBackendId}/`, // ⭐ 중요: 끝에 슬래시(/) 필수
+          `/solutions/${missionBackendId}`,
           {}, // Body는 빈 객체
           {
             headers: {
-              Authorization: `Bearer ${accessToken}`, // 헤더 강제 주입
+              Authorization: `${grantType} ${accessToken}`,
             },
           },
         );
@@ -91,17 +88,28 @@ const MissionPage_01 = ({ onFinish }) => {
     createHistory();
   }, [missionBackendId, accessToken]);
 
-  /* -------------------- 풀이 완료 저장 (POST /solutions/) -------------------- */
-  const saveSolution = async () => {
+  /* -------------------- 풀이 종료 저장 (PATCH /solutions/update/{history_id}) -------------------- */
+  const saveSolution = async (isSolved) => {
     try {
-      const res = await authClient.post(`/solutions/`, {
-        mission_id: missionBackendId, // 11 / 12 / 13
-        status: 'success',
-      });
+      const { accessToken, grantType } = useAuthStore.getState().user;
 
-      console.log('📌 풀이 저장 성공:', res.data);
+      const res = await authClient.patch(
+        `/solutions/update/${historyId}`,
+
+        { is_solved: isSolved },
+        {
+          headers: {
+            Authorization: `${grantType} ${accessToken}`,
+          },
+        },
+      );
+
+      console.log('풀이 종료/이탈 저장 성공:', res.data);
     } catch (err) {
-      console.error('❌ 풀이 저장 실패:', err);
+      console.error(
+        '풀이 종료/이탈 저장 실패:',
+        err.response?.data || err.message,
+      );
     }
   };
 
@@ -341,10 +349,10 @@ const MissionPage_01 = ({ onFinish }) => {
             </AnswerCheckContainer>
           </LeftPanel>
 
-          {/* 오른쪽: 문제 풀이 */}
           <RightPanel>
             {(() => {
               switch (mission) {
+                /* --------------------- CASE 1 --------------------- */
                 case 1:
                   return (
                     <AnswerChat
@@ -360,17 +368,14 @@ const MissionPage_01 = ({ onFinish }) => {
 
                         if (v === 'success') {
                           setTimeout(async () => {
-                            await saveSolution();
-                            localStorage.setItem(
-                              'shouldRefreshMissions',
-                              'true',
-                            );
+                            await saveSolution(true);
                             onFinish(true);
                           }, 1200);
                         }
 
                         if (v === 'fail') {
-                          setTimeout(() => {
+                          setTimeout(async () => {
+                            await saveSolution(false);
                             onFinish(false);
                           }, 1200);
                         }
@@ -378,47 +383,15 @@ const MissionPage_01 = ({ onFinish }) => {
                     />
                   );
 
+                /* --------------------- CASE 2 --------------------- */
                 case 2:
                   return (
                     <AnswerChat
                       key={missionBackendId}
                       botIcon={botIcon}
-                      initialMessage={`1. 잘못된 레시피<br>레시피는 다음과 같은 형식으로 작성해주세요!<br><span style="color:#868ba3;">예시) “ 1. 00하기 / 2. 00하기 ”</span><br><br>2. 레시피가 잘못된 이유<br>잘못된 이유는 다음과 같이 서술형으로 작성해 주세요!<br><span style="color:#868ba3;">예시) “ ~라서 레시피가 순차적으로 적합하지 않아요. ”</span>`}
-                      correctMessage={`<strong style="color:#37AF00;">정답입니다!</strong><br><br>잘못된 레시피를 적절하게 고치는 방법까지 터득하셨네요! 이제 프로 요리사가 되기 위한 마지막 단계로 가볼까요?<br><span style="color:#868ba3; font-weight:500;">1. 잘못된 레시피를 정확하게 찾으셨다면, 정답으로 인정됩니다. </span><br><span style="color:#868ba3; font-weight:500;">2. 레시피가 잘못된 이유를 순차적인 개념과 함께 타당하게 제시하였다면, 정답으로 인정됩니다.  </span>`}
-                      wrongMessage={`<strong style="color:#FF644F;">오답입니다!</strong><br><br>레시피를 다시 점검해주세요.<br><span style="color:#868ba3; font-weight:500;">1. 잘피드백 문장 (레시피의 전후 관계를 다시 확인해주세요! 예를 들어, 불을 먼저 켜야만 나중에 끌 수 있겠죠?) </span><br><span style="color:#868ba3; font-weight:500;">2. 피드백 문장 (해당 레시피가 왜 잘못되었을까요? 순차적인 개념과 함께 생각해봅시다.)  </span>`}
-                      status={status}
-                      historyId={historyId} // ✅ WebSocket용 id
-                      setStatus={async (v) => {
-                        setStatus(v);
-
-                        if (v === 'success') {
-                          setTimeout(async () => {
-                            await saveSolution();
-                            localStorage.setItem(
-                              'shouldRefreshMissions',
-                              'true',
-                            );
-                            onFinish(true);
-                          }, 1200);
-                        }
-
-                        if (v === 'fail') {
-                          setTimeout(() => {
-                            onFinish(false);
-                          }, 1200);
-                        }
-                      }}
-                    />
-                  );
-
-                case 3:
-                  return (
-                    <AnswerChat
-                      key={missionBackendId}
-                      botIcon={botIcon}
-                      initialMessage={`레시피는 다음과 같은 형식으로 작성해주세요!<br>예시) “1. 00하기 / 2. 00하기”`}
-                      correctMessage={`<strong style="color:#37AF00;">버섯과 꿀이 들어가고 허브가 뿌려진</strong><br><strong style="color:#37AF00;">매우 맛있는 스프가 완성되었어요!</strong><br><br>손님의 주문에 맞춰 매우 맛있는 스프를 요리해낸 당신! 프로 요리사로서, 이제 어떤 스프든 맛있게 만들어낼 수 있을 거에요!<br><span style="color:#868ba3; font-weight:500;">손님의 주문에 맞춰 레시피가 논리에 문제 없이 순차적으로 작동한다면, 정답으로 인정됩니다. </span>`}
-                      wrongMessage={`<strong style="color:#FF644F;">맛이 밍밍한</strong><br><strong style="color:#FF644F;">아쉬운 스프가 완성되었어요!</strong><br><br>레시피를 다시 점검해주세요.<br><span style="color:#868ba3; font-weight:500;">* 피드백 문장 (곰 손님의 주문을 다시 확인해보고, 순차적으로 문제 없도록 요리에 적용해보세요!)</span>`}
+                      initialMessage={`1. 잘못된 레시피<br>레시피는 다음과 같은 형식으로 작성해주세요!<br><span style="color:#868ba3;">예시) “ 1. 00하기 / 2. 00하기 ”</span><br><br>2. 레시피가 잘못된 이유<br>잘못된 이유는 다음과 같이 서술형으로 작성해 주세요!`}
+                      correctMessage={`<strong style="color:#37AF00;">정답입니다!</strong><br><br>잘못된 레시피를 적절하게 고치는 방법까지 터득하셨네요!`}
+                      wrongMessage={`<strong style="color:#FF644F;">오답입니다!</strong><br><br>레시피의 전후 관계를 다시 확인해주세요!`}
                       status={status}
                       historyId={historyId}
                       setStatus={async (v) => {
@@ -426,17 +399,45 @@ const MissionPage_01 = ({ onFinish }) => {
 
                         if (v === 'success') {
                           setTimeout(async () => {
-                            await saveSolution();
-                            localStorage.setItem(
-                              'shouldRefreshMissions',
-                              'true',
-                            );
+                            await saveSolution(true);
                             onFinish(true);
                           }, 1200);
                         }
 
                         if (v === 'fail') {
-                          setTimeout(() => {
+                          setTimeout(async () => {
+                            await saveSolution(false);
+                            onFinish(false);
+                          }, 1200);
+                        }
+                      }}
+                    />
+                  );
+
+                /* --------------------- CASE 3 --------------------- */
+                case 3:
+                  return (
+                    <AnswerChat
+                      key={missionBackendId}
+                      botIcon={botIcon}
+                      initialMessage={`레시피는 다음과 같은 형식으로 작성해주세요!<br>예시) “1. 00하기 / 2. 00하기”`}
+                      correctMessage={`<strong style="color:#37AF00;">버섯과 꿀이 들어간 스프가 완성되었어요!</strong>`}
+                      wrongMessage={`<strong style="color:#FF644F;">아쉬운 스프가 완성되었어요!</strong>`}
+                      status={status}
+                      historyId={historyId}
+                      setStatus={async (v) => {
+                        setStatus(v);
+
+                        if (v === 'success') {
+                          setTimeout(async () => {
+                            await saveSolution(true);
+                            onFinish(true);
+                          }, 1200);
+                        }
+
+                        if (v === 'fail') {
+                          setTimeout(async () => {
+                            await saveSolution(false);
                             onFinish(false);
                           }, 1200);
                         }
