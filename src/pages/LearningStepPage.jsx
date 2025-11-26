@@ -13,7 +13,8 @@ import LineIcon from '../assets/icons/line2.png';
 const LearningStepPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, accessToken, isAuthenticated } = useAuthStore();
+  const { user, isAuthenticated } = useAuthStore();
+  const accessToken = useAuthStore((state) => state.user.accessToken);
 
   const [chapters, setChapters] = useState([]);
   const [missions, setMissions] = useState([]);
@@ -273,7 +274,7 @@ const LearningStepPage = () => {
                 onClick={() => navigate(`/solution-history/${h.id}`)}
                 style={{ cursor: 'pointer' }}
               >
-                풀이 기록 {idx + 1} : {formatDate(h.created_at)}
+                풀이 기록 {idx + 1} : {formatDate(h.updated_at)}
               </p>
             ))}
           </RecordBox>

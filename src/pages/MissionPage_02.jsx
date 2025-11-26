@@ -26,53 +26,43 @@ import { authClient } from '../apis/instance';
 
 import defaultImg from '../assets/icons/missionpage_2/default.svg';
 
-
-
-
 const MissionPage_02 = ({ onFinish }) => {
   const [status, setStatus] = useState('default');
 
-  // ✅ 백엔드에서 오는 "진짜 mission id" -> 화면에서 쓸 번호(1/2/3) 매핑
   const missionNumberMap = {
     21: 1,
     22: 2,
     23: 3,
   };
 
-
   const { missionId } = useParams();
   const missionBackendId = Number(missionId); // 11 / 12 / 13
   const mission = missionNumberMap[missionBackendId]; // 1 / 2 / 3
 
-  // ✅ [수정됨] 토큰 가져오는 올바른 방법
   const accessToken = useAuthStore((state) => state.user.accessToken);
 
   const [historyId, setHistoryId] = useState(null);
 
-  
   /* -------------------- 풀이 기록 생성 (POST /solutions/{id}/) -------------------- */
   useEffect(() => {
-    // 1. 미션 ID나 토큰이 없으면 아예 시도하지 않음
     if (!missionBackendId || !accessToken) return;
 
     const createHistory = async () => {
       try {
-        console.log(`📡 요청 시작: POST /solutions/${missionBackendId}/`);
+        const { accessToken, grantType } = useAuthStore.getState().user;
 
-        // ✅ [수정됨] 404/Redirect 문제 해결을 위한 완벽한 요청 코드
         const res = await authClient.post(
-          `/solutions/${missionBackendId}/`, // ⭐ 중요: 끝에 슬래시(/) 필수
-          {}, // Body는 빈 객체
+          `/solutions/${missionBackendId}`,
+          {},
           {
             headers: {
-              Authorization: `Bearer ${accessToken}`, // 헤더 강제 주입
+              Authorization: `${grantType} ${accessToken}`,
             },
           },
         );
 
         console.log('📌 서버 응답 성공:', res.data);
 
-        // 서버가 주는 ID 필드명 찾기 (id, solution_id, history_id 등)
         const receivedId =
           res.data.id || res.data.solution_id || res.data.history_id;
 
@@ -86,7 +76,6 @@ const MissionPage_02 = ({ onFinish }) => {
           );
         }
       } catch (err) {
-        // 에러 내용을 더 자세히 보기
         console.error(
           '❌ createHistory 실패:',
           err.response?.data || err.message,
@@ -97,17 +86,24 @@ const MissionPage_02 = ({ onFinish }) => {
     createHistory();
   }, [missionBackendId, accessToken]);
 
-  /* -------------------- 풀이 완료 저장 (POST /solutions/) -------------------- */
-  const saveSolution = async () => {
+  /* -------------------- 풀이 완료 저장(PATCH) -------------------- */
+  const saveSolution = async (isSolved) => {
     try {
-      const res = await authClient.post(`/solutions/`, {
-        mission_id: missionBackendId, // 11 / 12 / 13
-        status: 'success',
-      });
+      const { accessToken, grantType } = useAuthStore.getState().user;
 
-      console.log('📌 풀이 저장 성공:', res.data);
+      const res = await authClient.patch(
+        `/solutions/update/${historyId}`,
+        { is_solved: isSolved },
+        {
+          headers: {
+            Authorization: `${grantType} ${accessToken}`,
+          },
+        },
+      );
+
+      console.log('풀이 저장 성공:', res.data);
     } catch (err) {
-      console.error('❌ 풀이 저장 실패:', err);
+      console.error('풀이 저장 실패:', err.response?.data || err.message);
     }
   };
 
@@ -463,19 +459,16 @@ const MissionPage_02 = ({ onFinish }) => {
 
                         if (v === 'success') {
                           setTimeout(async () => {
-                            await saveSolution();
-                            localStorage.setItem(
-                              'shouldRefreshMissions',
-                              'true',
-                            );
+                            await saveSolution(true);
                             onFinish(true);
-                          }, 1200); // 메시지 자연스럽게 보이게 1.2초
+                          }, 1200);
                         }
 
                         if (v === 'fail') {
-                          setTimeout(() => {
+                          setTimeout(async () => {
+                            await saveSolution(false);
                             onFinish(false);
-                          }, 1200); // ⬅ 1.2초 메시지 유지
+                          }, 1200);
                         }
                       }}
                     />
@@ -496,19 +489,16 @@ const MissionPage_02 = ({ onFinish }) => {
 
                         if (v === 'success') {
                           setTimeout(async () => {
-                            await saveSolution();
-                            localStorage.setItem(
-                              'shouldRefreshMissions',
-                              'true',
-                            );
+                            await saveSolution(true);
                             onFinish(true);
-                          }, 1200); // 메시지 자연스럽게 보이게 1.2초
+                          }, 1200);
                         }
 
                         if (v === 'fail') {
-                          setTimeout(() => {
+                          setTimeout(async () => {
+                            await saveSolution(false);
                             onFinish(false);
-                          }, 1200); // ⬅ 1.2초 메시지 유지
+                          }, 1200);
                         }
                       }}
                     />
@@ -529,19 +519,16 @@ const MissionPage_02 = ({ onFinish }) => {
 
                         if (v === 'success') {
                           setTimeout(async () => {
-                            await saveSolution();
-                            localStorage.setItem(
-                              'shouldRefreshMissions',
-                              'true',
-                            );
+                            await saveSolution(true);
                             onFinish(true);
-                          }, 1200); // 메시지 자연스럽게 보이게 1.2초
+                          }, 1200);
                         }
 
                         if (v === 'fail') {
-                          setTimeout(() => {
+                          setTimeout(async () => {
+                            await saveSolution(false);
                             onFinish(false);
-                          }, 1200); // ⬅ 1.2초 메시지 유지
+                          }, 1200);
                         }
                       }}
                     />
