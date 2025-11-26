@@ -352,12 +352,17 @@ const MissionPage_01 = ({ onFinish }) => {
           </LeftPanel>
 
           <RightPanel>
-            {(() => {
-              switch (mission) {
-                /* --------------------- CASE 1 --------------------- */
-                case 1:
-                  return (
-                    hisrotyId && (
+            {!historyId ? (
+              <div
+                style={{ color: '#999', fontSize: '0.9rem', padding: '1rem' }}
+              >
+                채팅을 준비하고 있어요...
+              </div>
+            ) : (
+              (() => {
+                switch (mission) {
+                  case 1:
+                    return (
                       <AnswerChat
                         key={missionBackendId}
                         botIcon={botIcon}
@@ -384,13 +389,10 @@ const MissionPage_01 = ({ onFinish }) => {
                           }
                         }}
                       />
-                    )
-                  );
+                    );
 
-                /* --------------------- CASE 2 --------------------- */
-                case 2:
-                  return (
-                    hisrotyId && (
+                  case 2:
+                    return (
                       <AnswerChat
                         key={missionBackendId}
                         botIcon={botIcon}
@@ -417,13 +419,10 @@ const MissionPage_01 = ({ onFinish }) => {
                           }
                         }}
                       />
-                    )
-                  );
+                    );
 
-                /* --------------------- CASE 3 --------------------- */
-                case 3:
-                  return (
-                    hisrotyId && (
+                  case 3:
+                    return (
                       <AnswerChat
                         key={missionBackendId}
                         botIcon={botIcon}
@@ -450,13 +449,13 @@ const MissionPage_01 = ({ onFinish }) => {
                           }
                         }}
                       />
-                    )
-                  );
+                    );
 
-                default:
-                  return null;
-              }
-            })()}
+                  default:
+                    return null;
+                }
+              })()
+            )}
           </RightPanel>
         </MainLayout>
       </ContentWrap>
