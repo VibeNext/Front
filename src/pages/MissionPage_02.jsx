@@ -63,9 +63,8 @@ const MissionPage_02 = ({ onFinish }) => {
 
         console.log('📌 서버 응답 성공:', res.data);
 
-        const data = Array.isArray(res.data) ? res.data[0] : res.data;
-
-        const receivedId = data.id;
+        const receivedId =
+          res.data.id || res.data.solution_id || res.data.history_id;
 
         if (receivedId) {
           setHistoryId(receivedId);

@@ -52,7 +52,7 @@ const MissionPage_01 = ({ onFinish }) => {
 
         const res = await authClient.post(
           `/solutions/${missionBackendId}`,
-          {},
+          {}, // Body는 빈 객체
           {
             headers: {
               Authorization: `${grantType} ${accessToken}`,
