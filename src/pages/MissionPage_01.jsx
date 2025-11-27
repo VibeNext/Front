@@ -179,13 +179,13 @@ const MissionPage_01 = ({ onFinish }) => {
       case 2:
         return (
           <>
-            <p>오늘은 내가 요리사!</p>
+            <p>오늘은 친구가 요리사!</p>
             <p style={{ marginBottom: '1rem' }}>
               갓 따온 버섯를 이용해 맛있는 토마토 스프를 만들려고 해요.
             </p>
             <p>
-              아래에 섞여 있는 조리 단계를 참고해서 올바른 레시피를 작성해
-              주세요.
+              앗, 하지만 아쉽게도 친구의 요리는 실패하고 말았어요. 어디가 잘못된
+              걸까요?
             </p>
             <p>
               모든 과정을 순서대로 실행하면, 따뜻하고 맛있는 버섯스프가 완성될
@@ -193,8 +193,12 @@ const MissionPage_01 = ({ onFinish }) => {
             </p>
             <ImageRow>
               <ImageItem>
-                <small>불끄기</small>
-                <img src={fireOffImg} alt='불끄기' />
+                <small>불켜기</small>
+                <img src={fireOnImg} alt='불켜기' />
+              </ImageItem>
+              <ImageItem>
+                <small>냄비에 물 붓기</small>
+                <img src={waterImg} alt='냄비에 물 붓기' />
               </ImageItem>
               <ImageItem>
                 <small>버섯 넣기</small>
@@ -205,20 +209,16 @@ const MissionPage_01 = ({ onFinish }) => {
                 <img src={saltImg} alt='채소와 소금 넣기' />
               </ImageItem>
               <ImageItem>
-                <small>완성된 스프 담기</small>
-                <img src={soupImg} alt='완성된 스프 담기' />
-              </ImageItem>
-              <ImageItem>
-                <small>불켜기</small>
-                <img src={fireOnImg} alt='불켜기' />
-              </ImageItem>
-              <ImageItem>
-                <small>냄비에 물 붓기</small>
-                <img src={waterImg} alt='냄비에 물 붓기' />
+                <small>불끄기</small>
+                <img src={fireOffImg} alt='불끄기' />
               </ImageItem>
               <ImageItem>
                 <small>물 끓이기</small>
                 <img src={boilImg} alt='물 끓이기' />
+              </ImageItem>
+              <ImageItem>
+                <small>완성된 스프 담기</small>
+                <img src={soupImg} alt='완성된 스프 담기' />
               </ImageItem>
             </ImageRow>
           </>
