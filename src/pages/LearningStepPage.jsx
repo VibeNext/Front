@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'; // 👈 useMemo 추가
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
@@ -29,7 +29,7 @@ const LearningStepPage = () => {
   const [loginDialog, setLoginDialog] = useState(false);
   const [lockDialog, setLockDialog] = useState(false);
 
-  const [solutionHistory, setSolutionHistory] = useState([]);
+  const [historyMap, setHistoryMap] = useState({});
 
   const containerRef = useRef(null);
   const itemRefs = useRef({});
@@ -59,12 +59,45 @@ const LearningStepPage = () => {
       setChapters(filteredChapters);
       setMissions(filteredMissions);
 
+      // (추가) 미션 로딩 후 각 미션 히스토리 병렬로 불러오기
+      fetchAllHistories(filteredMissions);
+
       if (filteredChapters.length > 0) {
         setSelectedChapter(filteredChapters[0].id);
       }
     } catch (err) {
       console.error('❌ Failed to fetch missions:', err);
     }
+  };
+
+  // ⭐ 각 미션의 풀이 기록 불러오는 함수
+  const fetchAllHistories = async (missions) => {
+    const API_BASE = import.meta.env.VITE_API_URL;
+
+    const promises = missions.map(async (m) => {
+      try {
+        const res = await fetch(`${API_BASE}/solutions/${m.id}`, {
+          headers: {
+            Authorization: `${grantType} ${accessToken}`,
+          },
+        });
+
+        const data = await res.json();
+        return { missionId: m.id, history: data || [] };
+      } catch (err) {
+        console.error(`❌ 히스토리 가져오기 실패: mission ${m.id}`, err);
+        return { missionId: m.id, history: [] };
+      }
+    });
+
+    const results = await Promise.all(promises);
+
+    const map = {};
+    results.forEach((r) => {
+      map[r.missionId] = r.history;
+    });
+
+    setHistoryMap(map); // 저장
   };
 
   // 날짜 포맷 함수
@@ -169,33 +202,6 @@ const LearningStepPage = () => {
 
   const selectedMissionData = missions.find((m) => m.id === currentMission);
 
-  // 풀이기록 조회 GET /solutions/{mission_id}
-  useEffect(() => {
-    if (!selectedMissionData || !accessToken) return;
-
-    const fetchHistory = async () => {
-      try {
-        const API_BASE = import.meta.env.VITE_API_URL;
-
-        const res = await fetch(
-          `${API_BASE}/solutions/${selectedMissionData.id}`,
-          {
-            headers: {
-              Authorization: `${grantType} ${accessToken}`,
-            },
-          },
-        );
-
-        const data = await res.json();
-        setSolutionHistory(data || []);
-      } catch (err) {
-        console.error('❌ Failed to fetch solution history:', err);
-      }
-    };
-
-    fetchHistory();
-  }, [selectedMissionData, accessToken]);
-
   useEffect(() => {
     const shouldRefresh = localStorage.getItem('shouldRefreshMissions');
 
@@ -284,7 +290,7 @@ const LearningStepPage = () => {
               key={m.id}
               onMouseEnter={() => setHoverId(m.id)}
               onMouseLeave={() => setHoverId(null)}
-              onClick={() => clickMission(m)} // 여기서 수정된 함수 실행
+              onClick={() => clickMission(m)}
               ref={(el) => (itemRefs.current[m.id] = el)}
             >
               <MissionCard
@@ -295,24 +301,24 @@ const LearningStepPage = () => {
                 description={m.description}
                 imageSrc={m.image}
               />
+
+              {/* ⭐ 각 미션 카드 아래 자신의 풀이기록 표시 */}
+              {historyMap[m.id] && historyMap[m.id].length > 0 && (
+                <RecordBox>
+                  {historyMap[m.id].map((h, idx) => (
+                    <p
+                      key={h.id}
+                      onClick={() => navigate(`/solution-history/${h.id}`)}
+                      style={{ cursor: 'pointer' }}
+                    >
+                      풀이 기록 {idx + 1} : {formatDate(h.updated_at)}
+                    </p>
+                  ))}
+                </RecordBox>
+              )}
             </MissionWrapper>
           ))}
         </MissionContainer>
-
-        {/* 풀이기록 */}
-        {solutionHistory.length > 0 && (
-          <RecordBox>
-            {solutionHistory.map((h, idx) => (
-              <p
-                key={h.id}
-                onClick={() => navigate(`/solution-history/${h.id}`)}
-                style={{ cursor: 'pointer' }}
-              >
-                풀이 기록 {idx + 1} : {formatDate(h.updated_at)}
-              </p>
-            ))}
-          </RecordBox>
-        )}
       </SWrapper>
     </SPageContainer>
   );
