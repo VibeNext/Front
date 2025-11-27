@@ -160,8 +160,12 @@ const MissionPage_01 = ({ onFinish }) => {
             </p>
             <ImageRow>
               <ImageItem>
-                <small>불끄기</small>
-                <img src={fireOffImg} alt='불끄기' />
+                <small>불켜기</small>
+                <img src={fireOnImg} alt='불켜기' />
+              </ImageItem>
+              <ImageItem>
+                <small>냄비에 물 붓기</small>
+                <img src={waterImg} alt='냄비에 물 붓기' />
               </ImageItem>
               <ImageItem>
                 <small>버섯 넣기</small>
@@ -172,20 +176,16 @@ const MissionPage_01 = ({ onFinish }) => {
                 <img src={saltImg} alt='채소와 소금 넣기' />
               </ImageItem>
               <ImageItem>
-                <small>완성된 스프 담기</small>
-                <img src={soupImg} alt='완성된 스프 담기' />
-              </ImageItem>
-              <ImageItem>
-                <small>불켜기</small>
-                <img src={fireOnImg} alt='불켜기' />
-              </ImageItem>
-              <ImageItem>
-                <small>냄비에 물 붓기</small>
-                <img src={waterImg} alt='냄비에 물 붓기' />
+                <small>불끄기</small>
+                <img src={fireOffImg} alt='불끄기' />
               </ImageItem>
               <ImageItem>
                 <small>물 끓이기</small>
                 <img src={boilImg} alt='물 끓이기' />
+              </ImageItem>
+              <ImageItem>
+                <small>완성된 스프 담기</small>
+                <img src={soupImg} alt='완성된 스프 담기' />
               </ImageItem>
             </ImageRow>
           </>
