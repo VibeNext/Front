@@ -1,14 +1,13 @@
 // Step 02 조건 페이지
 
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router-dom';
 import styled from 'styled-components';
 import AnswerChat from '../components/common/AnswerChat.jsx';
 import AnswerCheckContainer from '../components/common/AnswerCheckContainer/AnswerCheck.jsx';
 import MissionDescription from '../components/common/MissionDescription.jsx';
 import MissionHeader from '../components/common/MissionHeader.jsx';
 import TopNavigation from '../components/common/TopNavigation.jsx';
-import useAuthStore from '../stores/useAuthStore';
 
 import arrowrightIcon from '../assets/icons/arrow_right.png';
 import doorImg from '../assets/icons/door_close.png';
@@ -28,116 +27,76 @@ import defaultImg from '../assets/icons/missionpage_2/default.svg';
 
 const MissionPage_02 = ({ onFinish }) => {
   const [status, setStatus] = useState('default');
-
-  const missionNumberMap = {
-    21: 1,
-    22: 2,
-    23: 3,
-  };
+  const [serverImages, setServerImages] = useState([]); // ✅ 이미지 리스트 전체 저장
 
   const { missionId } = useParams();
-  const missionBackendId = Number(missionId); // 11 / 12 / 13
-  const mission = missionNumberMap[missionBackendId]; // 1 / 2 / 3
+  const location = useLocation();
 
-  const accessToken = useAuthStore((state) => state.user.accessToken);
+  const missionBackendId = Number(missionId);
+  const missionNumber = missionBackendId % 10;
 
-  const [historyId, setHistoryId] = useState(null);
+  // 학습 단계 페이지에서 받아온 historyId
+  const [historyId] = useState(location.state?.historyId || null);
 
   /* -------------------- 풀이 기록 생성 (POST /solutions/{id}/) -------------------- */
   useEffect(() => {
-    if (!missionBackendId || !accessToken) return;
+    setStatus('default');
+    setServerImages([]);
+  }, [missionId]);
 
-    const createHistory = async () => {
-      try {
-        const { accessToken, grantType } = useAuthStore.getState().user;
-
-        const res = await authClient.post(
-          `/solutions/${missionBackendId}`,
-          {},
-          {
-            headers: {
-              Authorization: `${grantType} ${accessToken}`,
-            },
-          },
-        );
-
-        console.log('📌 서버 응답 RAW:', JSON.stringify(res.data, null, 2));
-
-        const data = Array.isArray(res.data) ? res.data : [res.data];
-        console.log('📌 data 배열화:', JSON.stringify(data, null, 2));
-
-        if (data.length === 0) {
-          console.warn('⚠️ 응답 배열이 비어 있음:', res.data);
-          return;
-        }
-        // 최신 기록 = 가장 마지막 요소
-        const latest = data[data.length - 1];
-        console.log('📌 latest 요소:', JSON.stringify(latest, null, 2));
-
-        const receivedId = latest.id || latest.solution_id || latest.history_id;
-        console.log('📌 추출된 receivedId:', receivedId);
-
-        if (receivedId) {
-          setHistoryId(receivedId);
-          console.log('🎉 ID 획득 성공:', receivedId);
-        } else {
-          console.warn('⚠️ ID를 찾을 수 없습니다:', latest);
-        }
-      } catch (err) {
-        console.error(
-          '❌ createHistory 실패:',
-          err.response?.data || err.message,
-        );
-      }
-    };
-
-    createHistory();
-  }, [missionBackendId, accessToken]);
-
-  /* -------------------- 풀이 완료 저장(PATCH) -------------------- */
+  // 풀이 완료 저장
   const saveSolution = async (isSolved) => {
+    if (!historyId) return;
     try {
-      const { accessToken, grantType } = useAuthStore.getState().user;
-
-      const res = await authClient.patch(
-        `/solutions/update/${historyId}`,
-        { is_solved: isSolved },
-        {
-          headers: {
-            Authorization: `${grantType} ${accessToken}`,
-          },
-        },
-      );
-
-      console.log('풀이 저장 성공:', res.data);
+      const res = await authClient.patch(`/solutions/update/${historyId}`, {
+        is_solved: isSolved,
+      });
+      console.log('풀이 종료/이탈 저장 성공:', res.data);
     } catch (err) {
-      console.error('풀이 저장 실패:', err.response?.data || err.message);
+      console.error('풀이 종료/이탈 저장 실패:', err);
     }
   };
 
-  const images = {
-    1: {
-      default: defaultImg,
-      checking: defaultImg,
-      success: defaultImg,
-      fail: defaultImg,
-    },
-    2: {
-      default: defaultImg,
-      checking: defaultImg,
-      success: defaultImg,
-      fail: defaultImg,
-    },
-    3: {
-      default: defaultImg,
-      checking: defaultImg,
-      success: defaultImg,
-      fail: defaultImg,
-    },
+  // ✅ [핵심] 순차 챕터 전용 결과 화면 렌더링 함수
+  const renderResultContent = () => {
+    const hasImages = serverImages && serverImages.length > 0;
+
+    // 1. 아직 이미지가 없을 때 (기본)
+    if (!hasImages) {
+      return (
+        <DefaultWrapper>
+          <img src={defaultImg} alt='기본' />
+          <p>프롬포트 입력시 결과 확인이 가능합니다.</p>
+        </DefaultWrapper>
+      );
+    }
+
+    // 2. 이미지가 있을 때 (순차 전용 디자인: 과정 + 결과)
+    // 마지막 요소는 '완성된 결과물', 나머지는 '조리 과정'
+    const resultImage = serverImages[serverImages.length - 1];
+    const stepImages = serverImages.slice(0, -1);
+
+    return (
+      <ResultWrapper>
+        {/* 윗줄: 조리 과정 아이콘들 */}
+        <StepList>
+          {stepImages.map((imgUrl, idx) => (
+            <StepItem key={idx}>
+              <img src={imgUrl} alt={`step-${idx}`} />
+            </StepItem>
+          ))}
+        </StepList>
+
+        {/* 아랫줄: 완성된 결과물 */}
+        <ResultItem>
+          <img src={resultImage} alt='결과물' />
+        </ResultItem>
+      </ResultWrapper>
+    );
   };
 
   const renderMissionContent = () => {
-    switch (mission) {
+    switch (missionNumber) {
       case 1:
         return (
           <>
@@ -370,12 +329,12 @@ const MissionPage_02 = ({ onFinish }) => {
   };
 
   // mission 매핑 실패하면 바로 리턴
-  if (!mission) {
+  if (!missionBackendId) {
     return (
       <Wrapper>
         <TopNavigation />
         <ContentWrap>
-          <p>잘못된 미션 ID 입니다. (missionId: {missionBackendId})</p>
+          <p>잘못된 접근입니다.</p>
         </ContentWrap>
       </Wrapper>
     );
@@ -392,13 +351,13 @@ const MissionPage_02 = ({ onFinish }) => {
           stepId={2}
           stepNumber='02 조건'
           title={
-            mission === 1
+            missionNumber === 1
               ? '건축가의 잠금장치: 하나의 열쇠로만'
-              : mission === 2
+              : missionNumber === 2
                 ? '건축가의 잠금장치: 고장난 잠금장치'
                 : '건축가의 잠금장치: 이중잠금'
           }
-          initialStep={mission}
+          initialStep={missionNumber}
           status={status}
         />
 
@@ -410,48 +369,14 @@ const MissionPage_02 = ({ onFinish }) => {
 
             {/* 정답 확인 영역 - 상태 연동 */}
             <AnswerCheckContainer status={status}>
-              {status === 'default' && (
-                <div style={{ textAlign: 'center' }}>
-                  <img
-                    src={images[mission].default}
-                    alt='기본 이미지'
-                    style={{
-                      width: 'auto',
-                      height: 'auto',
-                      maxWidth: '60%',
-                      maxHeight: '60%',
-                      objectFit: 'contain',
-                      display: 'block',
-                      margin: '0 auto',
-                    }}
-                  />
-                  <p
-                    style={{
-                      color: '#868BA3',
-                      fontFamily: 'Pretendard',
-                      fontWeight: 500,
-                      fontSize: '1rem',
-                      marginTop: '1rem',
-                    }}
-                  >
-                    프롬포트 입력시 결과 확인이 가능합니다.
-                  </p>
-                </div>
-              )}
-
-              {status !== 'default' && (
-                <img
-                  src={images[mission][status]}
-                  alt={`${mission}번 미션 ${status} 이미지`}
-                />
-              )}
+              {renderResultContent()}
             </AnswerCheckContainer>
           </LeftPanel>
 
           {/* 오른쪽: 문제 풀이 */}
           <RightPanel>
             {(() => {
-              switch (mission) {
+              switch (missionNumber) {
                 case 1:
                   return (
                     <AnswerChat
@@ -462,20 +387,25 @@ const MissionPage_02 = ({ onFinish }) => {
                       wrongMessage={`<strong style="color:#FF644F;">오답입니다!</strong><br><br>조건문을 다시 점검해주세요.<br><span style="color:#868ba3; font-weight:500;">* 피드백 문장 (해당 조건문이 왜 잘못되었을까요? 조건의 범위는 넓거나 중복되지 않도록 구성해야 한다는 사실을 기억해주세요!)</span>`}
                       status={status}
                       historyId={historyId}
+                      setImage={setServerImages}
                       setStatus={async (v) => {
                         setStatus(v);
 
                         if (v === 'success') {
                           setTimeout(async () => {
                             await saveSolution(true);
-                            onFinish(true);
+                            localStorage.setItem(
+                              'shouldRefreshMissions',
+                              'true',
+                            ); // 목록 갱신 요청
+                            if (onFinish) onFinish(true);
                           }, 1200);
                         }
 
                         if (v === 'fail') {
                           setTimeout(async () => {
                             await saveSolution(false);
-                            onFinish(false);
+                            if (onFinish) onFinish(false);
                           }, 1200);
                         }
                       }}
@@ -492,20 +422,25 @@ const MissionPage_02 = ({ onFinish }) => {
                       wrongMessage={`<strong style="color:#FF644F;">오답입니다!</strong><br><br>작성한 답변을 다시 점검해주세요.<br><span style="color:#868ba3; font-weight:500;">1. 피드백 문장 (Mission01에서 만들었던 잠금장치가 몇 개의 열쇠로 열렸는지 기억해보아요!) </span><br><span style="color:#868ba3; font-weight:500;">2. 피드백 문장 (해당 조건문이 왜 잘못되었을까요? 조건의 범위는 넓거나 중복되지 않도록 구성해야 한다는 사실을 기억해요!)   </span>`}
                       status={status}
                       historyId={historyId}
+                      setImage={setServerImages}
                       setStatus={async (v) => {
                         setStatus(v);
 
                         if (v === 'success') {
                           setTimeout(async () => {
                             await saveSolution(true);
-                            onFinish(true);
+                            localStorage.setItem(
+                              'shouldRefreshMissions',
+                              'true',
+                            );
+                            if (onFinish) onFinish(true);
                           }, 1200);
                         }
 
                         if (v === 'fail') {
                           setTimeout(async () => {
                             await saveSolution(false);
-                            onFinish(false);
+                            if (onFinish) onFinish(false);
                           }, 1200);
                         }
                       }}
@@ -522,20 +457,25 @@ const MissionPage_02 = ({ onFinish }) => {
                       wrongMessage={`<strong style="color:#FF644F;">주어진 조건을 반영하지 못하여, 보안이 느슨한 잠금장치가 완성되었어요!</strong><br><br>조건문을 다시 점검해주세요.<br><span style="color:#868ba3; font-weight:500;">* 피드백 문장 (해당 조건문이 왜 잘못되었을까요? 조건의 범위는 넓거나 중복되지 않도록 구성해야 한다는 사실을 기억해요!)</span>`}
                       status={status}
                       historyId={historyId}
+                      setImage={setServerImages}
                       setStatus={async (v) => {
                         setStatus(v);
 
                         if (v === 'success') {
                           setTimeout(async () => {
                             await saveSolution(true);
-                            onFinish(true);
+                            localStorage.setItem(
+                              'shouldRefreshMissions',
+                              'true',
+                            );
+                            if (onFinish) onFinish(true);
                           }, 1200);
                         }
 
                         if (v === 'fail') {
                           setTimeout(async () => {
                             await saveSolution(false);
-                            onFinish(false);
+                            if (onFinish) onFinish(false);
                           }, 1200);
                         }
                       }}
@@ -660,4 +600,62 @@ const SetLabel = styled.small`
 const Arrow = styled.img`
   width: 1.5rem;
   height: 1.5rem;
+`;
+
+// ✅ AnswerCheck 내부 컨텐츠용 스타일 (누락 방지)
+const DefaultWrapper = styled.div`
+  text-align: center;
+  img {
+    width: auto;
+    height: 10rem;
+    object-fit: contain;
+  }
+  p {
+    margin-top: 1rem;
+    color: #868ba3;
+    font-size: 1rem;
+    font-weight: 500;
+  }
+`;
+
+const ResultWrapper = styled.div`
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 1rem;
+`;
+
+const StepList = styled.div`
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+`;
+
+const StepItem = styled.div`
+  img {
+    width: 5rem;
+    height: 5rem;
+    object-fit: contain;
+  }
+`;
+
+const ResultItem = styled.div`
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 0;
+  img {
+    height: 100%;
+    max-height: 10rem;
+    object-fit: contain;
+    flex: 1;
+    min-height: 0;
+  }
 `;
