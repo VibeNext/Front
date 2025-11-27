@@ -2,6 +2,7 @@ import styled from 'styled-components';
 import lineIcon from '../../../assets/icons/Line23.png';
 import forwardIcon from '../../../assets/icons/forward.svg';
 
+// [핵심 변경] serverImages 같은 거 안 받음! 오직 'children'만 받아서 보여줌.
 const AnswerCheckContainer = ({ status = 'default', children }) => {
   return (
     <Container status={status}>
@@ -10,14 +11,16 @@ const AnswerCheckContainer = ({ status = 'default', children }) => {
         <Title>정답 확인</Title>
       </Header>
       <Line src={lineIcon} alt='divider' />
-      <Content>
-        <ImageWrapper>{children}</ImageWrapper>
-      </Content>
+
+      {/* 부모(MissionPage)가 만든 내용을 여기에 그대로 뿌려줌 */}
+      <Content>{children}</Content>
     </Container>
   );
 };
 
 export default AnswerCheckContainer;
+
+/* ---------- 스타일 ---------- */
 
 const Container = styled.div`
   width: 46.75rem;
@@ -34,6 +37,9 @@ const Container = styled.div`
             ? 'var(--Brand-2, #7DB1FF)'
             : 'var(--Gray-3, #C4C7D3)'};
   transition: border-color 0.3s ease;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 `;
 
 const Header = styled.header`
@@ -41,6 +47,7 @@ const Header = styled.header`
   align-items: center;
   gap: 0.75rem;
   padding: 1.25rem 1.5rem 0.5rem 1.5rem;
+  flex-shrink: 0;
 `;
 
 const Icon = styled.img`
@@ -55,39 +62,20 @@ const Title = styled.span`
 `;
 
 const Line = styled.img`
-  width: 700px;
-  padding-left: 24px;
-  height: 0.09rem;
+  width: 90%;
+  margin: 0 auto;
+  padding-bottom: 0.5rem;
+  height: auto;
+  flex-shrink: 0;
 `;
 
 const Content = styled.div`
   flex: 1;
+  width: 100%;
+  padding: 1rem;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  text-align: center;
-  margin-top: 4.81rem;
-`;
-
-const ImageWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-
-  img {
-    height: auto;
-    width: auto;
-    max-width: 100%;
-    object-fit: contain;
-  }
-
-  p {
-    margin: 1rem 0 0 0;
-    color: #868ba3;
-    font-family: Pretendard, sans-serif;
-    font-size: 1rem;
-    font-weight: 500;
-    text-align: center;
-  }
 `;

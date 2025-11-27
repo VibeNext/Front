@@ -38,16 +38,19 @@ const AnswerChat = ({
   }, [initialMessage]);
 
   /* -------------------- WebSocket 연결 -------------------- */
-
   useEffect(() => {
-    if (!historyId) return; // id 없으면 연결 안 함
+    if (!historyId) return;
 
-    const ws = new WebSocket(
-      `wss://nextvibe.up.railway.app/ws/solutions/${historyId}/chat/`,
-    );
+    console.log('🔑 Current Token:', accessToken);
+
+    // ✅ 웹소켓 주소 설정 (chat 뒤에 슬래시 필수, 토큰 필수)
+    const wsUrl = `wss://nextvibe.up.railway.app/ws/solutions/${historyId}/chat/?token=${accessToken}`;
+    console.log('🔗 Connecting to:', wsUrl);
+
+    const ws = new WebSocket(wsUrl);
 
     ws.onopen = () => {
-      console.log('🎉 WS Connected! 드디어 연결 성공!');
+      console.log('🎉 WS Connected! (연결 성공)');
       setSocket(ws);
     };
 
@@ -60,22 +63,54 @@ const AnswerChat = ({
           break;
 
         case 'message':
+          try {
+            // 1. JSON인지 파싱 시도 (성적표인지 확인)
+            const parsed = JSON.parse(data.message);
+
+            // 2. 성적표(JSON)가 맞다면? (is_solved 키가 있는지 확인)
+            if (parsed && typeof parsed.is_solved !== 'undefined') {
+              const feedbackText = parsed.feedback;
+
+              // ✅ [핵심 수정] 리스트 전체를 가져옵니다.
+              const assetList = parsed.answer_asset_list || [];
+
+              // (1) 상태 업데이트 (성공/실패)
+              if (parsed.is_solved) setStatus('success');
+              else setStatus('fail');
+
+              // (2) 부모에게 이미지 리스트 전체 전달!
+              if (setImage) {
+                setImage(assetList);
+              }
+
+              // (3) 말풍선 덮어쓰기! (지저분한 JSON을 멘트로 교체)
+              setMessages((prev) => {
+                const newList = [...prev];
+                const lastIndex = newList.length - 1;
+
+                // 마지막 메시지가 AI가 쓰던 것이면 내용을 바꿔치기함
+                if (lastIndex >= 0 && newList[lastIndex].role === 'ai') {
+                  newList[lastIndex] = {
+                    ...newList[lastIndex],
+                    text: feedbackText, // 깔끔한 피드백만 남김
+                  };
+                }
+                return newList;
+              });
+
+              // 여기서 break를 해서 아래쪽 '일반 메시지 추가' 로직이 실행 안 되게 막음
+              break;
+            }
+          } catch (e) {
+            // JSON 아니면 무시하고 아래로 진행
+          }
+
+          // (JSON 아닐 때만 실행됨) 일반 메시지 추가 로직
           setMessages((prev) => {
             const lastMsg = prev[prev.length - 1];
+            // 중복 방지
+            if (lastMsg && lastMsg.text === data.message) return prev;
 
-            // 방금 AI가 작성 중이던 메시지(streaming)가 완성된 내용과 같다면
-            // 새로 추가하지 말고 기존 걸 유지 (또는 덮어쓰기)
-            if (
-              lastMsg &&
-              lastMsg.role === 'ai' &&
-              (lastMsg.text === data.message ||
-                data.message.includes(lastMsg.text))
-            ) {
-              // 굳이 추가 안 해도 이미 delta로 다 그려졌으므로 무시
-              return prev;
-            }
-
-            // 중복 아니면 추가
             return [
               ...prev,
               {
@@ -100,29 +135,25 @@ const AnswerChat = ({
 
         case 'ai_delta':
           setMessages((prev) => {
-            const newList = [...prev]; // 배열 복사
+            const newList = [...prev];
             const lastIndex = newList.length - 1;
             const lastMsg = newList[lastIndex];
 
-            // 마지막 메시지가 AI이고, '생각중'이 아니라면 이어붙이기
             if (
               lastMsg &&
               lastMsg.role === 'ai' &&
               lastMsg.text !== 'AI가 생각중...'
             ) {
-              // ⚠️ 중요: 직접 수정(+=)하지 않고, 새로운 객체로 교체해야 2배 증식을 막음
               newList[lastIndex] = {
                 ...lastMsg,
                 text: lastMsg.text + data.delta,
               };
             } else if (lastMsg && lastMsg.text === 'AI가 생각중...') {
-              // '생각중' 메시지를 실제 답변으로 교체
               newList[lastIndex] = {
                 ...lastMsg,
                 text: data.delta,
               };
             } else {
-              // 없으면 새로 추가
               newList.push({
                 id: Date.now(),
                 role: 'ai',
@@ -152,17 +183,20 @@ const AnswerChat = ({
     };
 
     return () => {
-      ws.close();
+      // 연결 중이거나 열려있을 때만 닫기
+      if (
+        ws.readyState === WebSocket.OPEN ||
+        ws.readyState === WebSocket.CONNECTING
+      ) {
+        ws.close();
+      }
     };
   }, [historyId, accessToken]);
 
   /* -------------------- 메시지 전송 -------------------- */
-  /* AnswerChat.jsx 수정 */
-
   const handleSend = () => {
     if (!input.trim()) return;
 
-    //  [유지] 서버로 전송만 합니다.
     if (socket && socket.readyState === WebSocket.OPEN) {
       socket.send(JSON.stringify({ message: input }));
     } else {
