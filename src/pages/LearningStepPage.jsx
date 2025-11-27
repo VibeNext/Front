@@ -178,7 +178,7 @@ const LearningStepPage = () => {
           `${API_BASE}/solutions/${selectedMissionData.id}`,
           {
             headers: {
-              Authorization: `Bearer ${accessToken}`,
+              Authorization: `${grantType} ${accessToken}`,
             },
           },
         );
