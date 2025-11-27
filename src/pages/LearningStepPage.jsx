@@ -427,9 +427,11 @@ const MissionWrapper = styled.div`
 `;
 
 const RecordBox = styled.div`
-  margin: auto;
   margin-top: 3.25rem;
-  display: inline-flex;
+  /* 카드를 기준으로 중앙 정렬 */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   padding: 24px 36px;
   flex-direction: column;
   justify-content: center;
