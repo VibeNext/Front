@@ -417,13 +417,22 @@ const MissionWrapper = styled.div`
 `;
 
 const RecordBox = styled.div`
-  margin: auto;
-  margin-top: 2rem;
-  padding: 1rem 2rem;
-  background: rgba(255, 255, 255, 0.4);
-  border-radius: 1rem;
-  text-align: center;
-  font-family: Pretendard;
+  display: inline-flex;
+  padding: 24px 36px;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  border-radius: 16px;
+  border: 2px solid #fff;
+  background: var(
+    --,
+    linear-gradient(
+      180deg,
+      rgba(134, 139, 163, 0.05) 0%,
+      rgba(134, 139, 163, 0.2) 100%
+    )
+  );
 `;
 
 const LineImg = styled.img`
