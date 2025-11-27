@@ -427,6 +427,7 @@ const MissionWrapper = styled.div`
 `;
 
 const RecordBox = styled.div`
+  margin: auto;
   margin-top: 3.25rem;
   display: inline-flex;
   padding: 24px 36px;
