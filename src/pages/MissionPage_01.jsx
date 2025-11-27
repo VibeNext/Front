@@ -33,23 +33,14 @@ const MissionPage_01 = ({ onFinish }) => {
   const missionBackendId = Number(missionId);
   const missionNumber = missionBackendId % 10;
 
-  // historyId를 state로 직접 관리해야 함 (setHistoryId 반드시 존재)
-  const [historyId, setHistoryId] = useState(null);
+  // 학습 단계 페이지에서 받아온 historyId
+  const [historyId] = useState(location.state?.historyId || null);
 
   // ✅ 미션이 바뀔 때마다(예: 1->2) 상태 초기화
   useEffect(() => {
     setStatus('default');
     setServerImages([]);
   }, [missionId]);
-
-  useEffect(() => {
-    async function createHistory() {
-      const res = await authClient.post(`/solutions/${missionBackendId}`);
-      setHistoryId(res.data.id);
-    }
-
-    createHistory();
-  }, [missionBackendId]);
 
   // 풀이 완료 저장
   const saveSolution = async (isSolved) => {
@@ -301,7 +292,9 @@ const MissionPage_01 = ({ onFinish }) => {
                             ); // 목록 갱신 요청
                             const nextMissionId = missionBackendId + 1;
 
-                            navigate(`/step/1/mission/${nextMissionId}`);
+                            navigate(`/step/1/mission/${nextMissionId}`, {
+                              state: { historyId },
+                            });
                           }, 1200);
                         }
                         if (v === 'fail') {
@@ -335,7 +328,9 @@ const MissionPage_01 = ({ onFinish }) => {
                             );
                             const nextMissionId = missionBackendId + 1;
 
-                            navigate(`/step/1/mission/${nextMissionId}`);
+                            navigate(`/step/1/mission/${nextMissionId}`, {
+                              state: { historyId },
+                            });
                           }, 1200);
                         }
                         if (v === 'fail') {
@@ -369,7 +364,9 @@ const MissionPage_01 = ({ onFinish }) => {
                             );
                             const nextMissionId = 21;
 
-                            navigate(`/step/2/mission/${nextMissionId}`);
+                            navigate(`/step/2/mission/${nextMissionId}`, {
+                              state: { historyId },
+                            });
                           }, 1200);
                         }
                         if (v === 'fail') {
