@@ -409,6 +409,11 @@ const MissionWrapper = styled.div`
   flex-shrink: 0;
   cursor: pointer;
   position: relative;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* 카드 + 기록 모두 중앙정렬 */
+
   overflow: visible;
 
   transition:
