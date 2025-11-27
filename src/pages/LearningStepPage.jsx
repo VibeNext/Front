@@ -417,6 +417,8 @@ const MissionWrapper = styled.div`
 `;
 
 const RecordBox = styled.div`
+  margin: auto;
+  margin-top: 3.25rem;
   display: inline-flex;
   padding: 24px 36px;
   flex-direction: column;
@@ -433,6 +435,12 @@ const RecordBox = styled.div`
       rgba(134, 139, 163, 0.2) 100%
     )
   );
+  color: var(--Gray-1, #646879);
+  font-family: Pretendard;
+  font-size: 20px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 150%; /* 30px */
 `;
 
 const LineImg = styled.img`
