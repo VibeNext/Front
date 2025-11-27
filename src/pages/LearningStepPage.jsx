@@ -36,7 +36,7 @@ const LearningStepPage = () => {
     try {
       const headers = {};
       if (accessToken) {
-        headers['Authorization'] = `Bearer ${accessToken}`;
+        headers['Authorization'] = `${grantType} ${accessToken}`;
       }
 
       const API_BASE = import.meta.env.VITE_API_URL;
