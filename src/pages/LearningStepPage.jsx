@@ -44,6 +44,12 @@ const LearningStepPage = () => {
       const res = await fetch(`${API_BASE}/missions`, { headers });
       const data = await res.json();
 
+      // 📌 응답 전체 로그
+      console.log('📌 Missions API Raw Response:', data);
+
+      // 📌 mission 배열만 따로 확인
+      console.log('📌 Missions List:', data.mission);
+
       const filteredChapters = data.chapter.filter((c) => c.id !== 3);
       const filteredMissions = data.mission.filter((m) => m.chapter !== 3);
 
