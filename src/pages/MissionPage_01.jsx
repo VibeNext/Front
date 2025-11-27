@@ -34,7 +34,16 @@ const MissionPage_01 = ({ onFinish }) => {
   const missionNumber = missionBackendId % 10;
 
   // 학습 단계 페이지에서 받아온 historyId
-  const [historyId] = useState(location.state?.historyId || null);
+  const [historyId, setHistoryId] = useState(null);
+
+  useEffect(() => {
+    async function createHistory() {
+      const res = await authClient.post(`/solutions/${missionBackendId}`);
+      console.log('📌 생성된 History:', res.data.id);
+      setHistoryId(res.data.id);
+    }
+    createHistory();
+  }, [missionBackendId]);
 
   // ✅ 미션이 바뀔 때마다(예: 1->2) 상태 초기화
   useEffect(() => {
