@@ -1,4 +1,13 @@
 [[redirects]]
+  from = "/ws/*"
+  to = "wss://nextvibe.up.railway.app/:splat"
+  status = 200
+  force = true
+
+
+
+[[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
+

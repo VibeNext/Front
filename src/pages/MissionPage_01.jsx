@@ -1,143 +1,100 @@
-// Step 01 순서 페이지
-
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router-dom';
 import styled from 'styled-components';
 import AnswerChat from '../components/common/AnswerChat.jsx';
 import AnswerCheckContainer from '../components/common/AnswerCheckContainer/AnswerCheck.jsx';
 import MissionDescription from '../components/common/MissionDescription.jsx';
 import MissionHeader from '../components/common/MissionHeader.jsx';
 import TopNavigation from '../components/common/TopNavigation.jsx';
-import useAuthStore from '../stores/useAuthStore';
 
+// 이미지 아이콘들
 import bearImg from '../assets/icons/bear.png';
 import boilImg from '../assets/icons/boil.png';
+import botIcon from '../assets/icons/bot.png';
 import fireOffImg from '../assets/icons/fire_off.png';
 import fireOnImg from '../assets/icons/fire_on.png';
+import defaultImg from '../assets/icons/missionpage_1/default1.svg';
 import mushroomImg from '../assets/icons/mushroom.png';
 import saltImg from '../assets/icons/salt.png';
 import soupImg from '../assets/icons/soup.png';
 import tomatoImg from '../assets/icons/tomato.png';
 import waterImg from '../assets/icons/water.png';
 
-import botIcon from '../assets/icons/bot.png';
-
 import { authClient } from '../apis/instance';
-import defaultImg from '../assets/icons/missionpage_1/default1.svg';
 
 const MissionPage_01 = ({ onFinish }) => {
   const [status, setStatus] = useState('default');
+  const [serverImages, setServerImages] = useState([]); // ✅ 이미지 리스트 전체 저장
 
-  const missionNumberMap = {
-    11: 1,
-    12: 2,
-    13: 3,
-  };
+  const { missionId } = useParams();
+  const location = useLocation();
 
-  const { missionId } = useParams(); // URL의 미션 id (예: 11, 12, 13)
-  const missionBackendId = Number(missionId); // 11 / 12 / 13
-  const mission = missionNumberMap[missionBackendId]; // 1 / 2 / 3
+  const missionBackendId = Number(missionId);
+  const missionNumber = missionBackendId % 10;
 
-  const accessToken = useAuthStore((state) => state.user.accessToken);
+  // 학습 단계 페이지에서 받아온 historyId
+  const [historyId] = useState(location.state?.historyId || null);
 
-  const [historyId, setHistoryId] = useState(null);
-
-  /* -------------------- 풀이 기록 생성 (POST /solutions/{id}/) -------------------- */
+  // ✅ 미션이 바뀔 때마다(예: 1->2) 상태 초기화
   useEffect(() => {
-    if (!missionBackendId || !accessToken) return;
+    setStatus('default');
+    setServerImages([]);
+  }, [missionId]);
 
-    const createHistory = async () => {
-      try {
-        const { accessToken, grantType } = useAuthStore.getState().user;
-
-        const res = await authClient.post(
-          `/solutions/${missionBackendId}`,
-          {},
-          {
-            headers: {
-              Authorization: `${grantType} ${accessToken}`,
-            },
-          },
-        );
-
-        console.log('📌 서버 응답 성공:', res.data);
-
-        const data = Array.isArray(res.data) ? res.data : [res.data];
-
-        if (data.length === 0) {
-          console.warn('⚠️ 응답 배열이 비어 있음:', res.data);
-          return;
-        }
-
-        // 최신 기록 = 가장 마지막 요소
-        const latest = data[data.length - 1];
-        const receivedId = latest.id || latest.solution_id || latest.history_id;
-
-        if (receivedId) {
-          setHistoryId(receivedId);
-          console.log('🎉 ID 획득 성공:', receivedId);
-        } else {
-          console.warn('⚠️ ID를 찾을 수 없습니다:', latest);
-        }
-      } catch (err) {
-        console.error(
-          '❌ createHistory 실패:',
-          err.response?.data || err.message,
-        );
-      }
-    };
-
-    createHistory();
-  }, [missionBackendId, accessToken]);
-
-  /* -------------------- 풀이 종료 저장 (PATCH /solutions/update/{history_id}) -------------------- */
+  // 풀이 완료 저장
   const saveSolution = async (isSolved) => {
+    if (!historyId) return;
     try {
-      const { accessToken, grantType } = useAuthStore.getState().user;
-
-      const res = await authClient.patch(
-        `/solutions/update/${historyId}`,
-
-        { is_solved: isSolved },
-        {
-          headers: {
-            Authorization: `${grantType} ${accessToken}`,
-          },
-        },
-      );
-
+      const res = await authClient.patch(`/solutions/update/${historyId}`, {
+        is_solved: isSolved,
+      });
       console.log('풀이 종료/이탈 저장 성공:', res.data);
     } catch (err) {
-      console.error(
-        '풀이 종료/이탈 저장 실패:',
-        err.response?.data || err.message,
-      );
+      console.error('풀이 종료/이탈 저장 실패:', err);
     }
   };
 
-  const images = {
-    1: {
-      default: defaultImg,
-      checking: defaultImg,
-      success: defaultImg,
-      fail: defaultImg,
-    },
-    2: {
-      default: defaultImg,
-      checking: defaultImg,
-      success: defaultImg,
-      fail: defaultImg,
-    },
-    3: {
-      default: defaultImg,
-      checking: defaultImg,
-      success: defaultImg,
-      fail: defaultImg,
-    },
+  // ✅ [핵심] 순차 챕터 전용 결과 화면 렌더링 함수
+  const renderResultContent = () => {
+    const hasImages = serverImages && serverImages.length > 0;
+
+    // 1. 아직 이미지가 없을 때 (기본)
+    if (!hasImages) {
+      return (
+        <DefaultWrapper>
+          <img src={defaultImg} alt='기본' />
+          <p>프롬포트 입력시 결과 확인이 가능합니다.</p>
+        </DefaultWrapper>
+      );
+    }
+
+    // 2. 이미지가 있을 때 (순차 전용 디자인: 과정 + 결과)
+    // 마지막 요소는 '완성된 결과물', 나머지는 '조리 과정'
+    const resultImage = serverImages[serverImages.length - 1];
+    const stepImages = serverImages.slice(0, -1);
+
+    return (
+      <ResultWrapper>
+        {/* 윗줄: 조리 과정 아이콘들 */}
+        <StepList>
+          {stepImages.map((imgUrl, idx) => (
+            <StepItem key={idx}>
+              <img src={imgUrl} alt={`step-${idx}`} />
+            </StepItem>
+          ))}
+        </StepList>
+
+        {/* 아랫줄: 완성된 결과물 */}
+        <ResultItem>
+          <img src={resultImage} alt='결과물' />
+        </ResultItem>
+      </ResultWrapper>
+    );
   };
 
+  // 미션 설명 렌더링
   const renderMissionContent = () => {
-    switch (mission) {
+    switch (missionNumber) {
       case 1:
         return (
           <>
@@ -185,21 +142,20 @@ const MissionPage_01 = ({ onFinish }) => {
             </ImageRow>
           </>
         );
-
       case 2:
         return (
           <>
             <p>오늘은 내가 요리사!</p>
             <p style={{ marginBottom: '1rem' }}>
-              갓 따온 토마토를 이용해 맛있는 토마토 스프를 만들려고 해요.
+              갓 따온 버섯를 이용해 맛있는 토마토 스프를 만들려고 해요.
             </p>
             <p>
               아래에 섞여 있는 조리 단계를 참고해서 올바른 레시피를 작성해
               주세요.
             </p>
             <p>
-              모든 과정을 순서대로 실행하면, 따뜻하고 맛있는 토마토 스프가
-              완성될 거예요!
+              모든 과정을 순서대로 실행하면, 따뜻하고 맛있는 버섯스프가 완성될
+              거예요!
             </p>
             <ImageRow>
               <ImageItem>
@@ -233,7 +189,6 @@ const MissionPage_01 = ({ onFinish }) => {
             </ImageRow>
           </>
         );
-
       case 3:
         return (
           <>
@@ -266,19 +221,17 @@ const MissionPage_01 = ({ onFinish }) => {
             </ImageItem>
           </>
         );
-
       default:
         return <p>미션 설명을 불러올 수 없습니다.</p>;
     }
   };
 
-  // mission 매핑 실패하면 바로 리턴
-  if (!mission) {
+  if (!missionBackendId) {
     return (
       <Wrapper>
         <TopNavigation />
         <ContentWrap>
-          <p>잘못된 미션 ID 입니다. (missionId: {missionBackendId})</p>
+          <p>잘못된 접근입니다.</p>
         </ContentWrap>
       </Wrapper>
     );
@@ -286,75 +239,35 @@ const MissionPage_01 = ({ onFinish }) => {
 
   return (
     <Wrapper>
-      {/* 상단 네비게이션 */}
       <TopNavigation />
-
       <ContentWrap>
-        {/* 헤더 (Step, Mission 제목) */}
         <MissionHeader
           stepId={1}
           stepNumber='01 순차'
           title={
-            mission === 1
+            missionNumber === 1
               ? '요리사의 레시피: 토마토 스프'
-              : mission === 2
+              : missionNumber === 2
                 ? '요리사의 레시피: 버섯 스프'
                 : '요리사의 레시피: 손님의 스프'
           }
-          initialStep={mission}
+          initialStep={missionNumber}
           status={status}
         />
 
-        {/* 메인 레이아웃 */}
         <MainLayout>
-          {/* 왼쪽: 문제 설명 + 정답 확인 */}
           <LeftPanel>
             <MissionDescription>{renderMissionContent()}</MissionDescription>
 
-            {/* 정답 확인 영역 - 상태 연동 */}
+            {/* ✅ AnswerCheckContainer를 '틀'로만 사용하고, 내용은 renderResultContent로 채움 */}
             <AnswerCheckContainer status={status}>
-              {status === 'default' && (
-                <div style={{ textAlign: 'center' }}>
-                  <img
-                    src={images[mission].default}
-                    alt='기본 이미지'
-                    style={{
-                      width: 'auto',
-                      height: 'auto',
-                      maxWidth: '60%',
-                      maxHeight: '60%',
-                      objectFit: 'contain',
-                      display: 'block',
-                      margin: '0 auto',
-                    }}
-                  />
-                  <p
-                    style={{
-                      color: '#868BA3',
-                      fontFamily: 'Pretendard',
-                      fontWeight: 500,
-                      fontSize: '1rem',
-                      marginTop: '1rem',
-                    }}
-                  >
-                    프롬포트 입력시 결과 확인이 가능합니다.
-                  </p>
-                </div>
-              )}
-
-              {status !== 'default' && (
-                <img
-                  src={images[mission][status]}
-                  alt={`${mission}번 미션 ${status} 이미지`}
-                />
-              )}
+              {renderResultContent()}
             </AnswerCheckContainer>
           </LeftPanel>
 
           <RightPanel>
             {(() => {
-              switch (mission) {
-                /* --------------------- CASE 1 --------------------- */
+              switch (missionNumber) {
                 case 1:
                   return (
                     <AnswerChat
@@ -365,27 +278,28 @@ const MissionPage_01 = ({ onFinish }) => {
                       wrongMessage={`<strong style="color:#FF644F;">오답입니다!</strong><br><br>레시피 순서를 다시 확인해주세요!<br><span style="color:#868ba3; font-weight:500;">예: 불을 켜야만 물을 끓일 수 있겠죠?</span>`}
                       status={status}
                       historyId={historyId}
+                      setImage={setServerImages} // ✅ 이미지 리스트 설정 함수 전달
                       setStatus={async (v) => {
                         setStatus(v);
-
                         if (v === 'success') {
                           setTimeout(async () => {
                             await saveSolution(true);
-                            onFinish(true);
+                            localStorage.setItem(
+                              'shouldRefreshMissions',
+                              'true',
+                            ); // 목록 갱신 요청
+                            if (onFinish) onFinish(true); // ✅ 안전장치
                           }, 1200);
                         }
-
                         if (v === 'fail') {
                           setTimeout(async () => {
                             await saveSolution(false);
-                            onFinish(false);
+                            if (onFinish) onFinish(false); // ✅ 안전장치
                           }, 1200);
                         }
                       }}
                     />
                   );
-
-                /* --------------------- CASE 2 --------------------- */
                 case 2:
                   return (
                     <AnswerChat
@@ -396,27 +310,28 @@ const MissionPage_01 = ({ onFinish }) => {
                       wrongMessage={`<strong style="color:#FF644F;">오답입니다!</strong><br><br>레시피의 전후 관계를 다시 확인해주세요!`}
                       status={status}
                       historyId={historyId}
+                      setImage={setServerImages}
                       setStatus={async (v) => {
                         setStatus(v);
-
                         if (v === 'success') {
                           setTimeout(async () => {
                             await saveSolution(true);
-                            onFinish(true);
+                            localStorage.setItem(
+                              'shouldRefreshMissions',
+                              'true',
+                            );
+                            if (onFinish) onFinish(true);
                           }, 1200);
                         }
-
                         if (v === 'fail') {
                           setTimeout(async () => {
                             await saveSolution(false);
-                            onFinish(false);
+                            if (onFinish) onFinish(false);
                           }, 1200);
                         }
                       }}
                     />
                   );
-
-                /* --------------------- CASE 3 --------------------- */
                 case 3:
                   return (
                     <AnswerChat
@@ -427,26 +342,28 @@ const MissionPage_01 = ({ onFinish }) => {
                       wrongMessage={`<strong style="color:#FF644F;">아쉬운 스프가 완성되었어요!</strong>`}
                       status={status}
                       historyId={historyId}
+                      setImage={setServerImages}
                       setStatus={async (v) => {
                         setStatus(v);
-
                         if (v === 'success') {
                           setTimeout(async () => {
                             await saveSolution(true);
-                            onFinish(true);
+                            localStorage.setItem(
+                              'shouldRefreshMissions',
+                              'true',
+                            );
+                            if (onFinish) onFinish(true);
                           }, 1200);
                         }
-
                         if (v === 'fail') {
                           setTimeout(async () => {
                             await saveSolution(false);
-                            onFinish(false);
+                            if (onFinish) onFinish(false);
                           }, 1200);
                         }
                       }}
                     />
                   );
-
                 default:
                   return null;
               }
@@ -460,7 +377,7 @@ const MissionPage_01 = ({ onFinish }) => {
 
 export default MissionPage_01;
 
-/* -------------------- styled-components -------------------- */
+/* --------------- 스타일 (순차 챕터 전용 UI) --------------- */
 
 const Wrapper = styled.div`
   width: 100%;
@@ -469,7 +386,6 @@ const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
 `;
-
 const ContentWrap = styled.div`
   width: 100%;
   max-width: 1920px;
@@ -477,26 +393,22 @@ const ContentWrap = styled.div`
   display: flex;
   flex-direction: column;
 `;
-
 const MainLayout = styled.div`
   display: flex;
   justify-content: space-between;
   gap: 1.5rem;
   padding: 0rem 12.5rem 0rem 12.5rem;
 `;
-
 const LeftPanel = styled.div`
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
 `;
-
 const RightPanel = styled.div`
   flex: 1;
   display: flex;
   flex-direction: column;
 `;
-
 const ImageRow = styled.div`
   display: flex;
   justify-content: center;
@@ -505,12 +417,10 @@ const ImageRow = styled.div`
   gap: 0.64rem;
   margin-top: 2.5rem;
 `;
-
 const ImageItem = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-
   small {
     color: var(--Gray-1, #646879);
     text-align: center;
@@ -521,10 +431,67 @@ const ImageItem = styled.div`
     line-height: 150%;
     margin-bottom: 0.5rem;
   }
-
   img {
     width: 5rem;
     height: 5rem;
     object-fit: contain;
+  }
+`;
+
+// ✅ AnswerCheck 내부 컨텐츠용 스타일 (누락 방지)
+const DefaultWrapper = styled.div`
+  text-align: center;
+  img {
+    width: auto;
+    height: 10rem;
+    object-fit: contain;
+  }
+  p {
+    margin-top: 1rem;
+    color: #868ba3;
+    font-size: 1rem;
+    font-weight: 500;
+  }
+`;
+
+const ResultWrapper = styled.div`
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 1rem;
+`;
+
+const StepList = styled.div`
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+`;
+
+const StepItem = styled.div`
+  img {
+    width: 5rem;
+    height: 5rem;
+    object-fit: contain;
+  }
+`;
+
+const ResultItem = styled.div`
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 0;
+  img {
+    height: 100%;
+    max-height: 10rem;
+    object-fit: contain;
+    flex: 1;
+    min-height: 0;
   }
 `;

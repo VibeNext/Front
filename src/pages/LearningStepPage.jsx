@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react'; // 👈 useMemo 추가
 import { useLocation, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
@@ -10,11 +10,12 @@ import useAuthStore from '../stores/useAuthStore';
 import AlertIcon from '../assets/icons/alert.png';
 import LineIcon from '../assets/icons/line2.png';
 
+import { authClient } from '../apis/instance';
+
 const LearningStepPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, isAuthenticated } = useAuthStore();
-  const accessToken = useAuthStore((state) => state.user.accessToken);
+  const { user, accessToken, isAuthenticated } = useAuthStore();
 
   const [chapters, setChapters] = useState([]);
   const [missions, setMissions] = useState([]);
@@ -78,8 +79,10 @@ const LearningStepPage = () => {
     return () => window.removeEventListener('focus', handler);
   }, []);
 
-  // 선택된 챕터의 미션 목록
-  const chapterMissions = missions.filter((m) => m.chapter === selectedChapter);
+  // [수정 1] 무한 루프 방지를 위해 useMemo 사용
+  const chapterMissions = useMemo(() => {
+    return missions.filter((m) => m.chapter === selectedChapter);
+  }, [missions, selectedChapter]);
 
   const getChapterLocked = (chapterId) => {
     const ms = missions.filter((m) => m.chapter === chapterId);
@@ -113,16 +116,16 @@ const LearningStepPage = () => {
     return () => clearTimeout(timer);
   }, [currentMission]);
 
-  const clickMission = (m) => {
-    // 로그인 여부는 accessToken으로 체크
+  // [수정 2] 클릭 시 미리 API 호출하여 ID 생성 후 이동
+  const clickMission = async (m) => {
+    // 1. 로그인 체크
     if (!isAuthenticated) {
       setLoginDialog(true);
       return;
     }
 
-    // Step01-Mission01은 항상 unlock
+    // 2. 잠금 체크
     const alwaysOpen = m.chapter === 1 && Number(m.number) === 1;
-
     const unlocked = alwaysOpen ? true : (m.is_unlocked ?? false);
 
     if (!unlocked) {
@@ -130,7 +133,29 @@ const LearningStepPage = () => {
       return;
     }
 
-    navigate(`/step/${m.chapter}/mission/${m.id}`);
+    // 3. 풀이 기록 생성 API 호출
+    try {
+      console.log(`📡 풀이 기록 생성 요청: Mission ID ${m.id}`);
+
+      // POST /solutions/ 요청
+      const res = await authClient.post(`/solutions/${m.id}/`, {});
+      const createdHistoryId =
+        res.data.id || res.data.solution_id || res.data.history_id;
+      console.log('🎉 생성된 History ID:', createdHistoryId);
+
+      if (!createdHistoryId) {
+        alert('서버에서 ID를 받아오지 못했습니다.');
+        return;
+      }
+
+      // 4. ID를 가지고 페이지 이동 (state로 전달)
+      navigate(`/step/${m.chapter}/mission/${m.id}`, {
+        state: { historyId: createdHistoryId },
+      });
+    } catch (err) {
+      console.error('❌ 풀이 기록 생성 실패:', err);
+      alert('미션 시작 중 오류가 발생했습니다.');
+    }
   };
 
   const selectedMissionData = missions.find((m) => m.id === currentMission);
@@ -250,7 +275,7 @@ const LearningStepPage = () => {
               key={m.id}
               onMouseEnter={() => setHoverId(m.id)}
               onMouseLeave={() => setHoverId(null)}
-              onClick={() => clickMission(m)}
+              onClick={() => clickMission(m)} // 여기서 수정된 함수 실행
               ref={(el) => (itemRefs.current[m.id] = el)}
             >
               <MissionCard
@@ -286,6 +311,7 @@ const LearningStepPage = () => {
 
 export default LearningStepPage;
 
+/* 스타일 컴포넌트 (기존과 동일) */
 const SPageContainer = styled.div`
   background: linear-gradient(180deg, #fff 0%, #b1d0ff 100%);
   min-height: 100vh;
@@ -330,9 +356,9 @@ const SubTitle = styled.div`
   border-radius: 1rem;
   border: none;
   background-color: ${({ locked, active }) => {
-    if (locked) return 'rgba(196, 199, 211, 0.75)'; // 모두 잠김 (회색)
-    if (active) return 'var(--Brand-2, #7DB1FF)'; // 하나라도 열림 + 선택됨 (파랑)
-    return 'var(--Brand-4, #B1D0FF)'; // 하나라도 열림 + 선택 안 됨 (밝은 파랑)
+    if (locked) return 'rgba(196, 199, 211, 0.75)';
+    if (active) return 'var(--Brand-2, #7DB1FF)';
+    return 'var(--Brand-4, #B1D0FF)';
   }};
 `;
 
