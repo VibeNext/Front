@@ -33,48 +33,43 @@ const MissionPage_01 = ({ onFinish }) => {
   const missionNumber = missionBackendId % 10;
   const [historyId, setHistoryId] = useState(null);
 
+  const queryHistoryId = new URLSearchParams(location.search).get('historyId');
+
   useEffect(() => {
-    // 1. 화면 상태 초기화 (이전 미션의 잔상 제거)
     setStatus('default');
     setServerImages([]);
 
-    // 2. ID 처리 로직
-    const incomingId = location.state?.historyId;
+    const stateHistoryId = location.state?.historyId;
+
+    const incomingId = queryHistoryId || stateHistoryId;
 
     if (incomingId) {
-      //  Case A: 학습 목록에서 ID를 들고 온 경우 -> 그대로 사용
-      console.log(`💼 가져온 ID 사용: ${incomingId}`);
-      setHistoryId(incomingId);
-    } else {
-      // Case B: '다음으로' 버튼으로 와서 ID가 없는 경우 -> 새로 생성
-      console.log(`✨ ID 없음. Mission ${missionBackendId} 기록 생성 시작...`);
-      setHistoryId(null); // 일단 비우기
-
-      const createHistory = async () => {
-        try {
-          // API 호출 (빈 객체 {} 전송)
-          const res = await authClient.post(
-            `/solutions/${missionBackendId}/`,
-            {},
-          );
-
-          const data = res.data;
-          const targetData = Array.isArray(data) ? data[data.length - 1] : data;
-          const newId =
-            targetData?.id || targetData?.solution_id || targetData?.history_id;
-
-          if (newId) {
-            console.log(`🎉 새 ID 발급 성공: ${newId}`);
-            setHistoryId(newId); // 여기서 ID 업데이트 -> 웹소켓 연결됨
-          }
-        } catch (err) {
-          console.error('❌ 기록 생성 실패:', err);
-        }
-      };
-
-      createHistory();
+      console.log(`💼 기존 historyId 재사용: ${incomingId}`);
+      setHistoryId(incomingId); // (A) 재진입 모드
+      return;
     }
-  }, [missionBackendId, location.state]); // 미션 번호나 state가 바뀌면 실행
+
+    // (B) historyId 없음 → 새로 생성
+    console.log(`✨ 새 풀이 기록 생성`);
+    setHistoryId(null);
+
+    const createHistory = async () => {
+      try {
+        const res = await authClient.post(
+          `/solutions/${missionBackendId}/`,
+          {},
+        );
+        const data = res.data;
+        const newId = data.id || data.solution_id || data.history_id;
+        if (newId) setHistoryId(newId);
+      } catch (err) {
+        console.error('❌ 기록 생성 실패:', err);
+      }
+    };
+
+    createHistory();
+  }, [missionBackendId, location.search, location.state]);
+
   // 풀이 완료 저장
   const saveSolution = async (isSolved) => {
     if (!historyId) return;

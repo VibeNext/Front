@@ -308,7 +308,11 @@ const LearningStepPage = () => {
                   {historyMap[m.id].map((h, idx) => (
                     <p
                       key={h.id}
-                      onClick={() => navigate(`/solution-history/${h.id}`)}
+                      onClick={() =>
+                        navigate(
+                          `/step/${m.chapter}/mission/${m.id}?historyId=${h.id}`,
+                        )
+                      }
                       style={{ cursor: 'pointer' }}
                     >
                       풀이 기록 {idx + 1} : {formatDate(h.updated_at)}
