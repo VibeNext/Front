@@ -1,5 +1,3 @@
-// Step 02 조건 페이지
-
 import { useEffect, useState } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
 import styled from 'styled-components';
@@ -22,12 +20,11 @@ import keyCXImg from '../assets/icons/key_c_x.png';
 import botIcon from '../assets/icons/bot2.png';
 
 import { authClient } from '../apis/instance';
-
 import defaultImg from '../assets/icons/missionpage_2/default.svg';
 
 const MissionPage_02 = ({ onFinish }) => {
   const [status, setStatus] = useState('default');
-  const [serverImages, setServerImages] = useState([]); // ✅ 이미지 리스트 전체 저장
+  const [serverImages, setServerImages] = useState([]);
 
   const { missionId } = useParams();
   const location = useLocation();
@@ -35,33 +32,54 @@ const MissionPage_02 = ({ onFinish }) => {
   const missionBackendId = Number(missionId);
   const missionNumber = missionBackendId % 10;
 
-  // 학습 단계 페이지에서 받아온 historyId
-  const [historyId] = useState(location.state?.historyId || null);
+  const [historyId, setHistoryId] = useState(location.state?.historyId || null);
 
-  /* -------------------- 풀이 기록 생성 (POST /solutions/{id}/) -------------------- */
   useEffect(() => {
     setStatus('default');
     setServerImages([]);
-  }, [missionId]);
 
-  // 풀이 완료 저장
+    const incomingId = location.state?.historyId;
+    if (incomingId) {
+      setHistoryId(incomingId);
+    } else {
+      setHistoryId(null);
+      const createHistory = async () => {
+        try {
+          const res = await authClient.post(
+            `/solutions/${missionBackendId}/`,
+            {},
+          );
+          const data = res.data;
+          const targetData = Array.isArray(data) ? data[data.length - 1] : data;
+          const newId =
+            targetData?.id || targetData?.solution_id || targetData?.history_id;
+
+          if (newId) {
+            setHistoryId(newId);
+          }
+        } catch (err) {
+          console.error('❌ 기록 생성 실패:', err);
+        }
+      };
+      createHistory();
+    }
+  }, [missionBackendId, location.state]);
+
   const saveSolution = async (isSolved) => {
     if (!historyId) return;
     try {
       const res = await authClient.patch(`/solutions/update/${historyId}`, {
         is_solved: isSolved,
       });
-      console.log('풀이 종료/이탈 저장 성공:', res.data);
+      console.log('풀이 저장 성공:', res.data);
     } catch (err) {
-      console.error('풀이 종료/이탈 저장 실패:', err);
+      console.error('풀이 저장 실패:', err);
     }
   };
 
-  // ✅ [핵심] 순차 챕터 전용 결과 화면 렌더링 함수
   const renderResultContent = () => {
     const hasImages = serverImages && serverImages.length > 0;
 
-    // 1. 아직 이미지가 없을 때 (기본)
     if (!hasImages) {
       return (
         <DefaultWrapper>
@@ -70,27 +88,22 @@ const MissionPage_02 = ({ onFinish }) => {
         </DefaultWrapper>
       );
     }
-
-    // 2. 이미지가 있을 때 (순차 전용 디자인: 과정 + 결과)
-    // 마지막 요소는 '완성된 결과물', 나머지는 '조리 과정'
     const resultImage = serverImages[serverImages.length - 1];
     const stepImages = serverImages.slice(0, -1);
 
     return (
       <ResultWrapper>
-        {/* 윗줄: 조리 과정 아이콘들 */}
-        <StepList>
-          {stepImages.map((imgUrl, idx) => (
-            <StepItem key={idx}>
-              <img src={imgUrl} alt={`step-${idx}`} />
-            </StepItem>
-          ))}
-        </StepList>
+        {/* 과정 이미지들 */}
+        {stepImages.map((imgUrl, idx) => (
+          <ImageItemBox key={idx}>
+            <img src={imgUrl} alt={`step-${idx}`} />
+          </ImageItemBox>
+        ))}
 
-        {/* 아랫줄: 완성된 결과물 */}
-        <ResultItem>
-          <img src={resultImage} alt='결과물' />
-        </ResultItem>
+        {/* 🔥 최종 결과 이미지(문) */}
+        <ImageItemBox>
+          <img src={resultImage} alt='result' />
+        </ImageItemBox>
       </ResultWrapper>
     );
   };
@@ -109,7 +122,6 @@ const MissionPage_02 = ({ onFinish }) => {
               아래 그림을 보고, 어떤 열쇠로 문이 열리고 닫히는지 직접 조건문을
               만들어 봅시다!
             </p>
-
             <ImageRow>
               <ImageItem>
                 <small>열쇠 A</small>
@@ -137,7 +149,6 @@ const MissionPage_02 = ({ onFinish }) => {
             </ImageRow>
           </>
         );
-
       case 2:
         return (
           <>
@@ -147,14 +158,12 @@ const MissionPage_02 = ({ onFinish }) => {
               작동하기 시작했어요.
             </p>
             <p>
-              아래 그림을 보고, 잠금장치에서 무엇이 잘못되었는지
-              설명해주세요.{' '}
+              아래 그림을 보고, 잠금장치에서 무엇이 잘못되었는지 설명해주세요.
             </p>
             <p>
               그 후 잠금장치가 올바르게 작동하도록 새로운 조건문을 직접
               작성해봅시다!
             </p>
-
             <ImageRow>
               <ImageItem>
                 <small>열쇠 A</small>
@@ -182,13 +191,12 @@ const MissionPage_02 = ({ onFinish }) => {
             </ImageRow>
           </>
         );
-
       case 3:
         return (
           <>
-            <p>건축가로서 능력을 인정받은 당신! </p>
+            <p>건축가로서 능력을 인정받은 당신!</p>
             <p style={{ marginBottom: '1rem' }}>
-              이번에는 은행에서 새로운 잠금장치를 의뢰했어요.{' '}
+              이번에는 은행에서 새로운 잠금장치를 의뢰했어요.
             </p>
             <p>
               보다 뛰어난 보안을 위해, 이전보다 복잡한 규칙으로 문이 열리도록
@@ -198,9 +206,7 @@ const MissionPage_02 = ({ onFinish }) => {
               아래 그림을 보고, 새로운 잠금장치에 맞는 조건문을 직접
               작성해보세요!
             </p>
-
             <ImageRow style={{ marginTop: '0.5rem', gap: '0.75rem' }}>
-              {/* 왼쪽 열쇠 세트 */}
               <LockSetGroup>
                 <LockSet>
                   <KeyGroup>
@@ -253,10 +259,7 @@ const MissionPage_02 = ({ onFinish }) => {
                 </LockSet>
                 <SetLabel>3개 중 하나의 열쇠로 열기</SetLabel>
               </LockSetGroup>
-
               <Arrow src={arrowrightIcon} />
-
-              {/* 오른쪽 열쇠 세트 + 문 */}
               <LockSetGroup>
                 <LockSet>
                   <KeyGroup>
@@ -309,9 +312,7 @@ const MissionPage_02 = ({ onFinish }) => {
                 </LockSet>
                 <SetLabel>3개 중 하나의 열쇠로 열기</SetLabel>
               </LockSetGroup>
-
               <Arrow src={arrowrightIcon} />
-
               <ImageItem>
                 <img
                   src={doorImg}
@@ -322,13 +323,11 @@ const MissionPage_02 = ({ onFinish }) => {
             </ImageRow>
           </>
         );
-
       default:
         return <p>미션 설명을 불러올 수 없습니다.</p>;
     }
   };
 
-  // mission 매핑 실패하면 바로 리턴
   if (!missionBackendId) {
     return (
       <Wrapper>
@@ -342,11 +341,8 @@ const MissionPage_02 = ({ onFinish }) => {
 
   return (
     <Wrapper>
-      {/* 상단 네비게이션 */}
       <TopNavigation />
-
       <ContentWrap>
-        {/* 헤더 (Step, Mission 제목) */}
         <MissionHeader
           stepId={2}
           stepNumber='02 조건'
@@ -361,19 +357,15 @@ const MissionPage_02 = ({ onFinish }) => {
           status={status}
         />
 
-        {/* 메인 레이아웃 */}
         <MainLayout>
-          {/* 왼쪽: 문제 설명 + 정답 확인 */}
           <LeftPanel>
             <MissionDescription>{renderMissionContent()}</MissionDescription>
-
-            {/* 정답 확인 영역 - 상태 연동 */}
+            {/* ✅ AnswerCheckContainer에 내용 전달 */}
             <AnswerCheckContainer status={status}>
               {renderResultContent()}
             </AnswerCheckContainer>
           </LeftPanel>
 
-          {/* 오른쪽: 문제 풀이 */}
           <RightPanel>
             {(() => {
               switch (missionNumber) {
@@ -383,25 +375,23 @@ const MissionPage_02 = ({ onFinish }) => {
                       key={missionBackendId}
                       botIcon={botIcon}
                       initialMessage={`조건문은 다음과 같은 형식으로 작성해주세요!<br><span style="color:#868ba3;">예시) “만약 ○○라면, △△한다. 그렇지 않다면, ▽▽한다.”</span>`}
-                      correctMessage={`<strong style="color:#37AF00;">정답입니다!</strong><br><br>단 하나의 열쇠로만 열리는 잠금장치가 완성되었어요. 조건이 명확하게 작동하고 있네요!!<br><span style="color:#868ba3; font-weight:500;">‘하나의 열쇠로만 문이 열리고, 나머지 열쇠로는 문이 열리지 않는다’는 내용을 포함한다면 정답으로 인정됩니다.</span>`}
-                      wrongMessage={`<strong style="color:#FF644F;">오답입니다!</strong><br><br>조건문을 다시 점검해주세요.<br><span style="color:#868ba3; font-weight:500;">* 피드백 문장 (해당 조건문이 왜 잘못되었을까요? 조건의 범위는 넓거나 중복되지 않도록 구성해야 한다는 사실을 기억해주세요!)</span>`}
+                      correctMessage={`<strong style="color:#37AF00;">정답입니다!</strong><br><br>단 하나의 열쇠로만 열리는 잠금장치가 완성되었어요...`}
+                      wrongMessage={`<strong style="color:#FF644F;">오답입니다!</strong><br><br>조건문을 다시 점검해주세요...`}
                       status={status}
                       historyId={historyId}
                       setImage={setServerImages}
                       setStatus={async (v) => {
                         setStatus(v);
-
                         if (v === 'success') {
                           setTimeout(async () => {
                             await saveSolution(true);
                             localStorage.setItem(
                               'shouldRefreshMissions',
                               'true',
-                            ); // 목록 갱신 요청
+                            );
                             if (onFinish) onFinish(true);
                           }, 1200);
                         }
-
                         if (v === 'fail') {
                           setTimeout(async () => {
                             await saveSolution(false);
@@ -411,21 +401,19 @@ const MissionPage_02 = ({ onFinish }) => {
                       }}
                     />
                   );
-
                 case 2:
                   return (
                     <AnswerChat
                       key={missionBackendId}
                       botIcon={botIcon}
-                      initialMessage={`잠금장치에서 무엇이 잘못되었는지와 새로운 조건문을 모두 작성해주세요.<br><br>1.잠금장치에서 무엇이 잘못되었는지는 다음과 같은 형식으로 작성해볼 수 있어요!<br><span style="color:#868ba3;">    예시) “지금은 ~라서 잠금장치가 제대로 작동하지 않아요.”</span><br><br>2. 조건문은 다음과 같은 형식으로 작성해주세요!<br><span style="color:#868ba3;">    예시) “만약 ○○라면, △△한다. 그렇지 않다면, ▽▽한다.”</span>`}
-                      correctMessage={`<strong style="color:#37AF00;">정답입니다!</strong><br><br>잠금장치의 문제를 정확히 찾아냈어요! 이제 더욱 멋진 건축가가 되기 위한 마지막 단계로 가볼까요?<br><span style="color:#868ba3; font-weight:500;">1. 잠금장치에서 무엇이 잘못되었는지 논리적으로 찾아 설명한다면 정답으로 인정됩니다.</span><br><span style="color:#868ba3; font-weight:500;">2. 한 가지 열쇠로만 문이 열리도록 새로운 조건문을 적절하게 작성한다면 정답으로 인정됩니다.</span>`}
-                      wrongMessage={`<strong style="color:#FF644F;">오답입니다!</strong><br><br>작성한 답변을 다시 점검해주세요.<br><span style="color:#868ba3; font-weight:500;">1. 피드백 문장 (Mission01에서 만들었던 잠금장치가 몇 개의 열쇠로 열렸는지 기억해보아요!) </span><br><span style="color:#868ba3; font-weight:500;">2. 피드백 문장 (해당 조건문이 왜 잘못되었을까요? 조건의 범위는 넓거나 중복되지 않도록 구성해야 한다는 사실을 기억해요!)   </span>`}
+                      initialMessage={`잠금장치에서 무엇이 잘못되었는지와 새로운 조건문을 모두 작성해주세요...`}
+                      correctMessage={`<strong style="color:#37AF00;">정답입니다!</strong>...`}
+                      wrongMessage={`<strong style="color:#FF644F;">오답입니다!</strong>...`}
                       status={status}
                       historyId={historyId}
                       setImage={setServerImages}
                       setStatus={async (v) => {
                         setStatus(v);
-
                         if (v === 'success') {
                           setTimeout(async () => {
                             await saveSolution(true);
@@ -436,7 +424,6 @@ const MissionPage_02 = ({ onFinish }) => {
                             if (onFinish) onFinish(true);
                           }, 1200);
                         }
-
                         if (v === 'fail') {
                           setTimeout(async () => {
                             await saveSolution(false);
@@ -446,21 +433,19 @@ const MissionPage_02 = ({ onFinish }) => {
                       }}
                     />
                   );
-
                 case 3:
                   return (
                     <AnswerChat
                       key={missionBackendId}
                       botIcon={botIcon}
-                      initialMessage={`2가지의 조건이 모두 반영되도록 새로운 조건문을 작성해주세요. <br><br>조건문은 다음과 같은 형식으로 작성해주세요!<br><span style="color:#868ba3; font-weight:500;">예시) “만약 ○○라면, △△한다. 그렇지 않다면, ▽▽한다.”</span>`}
-                      correctMessage={`<strong style="color:#37AF00;">주어진 조건을 모두 반영하여, 보안이 철저한 잠금장치가 완성되었어요!</strong><br><br>이중 잠금으로 보안이 철저한 잠금장치를 만들어낸 당신은 진정한 건축의 달인이에요!<br><span style="color:#868ba3; font-weight:500;">‘첫 번째 잠금장치와 두번째 잠금장치가 하나의 열쇠로만 열리고 다른 열쇠로는 열리지 않으며, 2가지의 조건을 동시에 만족한다’는 내용을 포함한다면 정답으로 인정됩니다.</span>`}
-                      wrongMessage={`<strong style="color:#FF644F;">주어진 조건을 반영하지 못하여, 보안이 느슨한 잠금장치가 완성되었어요!</strong><br><br>조건문을 다시 점검해주세요.<br><span style="color:#868ba3; font-weight:500;">* 피드백 문장 (해당 조건문이 왜 잘못되었을까요? 조건의 범위는 넓거나 중복되지 않도록 구성해야 한다는 사실을 기억해요!)</span>`}
+                      initialMessage={`2가지의 조건이 모두 반영되도록 새로운 조건문을 작성해주세요...`}
+                      correctMessage={`<strong style="color:#37AF00;">주어진 조건을 모두 반영하여...</strong>`}
+                      wrongMessage={`<strong style="color:#FF644F;">주어진 조건을 반영하지 못하여...</strong>`}
                       status={status}
                       historyId={historyId}
                       setImage={setServerImages}
                       setStatus={async (v) => {
                         setStatus(v);
-
                         if (v === 'success') {
                           setTimeout(async () => {
                             await saveSolution(true);
@@ -471,7 +456,6 @@ const MissionPage_02 = ({ onFinish }) => {
                             if (onFinish) onFinish(true);
                           }, 1200);
                         }
-
                         if (v === 'fail') {
                           setTimeout(async () => {
                             await saveSolution(false);
@@ -481,7 +465,6 @@ const MissionPage_02 = ({ onFinish }) => {
                       }}
                     />
                   );
-
                 default:
                   return null;
               }
@@ -495,8 +478,7 @@ const MissionPage_02 = ({ onFinish }) => {
 
 export default MissionPage_02;
 
-//styled-components
-
+/* ---------- 스타일 ---------- */
 const Wrapper = styled.div`
   width: 100%;
   min-height: 100vh;
@@ -504,7 +486,6 @@ const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
 `;
-
 const ContentWrap = styled.div`
   width: 100%;
   max-width: 1920px;
@@ -512,26 +493,22 @@ const ContentWrap = styled.div`
   display: flex;
   flex-direction: column;
 `;
-
 const MainLayout = styled.div`
   display: flex;
   justify-content: space-between;
   gap: 1.5rem;
   padding: 0rem 12.5rem 0rem 12.5rem;
 `;
-
 const LeftPanel = styled.div`
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
 `;
-
 const RightPanel = styled.div`
   flex: 1;
   display: flex;
   flex-direction: column;
 `;
-
 const ImageRow = styled.div`
   display: flex;
   justify-content: center;
@@ -540,12 +517,10 @@ const ImageRow = styled.div`
   gap: 1.75rem;
   margin-top: 1.51rem;
 `;
-
 const ImageItem = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-
   small {
     color: var(--Gray-1, #646879);
     text-align: center;
@@ -557,22 +532,18 @@ const ImageItem = styled.div`
     margin-bottom: 0.5rem;
     padding-left: 0.5rem;
   }
-
   img {
     width: 4.349rem;
     height: 6.70581rem;
     object-fit: contain;
   }
 `;
-
-// mission3 이미지
 const LockSetGroup = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
   margin: 0.56rem;
 `;
-
 const LockSet = styled.div`
   display: flex;
   flex-direction: column;
@@ -581,12 +552,10 @@ const LockSet = styled.div`
   border: 1px dashed var(--Gray-2, #868ba3);
   padding: 0.56rem 0.94rem;
 `;
-
 const KeyGroup = styled.div`
   display: flex;
   gap: 0.61rem;
 `;
-
 const SetLabel = styled.small`
   color: var(--Gray-2, #868ba3);
   text-align: center;
@@ -594,15 +563,14 @@ const SetLabel = styled.small`
   font-size: 0.75rem;
   font-style: normal;
   font-weight: 500;
-  line-height: 1.125rem; /* 150% */
+  line-height: 1.125rem;
 `;
-
 const Arrow = styled.img`
   width: 1.5rem;
   height: 1.5rem;
 `;
 
-// ✅ AnswerCheck 내부 컨텐츠용 스타일 (누락 방지)
+// ✅ Mission 2 결과 화면 스타일 (일자 배치)
 const DefaultWrapper = styled.div`
   text-align: center;
   img {
@@ -622,40 +590,20 @@ const ResultWrapper = styled.div`
   width: 100%;
   height: 100%;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  justify-content: space-between;
-  padding-bottom: 1rem;
-`;
-
-const StepList = styled.div`
-  display: flex;
-  gap: 1rem;
   justify-content: center;
+  gap: 1.5rem; /* 이미지 사이 간격 */
   flex-wrap: wrap;
-  margin-bottom: 1rem;
 `;
 
-const StepItem = styled.div`
-  img {
-    width: 5rem;
-    height: 5rem;
-    object-fit: contain;
-  }
-`;
-
-const ResultItem = styled.div`
-  flex: 1;
+const ImageItemBox = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 100%;
-  min-height: 0;
+
   img {
-    height: 100%;
-    max-height: 10rem;
+    width: 5.5rem; /* 다른 열쇠들과 크기 통일 */
+    height: 9rem; /* 6rem -> 9rem으로 높이를 늘려 문 이미지가 잘리지 않게 함 */
     object-fit: contain;
-    flex: 1;
-    min-height: 0;
   }
 `;

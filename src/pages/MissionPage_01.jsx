@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router-dom';
 import styled from 'styled-components';
 import AnswerChat from '../components/common/AnswerChat.jsx';
 import AnswerCheckContainer from '../components/common/AnswerCheckContainer/AnswerCheck.jsx';
@@ -28,29 +28,53 @@ const MissionPage_01 = ({ onFinish }) => {
 
   const { missionId } = useParams();
   const location = useLocation();
-  const navigate = useNavigate();
 
   const missionBackendId = Number(missionId);
   const missionNumber = missionBackendId % 10;
-
-  // 학습 단계 페이지에서 받아온 historyId
   const [historyId, setHistoryId] = useState(null);
 
   useEffect(() => {
-    async function createHistory() {
-      const res = await authClient.post(`/solutions/${missionBackendId}`);
-      console.log('📌 생성된 History:', res.data.id);
-      setHistoryId(res.data.id);
-    }
-    createHistory();
-  }, [missionBackendId]);
-
-  // ✅ 미션이 바뀔 때마다(예: 1->2) 상태 초기화
-  useEffect(() => {
+    // 1. 화면 상태 초기화 (이전 미션의 잔상 제거)
     setStatus('default');
     setServerImages([]);
-  }, [missionId]);
 
+    // 2. ID 처리 로직
+    const incomingId = location.state?.historyId;
+
+    if (incomingId) {
+      //  Case A: 학습 목록에서 ID를 들고 온 경우 -> 그대로 사용
+      console.log(`💼 가져온 ID 사용: ${incomingId}`);
+      setHistoryId(incomingId);
+    } else {
+      // Case B: '다음으로' 버튼으로 와서 ID가 없는 경우 -> 새로 생성
+      console.log(`✨ ID 없음. Mission ${missionBackendId} 기록 생성 시작...`);
+      setHistoryId(null); // 일단 비우기
+
+      const createHistory = async () => {
+        try {
+          // API 호출 (빈 객체 {} 전송)
+          const res = await authClient.post(
+            `/solutions/${missionBackendId}/`,
+            {},
+          );
+
+          const data = res.data;
+          const targetData = Array.isArray(data) ? data[data.length - 1] : data;
+          const newId =
+            targetData?.id || targetData?.solution_id || targetData?.history_id;
+
+          if (newId) {
+            console.log(`🎉 새 ID 발급 성공: ${newId}`);
+            setHistoryId(newId); // 여기서 ID 업데이트 -> 웹소켓 연결됨
+          }
+        } catch (err) {
+          console.error('❌ 기록 생성 실패:', err);
+        }
+      };
+
+      createHistory();
+    }
+  }, [missionBackendId, location.state]); // 미션 번호나 state가 바뀌면 실행
   // 풀이 완료 저장
   const saveSolution = async (isSolved) => {
     if (!historyId) return;
@@ -64,7 +88,7 @@ const MissionPage_01 = ({ onFinish }) => {
     }
   };
 
-  // ✅ [핵심] 순차 챕터 전용 결과 화면 렌더링 함수
+  //  [핵심] 순차 챕터 전용 결과 화면 렌더링 함수
   const renderResultContent = () => {
     const hasImages = serverImages && serverImages.length > 0;
 
@@ -157,16 +181,15 @@ const MissionPage_01 = ({ onFinish }) => {
           <>
             <p>오늘은 친구가 요리사!</p>
             <p style={{ marginBottom: '1rem' }}>
-              당신의 토마토 스프에 감동받은 친구가 버섯 스프를 만들어주려고
-              해요.
+              갓 따온 버섯를 이용해 맛있는 토마토 스프를 만들려고 해요.
             </p>
             <p>
               앗, 하지만 아쉽게도 친구의 요리는 실패하고 말았어요. 어디가 잘못된
               걸까요?
             </p>
             <p>
-              친구의 버섯 스프 레시피를 보고, 잘못된 레시피와 그 이유를
-              찾아주세요!
+              모든 과정을 순서대로 실행하면, 따뜻하고 맛있는 버섯스프가 완성될
+              거예요!
             </p>
             <ImageRow>
               <ImageItem>
@@ -271,7 +294,7 @@ const MissionPage_01 = ({ onFinish }) => {
             <MissionDescription>{renderMissionContent()}</MissionDescription>
 
             {/* ✅ AnswerCheckContainer를 '틀'로만 사용하고, 내용은 renderResultContent로 채움 */}
-            <AnswerCheckContainer status={status}>
+            <AnswerCheckContainer status={status} key={missionId}>
               {renderResultContent()}
             </AnswerCheckContainer>
           </LeftPanel>
@@ -299,11 +322,7 @@ const MissionPage_01 = ({ onFinish }) => {
                               'shouldRefreshMissions',
                               'true',
                             ); // 목록 갱신 요청
-                            const nextMissionId = missionBackendId + 1;
-
-                            navigate(`/step/1/mission/${nextMissionId}`, {
-                              state: { historyId },
-                            });
+                            if (onFinish) onFinish(true); // ✅ 안전장치
                           }, 1200);
                         }
                         if (v === 'fail') {
@@ -335,11 +354,7 @@ const MissionPage_01 = ({ onFinish }) => {
                               'shouldRefreshMissions',
                               'true',
                             );
-                            const nextMissionId = missionBackendId + 1;
-
-                            navigate(`/step/1/mission/${nextMissionId}`, {
-                              state: { historyId },
-                            });
+                            if (onFinish) onFinish(true);
                           }, 1200);
                         }
                         if (v === 'fail') {
@@ -371,11 +386,7 @@ const MissionPage_01 = ({ onFinish }) => {
                               'shouldRefreshMissions',
                               'true',
                             );
-                            const nextMissionId = 21;
-
-                            navigate(`/step/2/mission/${nextMissionId}`, {
-                              state: { historyId },
-                            });
+                            if (onFinish) onFinish(true);
                           }, 1200);
                         }
                         if (v === 'fail') {
