@@ -223,6 +223,8 @@ const SLabel = styled.span`
 
 /* before-login 우측 버튼 스타일 재사용 */
 const SButton = styled.button`
+  white-space: nowrap;
+
   font-family: Pretendard;
   font-size: 1.25rem;
   font-weight: 600;
