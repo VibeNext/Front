@@ -63,6 +63,7 @@ const AnswerChat = ({
           break;
 
         case 'message':
+          console.log('=== RAW JSON RESPONSE ===', data.message);
           try {
             // 1. JSON인지 파싱 시도 (성적표인지 확인)
             const parsed = JSON.parse(data.message);
