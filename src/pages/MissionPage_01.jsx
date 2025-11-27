@@ -32,8 +32,6 @@ const MissionPage_01 = ({ onFinish }) => {
 
   const missionBackendId = Number(missionId);
   const missionNumber = missionBackendId % 10;
-  console.log('missionId from URL:', missionId);
-  console.log('missionBackendId:', missionBackendId);
 
   // historyId를 state로 직접 관리해야 함 (setHistoryId 반드시 존재)
   const [historyId, setHistoryId] = useState(null);
