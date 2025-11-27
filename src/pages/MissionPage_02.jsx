@@ -372,11 +372,11 @@ const MissionPage_02 = ({ onFinish }) => {
                 case 1:
                   return (
                     <AnswerChat
-                      key={missionBackendId}
+                      key={missionId}
                       botIcon={botIcon}
                       initialMessage={`조건문은 다음과 같은 형식으로 작성해주세요!<br><span style="color:#868ba3;">예시) “만약 ○○라면, △△한다. 그렇지 않다면, ▽▽한다.”</span>`}
-                      correctMessage={`<strong style="color:#37AF00;">정답입니다!</strong><br><br>단 하나의 열쇠로만 열리는 잠금장치가 완성되었어요...`}
-                      wrongMessage={`<strong style="color:#FF644F;">오답입니다!</strong><br><br>조건문을 다시 점검해주세요...`}
+                      correctMessage={`<strong style="color:#37AF00;">정답입니다!</strong><br><br>단 하나의 열쇠로만 열리는 잠금장치가 완성되었어요. 조건이 명확하게 작동하고 있네요!!<br><span style="color:#868ba3; font-weight:500;">‘하나의 열쇠로만 문이 열리고, 나머지 열쇠로는 문이 열리지 않는다’는 내용을 포함한다면 정답으로 인정됩니다.</span>`}
+                      wrongMessage={`<strong style="color:#FF644F;">오답입니다!</strong><br><br>조건문을 다시 점검해주세요.<br><span style="color:#868ba3; font-weight:500;">* 피드백 문장 (해당 조건문이 왜 잘못되었을까요? 조건의 범위는 넓거나 중복되지 않도록 구성해야 한다는 사실을 기억해주세요!)</span>`}
                       status={status}
                       historyId={historyId}
                       setImage={setServerImages}
@@ -406,9 +406,9 @@ const MissionPage_02 = ({ onFinish }) => {
                     <AnswerChat
                       key={missionBackendId}
                       botIcon={botIcon}
-                      initialMessage={`잠금장치에서 무엇이 잘못되었는지와 새로운 조건문을 모두 작성해주세요...`}
-                      correctMessage={`<strong style="color:#37AF00;">정답입니다!</strong>...`}
-                      wrongMessage={`<strong style="color:#FF644F;">오답입니다!</strong>...`}
+                      initialMessage={`잠금장치에서 무엇이 잘못되었는지와 새로운 조건문을 모두 작성해주세요.<br><br>1.잠금장치에서 무엇이 잘못되었는지는 다음과 같은 형식으로 작성해볼 수 있어요!<br><span style="color:#868ba3;">    예시) “지금은 ~라서 잠금장치가 제대로 작동하지 않아요.”</span><br><br>2. 조건문은 다음과 같은 형식으로 작성해주세요!<br><span style="color:#868ba3;">    예시) “만약 ○○라면, △△한다. 그렇지 않다면, ▽▽한다.”</span>`}
+                      correctMessage={`<strong style="color:#37AF00;">정답입니다!</strong><br><br>잠금장치의 문제를 정확히 찾아냈어요! 이제 더욱 멋진 건축가가 되기 위한 마지막 단계로 가볼까요?<br><span style="color:#868ba3; font-weight:500;">1. 잠금장치에서 무엇이 잘못되었는지 논리적으로 찾아 설명한다면 정답으로 인정됩니다.</span><br><span style="color:#868ba3; font-weight:500;">2. 한 가지 열쇠로만 문이 열리도록 새로운 조건문을 적절하게 작성한다면 정답으로 인정됩니다.</span>`}
+                      wrongMessage={`<strong style="color:#FF644F;">오답입니다!</strong><br><br>작성한 답변을 다시 점검해주세요.<br><span style="color:#868ba3; font-weight:500;">1. 피드백 문장 (Mission01에서 만들었던 잠금장치가 몇 개의 열쇠로 열렸는지 기억해보아요!) </span><br><span style="color:#868ba3; font-weight:500;">2. 피드백 문장 (해당 조건문이 왜 잘못되었을까요? 조건의 범위는 넓거나 중복되지 않도록 구성해야 한다는 사실을 기억해요!)   </span>`}
                       status={status}
                       historyId={historyId}
                       setImage={setServerImages}
@@ -438,9 +438,9 @@ const MissionPage_02 = ({ onFinish }) => {
                     <AnswerChat
                       key={missionBackendId}
                       botIcon={botIcon}
-                      initialMessage={`2가지의 조건이 모두 반영되도록 새로운 조건문을 작성해주세요...`}
-                      correctMessage={`<strong style="color:#37AF00;">주어진 조건을 모두 반영하여...</strong>`}
-                      wrongMessage={`<strong style="color:#FF644F;">주어진 조건을 반영하지 못하여...</strong>`}
+                      initialMessage={`2가지의 조건이 모두 반영되도록 새로운 조건문을 작성해주세요. <br><br>조건문은 다음과 같은 형식으로 작성해주세요!<br><span style="color:#868ba3; font-weight:500;">예시) “만약 ○○라면, △△한다. 그렇지 않다면, ▽▽한다.”</span>`}
+                      correctMessage={`<strong style="color:#37AF00;">주어진 조건을 모두 반영하여, 보안이 철저한 잠금장치가 완성되었어요!</strong><br><br>이중 잠금으로 보안이 철저한 잠금장치를 만들어낸 당신은 진정한 건축의 달인이에요!<br><span style="color:#868ba3; font-weight:500;">‘첫 번째 잠금장치와 두번째 잠금장치가 하나의 열쇠로만 열리고 다른 열쇠로는 열리지 않으며, 2가지의 조건을 동시에 만족한다’는 내용을 포함한다면 정답으로 인정됩니다.</span>`}
+                      wrongMessage={`<strong style="color:#FF644F;">주어진 조건을 반영하지 못하여, 보안이 느슨한 잠금장치가 완성되었어요!</strong><br><br>조건문을 다시 점검해주세요.<br><span style="color:#868ba3; font-weight:500;">* 피드백 문장 (해당 조건문이 왜 잘못되었을까요? 조건의 범위는 넓거나 중복되지 않도록 구성해야 한다는 사실을 기억해요!)</span>`}
                       status={status}
                       historyId={historyId}
                       setImage={setServerImages}
