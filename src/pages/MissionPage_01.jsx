@@ -32,6 +32,9 @@ const MissionPage_01 = ({ onFinish }) => {
   const missionBackendId = Number(missionId);
   const missionNumber = missionBackendId % 10;
   const [historyId, setHistoryId] = useState(null);
+  const isSolved = location.state?.isSolved ?? false;
+
+  const [initialMessages, setInitialMessages] = useState([]);
 
   const queryHistoryId = new URLSearchParams(location.search).get('historyId');
 
@@ -69,6 +72,26 @@ const MissionPage_01 = ({ onFinish }) => {
 
     createHistory();
   }, [missionBackendId, location.search, location.state]);
+
+  // 🔍 기존 풀이기록 상세 조회 → 이전 채팅 복원
+  useEffect(() => {
+    if (!historyId) return;
+
+    const fetchDetail = async () => {
+      try {
+        const res = await authClient.get(`/solutions/detail/${historyId}`);
+        const data = res.data;
+
+        console.log('📌 상세 조회 응답:', data);
+
+        setInitialMessages(data.messages || []); // ← 메시지 저장
+      } catch (err) {
+        console.error('❌ 상세 조회 실패:', err);
+      }
+    };
+
+    fetchDetail();
+  }, [historyId]);
 
   // 풀이 완료 저장
   const saveSolution = async (isSolved) => {
@@ -327,6 +350,8 @@ const MissionPage_01 = ({ onFinish }) => {
                           }, 1200);
                         }
                       }}
+                      initialMessages={initialMessages} // ★ 추가
+                      readOnly={isSolved}
                     />
                   );
                 case 2:
@@ -359,6 +384,8 @@ const MissionPage_01 = ({ onFinish }) => {
                           }, 1200);
                         }
                       }}
+                      initialMessages={initialMessages} // ★ 추가
+                      readOnly={isSolved}
                     />
                   );
                 case 3:
@@ -391,6 +418,8 @@ const MissionPage_01 = ({ onFinish }) => {
                           }, 1200);
                         }
                       }}
+                      initialMessages={initialMessages} // ★ 추가
+                      readOnly={isSolved}
                     />
                   );
                 default:

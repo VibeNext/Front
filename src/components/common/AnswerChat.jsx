@@ -9,16 +9,29 @@ import useAuthStore from '../../stores/useAuthStore';
 const AnswerChat = ({
   botIcon,
   initialMessage,
+  initialMessages,
   status,
   setStatus,
   setImage,
   historyId,
+  readOnly,
 }) => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const chatRef = useRef(null);
   const [socket, setSocket] = useState(null);
   const accessToken = useAuthStore((state) => state.user.accessToken);
+  /* -------------------- 채팅 복원 -------------------- */
+  useEffect(() => {
+    if (initialMessages && initialMessages.length > 0) {
+      const restored = initialMessages.map((m, idx) => ({
+        id: idx,
+        role: m.sender === 'AI' ? 'ai' : 'user',
+        text: m.content,
+      }));
+      setMessages(restored);
+    }
+  }, [initialMessages]);
 
   /* -------------------- 스크롤 자동 이동 -------------------- */
   useEffect(() => {
@@ -32,13 +45,18 @@ const AnswerChat = ({
 
   /* -------------------- 초기 메시지 -------------------- */
   useEffect(() => {
+    // 기존 채팅이 있다면 초기 메시지 표시 금지
+    if (initialMessages && initialMessages.length > 0) return;
+
+    // 새 문제 → 초기 안내 메시지 표시
     if (initialMessage) {
-      setMessages([{ id: 0, role: 'ai', text: initialMessage }]);
+      setMessages([{ id: Date.now(), role: 'ai', text: initialMessage }]);
     }
   }, [initialMessage]);
 
   /* -------------------- WebSocket 연결 -------------------- */
   useEffect(() => {
+    if (readOnly) return;
     if (!historyId) return;
 
     console.log('🔑 Current Token:', accessToken);
@@ -192,7 +210,7 @@ const AnswerChat = ({
         ws.close();
       }
     };
-  }, [historyId, accessToken]);
+  }, [historyId, accessToken, readOnly]);
 
   /* -------------------- 메시지 전송 -------------------- */
   const handleSend = () => {
@@ -235,12 +253,25 @@ const AnswerChat = ({
       {/* 입력창 */}
       <InputArea>
         <Input
-          placeholder='정답 프롬프트를 입력해주세요.'
+          placeholder={
+            readOnly
+              ? '이미 풀이를 완료한 기록입니다.'
+              : '정답 프롬프트를 입력해주세요.'
+          }
           value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+          disabled={readOnly}
+          onChange={(e) => !readOnly && setInput(e.target.value)}
+          onKeyDown={(e) => !readOnly && e.key === 'Enter' && handleSend()}
         />
-        <SendButton onClick={handleSend}>
+
+        <SendButton
+          onClick={() => !readOnly && handleSend()}
+          disabled={readOnly}
+          style={{
+            opacity: readOnly ? 0.5 : 1,
+            cursor: readOnly ? 'not-allowed' : 'pointer',
+          }}
+        >
           <SendImg src={sendIcon} />
         </SendButton>
       </InputArea>

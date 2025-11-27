@@ -311,6 +311,12 @@ const LearningStepPage = () => {
                       onClick={() =>
                         navigate(
                           `/step/${m.chapter}/mission/${m.id}?historyId=${h.id}`,
+                          {
+                            state: {
+                              historyId: h.id, // 기존
+                              isSolved: h.is_solved, // 추가
+                            },
+                          },
                         )
                       }
                       style={{ cursor: 'pointer' }}
