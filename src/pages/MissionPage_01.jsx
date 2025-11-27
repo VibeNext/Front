@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useLocation, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import styled from 'styled-components';
 import AnswerChat from '../components/common/AnswerChat.jsx';
 import AnswerCheckContainer from '../components/common/AnswerCheckContainer/AnswerCheck.jsx';
@@ -28,6 +28,7 @@ const MissionPage_01 = ({ onFinish }) => {
 
   const { missionId } = useParams();
   const location = useLocation();
+  const navigate = useNavigate();
 
   const missionBackendId = Number(missionId);
   const missionNumber = missionBackendId % 10;
@@ -289,7 +290,11 @@ const MissionPage_01 = ({ onFinish }) => {
                               'shouldRefreshMissions',
                               'true',
                             ); // 목록 갱신 요청
-                            if (onFinish) onFinish(true); // ✅ 안전장치
+                            const nextMissionId = missionBackendId + 1;
+
+                            navigate(`/step/1/mission/${nextMissionId}`, {
+                              state: { historyId },
+                            });
                           }, 1200);
                         }
                         if (v === 'fail') {
@@ -321,7 +326,11 @@ const MissionPage_01 = ({ onFinish }) => {
                               'shouldRefreshMissions',
                               'true',
                             );
-                            if (onFinish) onFinish(true);
+                            const nextMissionId = missionBackendId + 1;
+
+                            navigate(`/step/1/mission/${nextMissionId}`, {
+                              state: { historyId },
+                            });
                           }, 1200);
                         }
                         if (v === 'fail') {
@@ -353,7 +362,11 @@ const MissionPage_01 = ({ onFinish }) => {
                               'shouldRefreshMissions',
                               'true',
                             );
-                            if (onFinish) onFinish(true);
+                            const nextMissionId = 21;
+
+                            navigate(`/step/2/mission/${nextMissionId}`, {
+                              state: { historyId },
+                            });
                           }, 1200);
                         }
                         if (v === 'fail') {
