@@ -15,7 +15,10 @@ import { authClient } from '../apis/instance';
 const LearningStepPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, accessToken, grantType, isAuthenticated } = useAuthStore();
+
+  const { user, isAuthenticated } = useAuthStore();
+  const grantType = user?.grantType;
+  const accessToken = user?.accessToken;
 
   const [chapters, setChapters] = useState([]);
   const [missions, setMissions] = useState([]);
