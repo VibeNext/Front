@@ -538,7 +538,7 @@ const StepList = styled.div`
   display: flex;
   gap: 1rem;
   justify-content: center;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   margin-bottom: 1rem;
 `;
 
