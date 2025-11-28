@@ -47,18 +47,9 @@ const MissionPage_02 = ({ onFinish }) => {
     const incomingId = queryHistoryId || location.state?.historyId; // ⭐ FIX
 
     if (incomingId) {
-<<<<<<< HEAD
-      const parsed = Number(incomingId);
-      if (!isNaN(parsed)) {
-        console.log('📌 기존 historyId 재사용:', parsed);
-        setHistoryId(parsed);
-        return;
-      }
-=======
       console.log('📌 기존 historyId 재사용:', incomingId);
       setHistoryId(Number(incomingId)); // ⭐ FIX: Number 처리만 하고 종료
       return; // ⭐ FIX: 기존 기록이 있으므로 새 기록 생성하지 않음
->>>>>>> 0329206ea688d7b4632d5800f3941e539017de8a
     }
 
     // 기존 기록이 없을 때만 새로 생성

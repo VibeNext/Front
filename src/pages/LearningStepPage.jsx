@@ -53,7 +53,7 @@ const MissionPage_02 = ({ onFinish }) => {
     if (incomingId) {
       const parsed = Number(incomingId);
       if (!isNaN(parsed)) {
-        console.log("📌 기존 historyId 재사용:", parsed);
+        console.log('📌 기존 historyId 재사용:', parsed);
         setHistoryId(parsed);
         return;
       }
@@ -89,7 +89,7 @@ const MissionPage_02 = ({ onFinish }) => {
         const res = await authClient.get(`/solutions/detail/${historyId}`);
         const data = res.data;
 
-        console.log("📌 기존 풀이 기록 상세:", data);
+        console.log('📌 기존 풀이 기록 상세:', data);
         setInitialMessages(data.messages || []);
       } catch (err) {
         console.error('❌ 상세 조회 실패:', err);
@@ -410,8 +410,8 @@ const MissionPage_02 = ({ onFinish }) => {
                       status={status}
                       historyId={historyId}
                       setImage={setServerImages}
-                      initialMessages={initialMessages}   {/* 🔥 추가 */}
-                      readOnly={isSolved}                 {/* 🔥 추가 */}
+                      initialMessages={initialMessages}
+                      readOnly={isSolved}
                       setStatus={async (v) => {
                         setStatus(v);
                         if (v === 'success') {
@@ -442,8 +442,8 @@ const MissionPage_02 = ({ onFinish }) => {
                       status={status}
                       historyId={historyId}
                       setImage={setServerImages}
-                      initialMessages={initialMessages}   {/* 🔥 추가 */}
-                      readOnly={isSolved}                 {/* 🔥 추가 */}
+                      initialMessages={initialMessages}
+                      readOnly={isSolved}
                       setStatus={async (v) => {
                         setStatus(v);
                         if (v === 'success') {
@@ -474,8 +474,8 @@ const MissionPage_02 = ({ onFinish }) => {
                       status={status}
                       historyId={historyId}
                       setImage={setServerImages}
-                      initialMessages={initialMessages}   {/* 🔥 추가 */}
-                      readOnly={isSolved}                 {/* 🔥 추가 */}
+                      initialMessages={initialMessages}
+                      readOnly={isSolved}
                       setStatus={async (v) => {
                         setStatus(v);
                         if (v === 'success') {
