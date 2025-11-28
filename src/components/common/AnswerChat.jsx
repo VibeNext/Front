@@ -24,11 +24,30 @@ const AnswerChat = ({
   /* -------------------- 채팅 복원 -------------------- */
   useEffect(() => {
     if (initialMessages && initialMessages.length > 0) {
-      const restored = initialMessages.map((m, idx) => ({
-        id: idx,
-        role: m.sender === 'AI' ? 'ai' : 'user',
-        text: m.content,
-      }));
+      console.log('✅ BACKEND initialMessages:', initialMessages);
+
+      const restored = initialMessages.map((m, idx) => {
+        let text = m.content;
+
+        // JSON인지 검사
+        try {
+          const parsed = JSON.parse(m.content);
+
+          // 정답 JSON이면 feedback만 사용
+          if (parsed && typeof parsed.is_solved !== 'undefined') {
+            text = parsed.feedback;
+          }
+        } catch (e) {
+          // 파싱 실패 → 일반 문자열
+        }
+
+        return {
+          id: idx,
+          role: m.sender === 0 ? 'user' : 'ai',
+          text,
+        };
+      });
+
       setMessages(restored);
     }
   }, [initialMessages]);
@@ -113,6 +132,12 @@ const AnswerChat = ({
                     ...newList[lastIndex],
                     text: feedbackText, // 깔끔한 피드백만 남김
                   };
+                } else {
+                  newList.push({
+                    id: Date.now(),
+                    role: 'ai',
+                    text: feedbackText,
+                  });
                 }
                 return newList;
               });

@@ -126,13 +126,6 @@ const LearningStepPage = () => {
     return missions.filter((m) => m.chapter === selectedChapter);
   }, [missions, selectedChapter]);
 
-<<<<<<< HEAD
-    if (incomingId) {
-      const parsed = Number(incomingId);
-      if (!isNaN(parsed)) {
-        console.log('📌 기존 historyId 재사용:', parsed);
-        setHistoryId(parsed);
-=======
   const getChapterLocked = (chapterId) => {
     const ms = missions.filter((m) => m.chapter === chapterId);
 
@@ -194,61 +187,12 @@ const LearningStepPage = () => {
 
       if (!createdHistoryId) {
         alert('서버에서 ID를 받아오지 못했습니다.');
->>>>>>> 1be0aedef23d66028c6d7dacf90f1fbb1ae12dab
         return;
       }
 
-<<<<<<< HEAD
-    // 새 기록 생성
-    setHistoryId(null);
-    const createHistory = async () => {
-      try {
-        const res = await authClient.post(
-          `/solutions/${missionBackendId}/`,
-          {},
-        );
-        const data = res.data;
-        const targetData = Array.isArray(data) ? data[data.length - 1] : data;
-        const newId =
-          targetData?.id || targetData?.solution_id || targetData?.history_id;
-
-        if (newId) setHistoryId(newId);
-      } catch (err) {
-        console.error('❌ 기록 생성 실패:', err);
-      }
-    };
-    createHistory();
-  }, [missionBackendId, location.state, queryHistoryId]);
-
-  /* 🔥 추가: 기존 풀이 기록 상세조회 */
-  useEffect(() => {
-    if (!historyId) return;
-
-    const fetchDetail = async () => {
-      try {
-        const res = await authClient.get(`/solutions/detail/${historyId}`);
-        const data = res.data;
-
-        console.log('📌 기존 풀이 기록 상세:', data);
-        setInitialMessages(data.messages || []);
-      } catch (err) {
-        console.error('❌ 상세 조회 실패:', err);
-      }
-    };
-
-    fetchDetail();
-  }, [historyId]);
-
-  const saveSolution = async (isSolved) => {
-    if (!historyId) return;
-    try {
-      const res = await authClient.patch(`/solutions/update/${historyId}`, {
-        is_solved: isSolved,
-=======
       // 4. ID를 가지고 페이지 이동 (state로 전달)
       navigate(`/step/${m.chapter}/mission/${m.id}`, {
         state: { historyId: createdHistoryId },
->>>>>>> 1be0aedef23d66028c6d7dacf90f1fbb1ae12dab
       });
     } catch (err) {
       console.error('❌ 풀이 기록 생성 실패:', err);
@@ -295,115 +239,6 @@ const LearningStepPage = () => {
         icon={<img src={AlertIcon} alt='alert' style={{ width: '3rem' }} />}
       />
 
-<<<<<<< HEAD
-          <RightPanel>
-            {(() => {
-              switch (missionNumber) {
-                case 1:
-                  return (
-                    <AnswerChat
-                      key={missionId}
-                      botIcon={botIcon}
-                      initialMessage={`조건문은 다음과 같은 형식으로 작성해주세요!<br><span style="color:#868ba3;">예시) “만약 ○○라면, △△한다. 그렇지 않다면, ▽▽한다.”</span>`}
-                      status={status}
-                      historyId={historyId}
-                      setImage={setServerImages}
-                      initialMessages={initialMessages}
-                      readOnly={isSolved}
-                      setStatus={async (v) => {
-                        setStatus(v);
-                        if (v === 'success') {
-                          setTimeout(async () => {
-                            await saveSolution(true);
-                            localStorage.setItem(
-                              'shouldRefreshMissions',
-                              'true',
-                            );
-                            if (onFinish) onFinish(true);
-                          }, 1200);
-                        }
-                        if (v === 'fail') {
-                          setTimeout(async () => {
-                            await saveSolution(false);
-                            if (onFinish) onFinish(false);
-                          }, 1200);
-                        }
-                      }}
-                    />
-                  );
-                case 2:
-                  return (
-                    <AnswerChat
-                      key={missionBackendId}
-                      botIcon={botIcon}
-                      initialMessage={`잠금장치에서 무엇이 잘못되었는지와 새로운 조건문을 모두 작성해주세요.<br><br>1.잠금장치에서 무엇이 잘못되었는지는 다음과 같은 형식으로 작성해볼 수 있어요!<br><span style="color:#868ba3;">    예시) “지금은 ~라서 잠금장치가 제대로 작동하지 않아요.”</span><br><br>2. 조건문은 다음과 같은 형식으로 작성해주세요!<br><span style="color:#868ba3;">    예시) “만약 ○○라면, △△한다. 그렇지 않다면, ▽▽한다.”</span>`}
-                      status={status}
-                      historyId={historyId}
-                      setImage={setServerImages}
-                      initialMessages={initialMessages}
-                      readOnly={isSolved}
-                      setStatus={async (v) => {
-                        setStatus(v);
-                        if (v === 'success') {
-                          setTimeout(async () => {
-                            await saveSolution(true);
-                            localStorage.setItem(
-                              'shouldRefreshMissions',
-                              'true',
-                            );
-                            if (onFinish) onFinish(true);
-                          }, 1200);
-                        }
-                        if (v === 'fail') {
-                          setTimeout(async () => {
-                            await saveSolution(false);
-                            if (onFinish) onFinish(false);
-                          }, 1200);
-                        }
-                      }}
-                    />
-                  );
-                case 3:
-                  return (
-                    <AnswerChat
-                      key={missionBackendId}
-                      botIcon={botIcon}
-                      initialMessage={`2가지의 조건이 모두 반영되도록 새로운 조건문을 작성해주세요. <br><br>조건문은 다음과 같은 형식으로 작성해주세요!<br><span style="color:#868ba3; font-weight:500;">예시) “만약 ○○라면, △△한다. 그렇지 않다면, ▽▽한다.”</span>`}
-                      status={status}
-                      historyId={historyId}
-                      setImage={setServerImages}
-                      initialMessages={initialMessages}
-                      readOnly={isSolved}
-                      setStatus={async (v) => {
-                        setStatus(v);
-                        if (v === 'success') {
-                          setTimeout(async () => {
-                            await saveSolution(true);
-                            localStorage.setItem(
-                              'shouldRefreshMissions',
-                              'true',
-                            );
-                            if (onFinish) onFinish(true);
-                          }, 1200);
-                        }
-                        if (v === 'fail') {
-                          setTimeout(async () => {
-                            await saveSolution(false);
-                            if (onFinish) onFinish(false);
-                          }, 1200);
-                        }
-                      }}
-                    />
-                  );
-                default:
-                  return null;
-              }
-            })()}
-          </RightPanel>
-        </MainLayout>
-      </ContentWrap>
-    </Wrapper>
-=======
       <SWrapper>
         {/* 챕터 탭 */}
         <ChapterTabs>
@@ -496,7 +331,6 @@ const LearningStepPage = () => {
         </MissionContainer>
       </SWrapper>
     </SPageContainer>
->>>>>>> 1be0aedef23d66028c6d7dacf90f1fbb1ae12dab
   );
 };
 
@@ -628,28 +462,3 @@ const LineImg = styled.img`
   width: 12.5rem;
   height: 0.1875rem;
 `;
-<<<<<<< HEAD
-
-const ResultWrapper = styled.div`
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 1.5rem;
-  flex-wrap: wrap;
-`;
-
-const ImageItemBox = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  img {
-    width: 5.5rem;
-    height: 9rem;
-    object-fit: contain;
-  }
-`;
-=======
->>>>>>> 1be0aedef23d66028c6d7dacf90f1fbb1ae12dab
