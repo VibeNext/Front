@@ -32,11 +32,20 @@ const MissionPage_01 = ({ onFinish }) => {
   const missionBackendId = Number(missionId);
   const missionNumber = missionBackendId % 10;
   const [historyId, setHistoryId] = useState(null);
-  const isSolved = location.state?.isSolved ?? false;
+  const [isSolved, setIsSolved] = useState(location.state?.isSolved ?? false);
 
   const [initialMessages, setInitialMessages] = useState([]);
 
   const queryHistoryId = new URLSearchParams(location.search).get('historyId');
+
+  // Mission 변경 시 가장 먼저 isSolved 초기화
+  useEffect(() => {
+    // 재진입(historyId 존재)일 때는 건드리지 않는다
+    if (queryHistoryId) return; // ← 풀이기록 재입장의 핵심 조건
+
+    // 그 외 (NEXT 이동 or 페이지 직접 진입)일 경우 초기화
+    setIsSolved(false);
+  }, [missionBackendId]);
 
   useEffect(() => {
     setStatus('default');
@@ -44,15 +53,11 @@ const MissionPage_01 = ({ onFinish }) => {
 
     const stateHistoryId = location.state?.historyId;
 
-    const incomingId = queryHistoryId || stateHistoryId;
-
-    if (incomingId) {
-      console.log(`💼 기존 historyId 재사용: ${incomingId}`);
-      setHistoryId(incomingId); // (A) 재진입 모드
+    if (queryHistoryId) {
+      console.log(`💼 기존 historyId 재진입: ${queryHistoryId}`);
+      setHistoryId(queryHistoryId);
       return;
     }
-
-    // (B) historyId 없음 → 새로 생성
     console.log(`✨ 새 풀이 기록 생성`);
     setHistoryId(null);
 
@@ -73,7 +78,7 @@ const MissionPage_01 = ({ onFinish }) => {
     createHistory();
   }, [missionBackendId, location.search, location.state]);
 
-  // 🔍 기존 풀이기록 상세 조회 → 이전 채팅 복원
+  // 기존 풀이기록 상세 조회 → 이전 채팅 복원
   useEffect(() => {
     if (!historyId) return;
 
@@ -85,6 +90,10 @@ const MissionPage_01 = ({ onFinish }) => {
         console.log('📌 상세 조회 응답:', data);
 
         setInitialMessages(data.messages || []); // ← 메시지 저장
+
+        if (typeof data.is_solved === 'boolean') {
+          setIsSolved(data.is_solved);
+        }
       } catch (err) {
         console.error('❌ 상세 조회 실패:', err);
       }
@@ -330,6 +339,7 @@ const MissionPage_01 = ({ onFinish }) => {
                       wrongMessage={`<strong style="color:#FF644F;">오답입니다!</strong><br><br>레시피 순서를 다시 확인해주세요!<br><span style="color:#868ba3; font-weight:500;">예: 불을 켜야만 물을 끓일 수 있겠죠?</span>`}
                       status={status}
                       historyId={historyId}
+                      setIsSolved={setIsSolved}
                       setImage={setServerImages} // ✅ 이미지 리스트 설정 함수 전달
                       setStatus={async (v) => {
                         setStatus(v);
@@ -386,6 +396,7 @@ const MissionPage_01 = ({ onFinish }) => {
                       }}
                       initialMessages={initialMessages} // ★ 추가
                       readOnly={isSolved}
+                      setIsSolved={setIsSolved}
                     />
                   );
                 case 3:
@@ -420,6 +431,7 @@ const MissionPage_01 = ({ onFinish }) => {
                       }}
                       initialMessages={initialMessages} // ★ 추가
                       readOnly={isSolved}
+                      setIsSolved={setIsSolved}
                     />
                   );
                 default:
@@ -526,7 +538,7 @@ const StepList = styled.div`
   display: flex;
   gap: 1rem;
   justify-content: center;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   margin-bottom: 1rem;
 `;
 
