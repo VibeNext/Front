@@ -24,20 +24,11 @@ const AnswerChat = ({
   /* -------------------- 채팅 복원 -------------------- */
   useEffect(() => {
     if (initialMessages && initialMessages.length > 0) {
-      console.log('📌 복원되는 메시지 목록:', initialMessages);
-
-      const restored = [...initialMessages]
-        .sort((a, b) => new Date(a.created_at) - new Date(b.created_at)) // 최신순 정렬
-        .map((m, idx) => ({
-          id: idx,
-          role: ['ai', 'assistant', 'bot'].includes(
-            (m.sender || '').trim().toLowerCase(),
-          )
-            ? 'ai'
-            : 'user',
-          text: m.content,
-        }));
-
+      const restored = initialMessages.map((m, idx) => ({
+        id: idx,
+        role: m.sender === 'AI' ? 'ai' : 'user',
+        text: m.content,
+      }));
       setMessages(restored);
     }
   }, [initialMessages]);
