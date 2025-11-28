@@ -26,7 +26,12 @@ const AnswerChat = ({
     if (initialMessages && initialMessages.length > 0) {
       const restored = initialMessages.map((m, idx) => ({
         id: idx,
-        role: m.sender === 'AI' ? 'ai' : 'user',
+        role:
+          m.sender?.toLowerCase() === 'ai' ||
+          m.sender?.toLowerCase() === 'assistant'
+            ? 'ai'
+            : 'user',
+
         text: m.content,
       }));
       setMessages(restored);
