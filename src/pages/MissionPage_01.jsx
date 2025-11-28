@@ -38,21 +38,26 @@ const MissionPage_01 = ({ onFinish }) => {
 
   const queryHistoryId = new URLSearchParams(location.search).get('historyId');
 
+  // Mission 변경 시 가장 먼저 isSolved 초기화
+  useEffect(() => {
+    // 재진입(historyId 존재)일 때는 건드리지 않는다
+    if (queryHistoryId) return; // ← 풀이기록 재입장의 핵심 조건
+
+    // 그 외 (NEXT 이동 or 페이지 직접 진입)일 경우 초기화
+    setIsSolved(false);
+  }, [missionBackendId]);
+
   useEffect(() => {
     setStatus('default');
     setServerImages([]);
 
     const stateHistoryId = location.state?.historyId;
 
-    const incomingId = queryHistoryId || stateHistoryId;
-
-    if (incomingId) {
-      console.log(`💼 기존 historyId 재사용: ${incomingId}`);
-      setHistoryId(incomingId); // (A) 재진입 모드
+    if (queryHistoryId) {
+      console.log(`💼 기존 historyId 재진입: ${queryHistoryId}`);
+      setHistoryId(queryHistoryId);
       return;
     }
-
-    // (B) historyId 없음 → 새로 생성
     console.log(`✨ 새 풀이 기록 생성`);
     setHistoryId(null);
 
