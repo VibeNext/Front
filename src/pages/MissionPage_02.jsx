@@ -34,33 +34,36 @@ const MissionPage_02 = ({ onFinish }) => {
 
   const [historyId, setHistoryId] = useState(null);
 
-  /* 🔥 추가: readOnly 모드 */
   const isSolved = location.state?.isSolved ?? false;
-
-  /* 🔥 추가: 기존 메시지 저장 */
   const [initialMessages, setInitialMessages] = useState([]);
 
-  /* 🔥 추가: URL ?historyId= 지원 */
   const queryHistoryId = new URLSearchParams(location.search).get('historyId');
 
   useEffect(() => {
     setStatus('default');
     setServerImages([]);
 
-    // URL → historyId
-    const incomingId = queryHistoryId || location.state?.historyId;
+    // ⭐ FIX: MissionPage_01과 동일한 방식으로 incoming historyId 결정
+    const incomingId = queryHistoryId || location.state?.historyId; // ⭐ FIX
 
     if (incomingId) {
+<<<<<<< HEAD
       const parsed = Number(incomingId);
       if (!isNaN(parsed)) {
         console.log('📌 기존 historyId 재사용:', parsed);
         setHistoryId(parsed);
         return;
       }
+=======
+      console.log('📌 기존 historyId 재사용:', incomingId);
+      setHistoryId(Number(incomingId)); // ⭐ FIX: Number 처리만 하고 종료
+      return; // ⭐ FIX: 기존 기록이 있으므로 새 기록 생성하지 않음
+>>>>>>> 0329206ea688d7b4632d5800f3941e539017de8a
     }
 
-    // 새 기록 생성
+    // 기존 기록이 없을 때만 새로 생성
     setHistoryId(null);
+
     const createHistory = async () => {
       try {
         const res = await authClient.post(
@@ -72,7 +75,10 @@ const MissionPage_02 = ({ onFinish }) => {
         const newId =
           targetData?.id || targetData?.solution_id || targetData?.history_id;
 
-        if (newId) setHistoryId(newId);
+        if (newId) {
+          console.log('✨ 새 historyId 생성:', newId);
+          setHistoryId(newId);
+        }
       } catch (err) {
         console.error('❌ 기록 생성 실패:', err);
       }
@@ -80,9 +86,9 @@ const MissionPage_02 = ({ onFinish }) => {
     createHistory();
   }, [missionBackendId, location.state, queryHistoryId]);
 
-  /* 🔥 추가: 기존 풀이 기록 상세조회 */
+  // ⭐ FIX: historyId가 유효할 때만 상세조회 (undefined로 먼저 실행되는 문제 방지)
   useEffect(() => {
-    if (!historyId) return;
+    if (!historyId) return; // ⭐ FIX
 
     const fetchDetail = async () => {
       try {
@@ -97,7 +103,7 @@ const MissionPage_02 = ({ onFinish }) => {
     };
 
     fetchDetail();
-  }, [historyId]);
+  }, [historyId]); // ⭐ FIX
 
   const saveSolution = async (isSolved) => {
     if (!historyId) return;
@@ -510,7 +516,7 @@ const MissionPage_02 = ({ onFinish }) => {
 
 export default MissionPage_02;
 
-/* ---------- 스타일 ---------- */
+/* ---------- 스타일(기존 그대로) ---------- */
 const Wrapper = styled.div`
   width: 100%;
   min-height: 100vh;
@@ -593,15 +599,11 @@ const SetLabel = styled.small`
   text-align: center;
   font-family: Pretendard;
   font-size: 0.75rem;
-  font-style: normal;
-  font-weight: 500;
-  line-height: 1.125rem;
 `;
 const Arrow = styled.img`
   width: 1.5rem;
   height: 1.5rem;
 `;
-
 const DefaultWrapper = styled.div`
   text-align: center;
   img {
@@ -616,7 +618,6 @@ const DefaultWrapper = styled.div`
     font-weight: 500;
   }
 `;
-
 const ResultWrapper = styled.div`
   width: 100%;
   height: 100%;
@@ -626,12 +627,10 @@ const ResultWrapper = styled.div`
   gap: 1.5rem;
   flex-wrap: wrap;
 `;
-
 const ImageItemBox = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-
   img {
     width: 5.5rem;
     height: 9rem;
