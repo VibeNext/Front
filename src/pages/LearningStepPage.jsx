@@ -1,640 +1,426 @@
-import { useEffect, useState } from 'react';
-import { useLocation, useParams } from 'react-router-dom';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import AnswerChat from '../components/common/AnswerChat.jsx';
-import AnswerCheckContainer from '../components/common/AnswerCheckContainer/AnswerCheck.jsx';
-import MissionDescription from '../components/common/MissionDescription.jsx';
-import MissionHeader from '../components/common/MissionHeader.jsx';
-import TopNavigation from '../components/common/TopNavigation.jsx';
 
-import arrowrightIcon from '../assets/icons/arrow_right.png';
-import doorImg from '../assets/icons/door_close.png';
-import dooropenImg from '../assets/icons/door_open.png';
-import keyAImg from '../assets/icons/key_a.png';
-import keyAOImg from '../assets/icons/key_a_o.png';
-import keyBImg from '../assets/icons/key_b.png';
-import keyBOImg from '../assets/icons/key_b_o.png';
-import keyCImg from '../assets/icons/key_c.png';
-import keyCXImg from '../assets/icons/key_c_x.png';
+import Dialog from '../components/common/Dialog.jsx';
+import MissionCard from '../components/common/MissionCard';
+import TopNavigation from '../components/common/TopNavigation';
+import useAuthStore from '../stores/useAuthStore';
 
-import botIcon from '../assets/icons/bot2.png';
+import AlertIcon from '../assets/icons/alert.png';
+import LineIcon from '../assets/icons/line2.png';
 
 import { authClient } from '../apis/instance';
-import defaultImg from '../assets/icons/missionpage_2/default.svg';
 
-const MissionPage_02 = ({ onFinish }) => {
-  const [status, setStatus] = useState('default');
-  const [serverImages, setServerImages] = useState([]);
-
-  const { missionId } = useParams();
+const LearningStepPage = () => {
+  const navigate = useNavigate();
   const location = useLocation();
 
-  const missionBackendId = Number(missionId);
-  const missionNumber = missionBackendId % 10;
+  const { user, isAuthenticated } = useAuthStore();
+  const grantType = user?.grantType;
+  const accessToken = user?.accessToken;
 
-  const [historyId, setHistoryId] = useState(null);
+  const [chapters, setChapters] = useState([]);
+  const [missions, setMissions] = useState([]);
 
-  /* 🔥 추가: readOnly 모드 */
-  const isSolved = location.state?.isSolved ?? false;
+  const [selectedChapter, setSelectedChapter] = useState(null);
+  const [currentMission, setCurrentMission] = useState(null);
 
-  /* 🔥 추가: 기존 메시지 저장 */
-  const [initialMessages, setInitialMessages] = useState([]);
+  const [loginDialog, setLoginDialog] = useState(false);
+  const [lockDialog, setLockDialog] = useState(false);
 
-  /* 🔥 추가: URL ?historyId= 지원 */
-  const queryHistoryId = new URLSearchParams(location.search).get('historyId');
+  const [solutionHistory, setSolutionHistory] = useState([]);
+
+  const containerRef = useRef(null);
+  const itemRefs = useRef({});
+  const [hoverId, setHoverId] = useState(null);
+
+  const fetchMissions = async () => {
+    try {
+      const headers = {};
+      if (accessToken) {
+        headers['Authorization'] = `${grantType} ${accessToken}`;
+      }
+
+      const API_BASE = import.meta.env.VITE_API_URL;
+
+      const res = await fetch(`${API_BASE}/missions`, { headers });
+      const data = await res.json();
+
+      // 📌 응답 전체 로그
+      console.log('📌 Missions API Raw Response:', data);
+
+      // 📌 mission 배열만 따로 확인
+      console.log('📌 Missions List:', data.mission);
+
+      const filteredChapters = data.chapter.filter((c) => c.id !== 3);
+      const filteredMissions = data.mission.filter((m) => m.chapter !== 3);
+
+      setChapters(filteredChapters);
+      setMissions(filteredMissions);
+
+      if (filteredChapters.length > 0) {
+        setSelectedChapter(filteredChapters[0].id);
+      }
+    } catch (err) {
+      console.error('❌ Failed to fetch missions:', err);
+    }
+  };
+
+  // 날짜 포맷 함수
+  const formatDate = (dateString) => {
+    const d = new Date(dateString);
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    const hour = String(d.getHours()).padStart(2, '0');
+    const min = String(d.getMinutes()).padStart(2, '0');
+    return `${month}.${day} ${hour}:${min}`;
+  };
+
+  // 최초 1회 미션 불러오기
+  useEffect(() => {
+    fetchMissions();
+  }, [accessToken]);
 
   useEffect(() => {
-    setStatus('default');
-    setServerImages([]);
+    const handler = () => fetchMissions();
+    window.addEventListener('focus', handler);
+    return () => window.removeEventListener('focus', handler);
+  }, []);
 
-    // URL → historyId
-    const incomingId = queryHistoryId || location.state?.historyId;
+  // [수정 1] 무한 루프 방지를 위해 useMemo 사용
+  const chapterMissions = useMemo(() => {
+    return missions.filter((m) => m.chapter === selectedChapter);
+  }, [missions, selectedChapter]);
 
-    if (incomingId) {
-      const parsed = Number(incomingId);
-      if (!isNaN(parsed)) {
-        console.log("📌 기존 historyId 재사용:", parsed);
-        setHistoryId(parsed);
+  const getChapterLocked = (chapterId) => {
+    const ms = missions.filter((m) => m.chapter === chapterId);
+
+    if (!accessToken) return true;
+
+    return ms.every((m) => m.is_unlocked === false);
+  };
+
+  // 챕터 바뀌면 첫 번째 미션 선택
+  useEffect(() => {
+    if (chapterMissions.length > 0) {
+      setCurrentMission(chapterMissions[0].id);
+    }
+  }, [selectedChapter, chapterMissions]);
+
+  // 현재 미션 중앙으로 스크롤 이동
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const container = containerRef.current;
+      const el = itemRefs.current[currentMission];
+
+      if (!container || !el) return;
+
+      const centerPos =
+        el.offsetLeft - container.clientWidth / 2 + el.clientWidth / 2;
+
+      container.scrollTo({ left: centerPos, behavior: 'smooth' });
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [currentMission]);
+
+  // [수정 2] 클릭 시 미리 API 호출하여 ID 생성 후 이동
+  const clickMission = async (m) => {
+    // 1. 로그인 체크
+    if (!isAuthenticated) {
+      setLoginDialog(true);
+      return;
+    }
+
+    // 2. 잠금 체크
+    const alwaysOpen = m.chapter === 1 && Number(m.number) === 1;
+    const unlocked = alwaysOpen ? true : (m.is_unlocked ?? false);
+
+    if (!unlocked) {
+      setLockDialog(true);
+      return;
+    }
+
+    // 3. 풀이 기록 생성 API 호출
+    try {
+      console.log(`📡 풀이 기록 생성 요청: Mission ID ${m.id}`);
+
+      // POST /solutions/ 요청
+      const res = await authClient.post(`/solutions/${m.id}/`, {});
+      const createdHistoryId =
+        res.data.id || res.data.solution_id || res.data.history_id;
+      console.log('🎉 생성된 History ID:', createdHistoryId);
+
+      if (!createdHistoryId) {
+        alert('서버에서 ID를 받아오지 못했습니다.');
         return;
       }
-    }
 
-    // 새 기록 생성
-    setHistoryId(null);
-    const createHistory = async () => {
-      try {
-        const res = await authClient.post(
-          `/solutions/${missionBackendId}/`,
-          {},
-        );
-        const data = res.data;
-        const targetData = Array.isArray(data) ? data[data.length - 1] : data;
-        const newId =
-          targetData?.id || targetData?.solution_id || targetData?.history_id;
-
-        if (newId) setHistoryId(newId);
-      } catch (err) {
-        console.error('❌ 기록 생성 실패:', err);
-      }
-    };
-    createHistory();
-  }, [missionBackendId, location.state, queryHistoryId]);
-
-  /* 🔥 추가: 기존 풀이 기록 상세조회 */
-  useEffect(() => {
-    if (!historyId) return;
-
-    const fetchDetail = async () => {
-      try {
-        const res = await authClient.get(`/solutions/detail/${historyId}`);
-        const data = res.data;
-
-        console.log("📌 기존 풀이 기록 상세:", data);
-        setInitialMessages(data.messages || []);
-      } catch (err) {
-        console.error('❌ 상세 조회 실패:', err);
-      }
-    };
-
-    fetchDetail();
-  }, [historyId]);
-
-  const saveSolution = async (isSolved) => {
-    if (!historyId) return;
-    try {
-      const res = await authClient.patch(`/solutions/update/${historyId}`, {
-        is_solved: isSolved,
+      // 4. ID를 가지고 페이지 이동 (state로 전달)
+      navigate(`/step/${m.chapter}/mission/${m.id}`, {
+        state: { historyId: createdHistoryId },
       });
-      console.log('풀이 저장 성공:', res.data);
     } catch (err) {
-      console.error('풀이 저장 실패:', err);
+      console.error('❌ 풀이 기록 생성 실패:', err);
+      alert('미션 시작 중 오류가 발생했습니다.');
     }
   };
 
-  const renderResultContent = () => {
-    const hasImages = serverImages && serverImages.length > 0;
+  const selectedMissionData = missions.find((m) => m.id === currentMission);
 
-    if (!hasImages) {
-      return (
-        <DefaultWrapper>
-          <img src={defaultImg} alt='기본' />
-          <p>프롬포트 입력시 결과 확인이 가능합니다.</p>
-        </DefaultWrapper>
-      );
+  // 풀이기록 조회 GET /solutions/{mission_id}
+  useEffect(() => {
+    if (!selectedMissionData || !accessToken) return;
+
+    const fetchHistory = async () => {
+      try {
+        const API_BASE = import.meta.env.VITE_API_URL;
+
+        const res = await fetch(
+          `${API_BASE}/solutions/${selectedMissionData.id}`,
+          {
+            headers: {
+              Authorization: `${grantType} ${accessToken}`,
+            },
+          },
+        );
+
+        const data = await res.json();
+        setSolutionHistory(data || []);
+      } catch (err) {
+        console.error('❌ Failed to fetch solution history:', err);
+      }
+    };
+
+    fetchHistory();
+  }, [selectedMissionData, accessToken]);
+
+  useEffect(() => {
+    const shouldRefresh = localStorage.getItem('shouldRefreshMissions');
+
+    if (shouldRefresh === 'true') {
+      fetchMissions();
+      localStorage.removeItem('shouldRefreshMissions');
     }
-    const resultImage = serverImages[serverImages.length - 1];
-    const stepImages = serverImages.slice(0, -1);
-
-    return (
-      <ResultWrapper>
-        {stepImages.map((imgUrl, idx) => (
-          <ImageItemBox key={idx}>
-            <img src={imgUrl} alt={`step-${idx}`} />
-          </ImageItemBox>
-        ))}
-
-        <ImageItemBox>
-          <img src={resultImage} alt='result' />
-        </ImageItemBox>
-      </ResultWrapper>
-    );
-  };
-
-  const renderMissionContent = () => {
-    switch (missionNumber) {
-      case 1:
-        return (
-          <>
-            <p>손재주가 뛰어난 건축가인 당신!</p>
-            <p style={{ marginBottom: '1rem' }}>
-              뚝딱뚝딱 새로 지은 집의 문이 완성됐어요.
-            </p>
-            <p>이제 문단속을 위해 하나의 열쇠로만 문이 열리도록 해야해요.</p>
-            <p>
-              아래 그림을 보고, 어떤 열쇠로 문이 열리고 닫히는지 직접 조건문을
-              만들어 봅시다!
-            </p>
-            <ImageRow>
-              <ImageItem>
-                <small>열쇠 A</small>
-                <img src={keyAImg} alt='열쇠 A' />
-              </ImageItem>
-              <ImageItem>
-                <small>열쇠 B</small>
-                <img src={keyBImg} alt='열쇠 B' />
-              </ImageItem>
-              <ImageItem>
-                <small>열쇠 C</small>
-                <img src={keyCImg} alt='열쇠 C' />
-              </ImageItem>
-              <ImageItem>
-                <img
-                  src={doorImg}
-                  alt='문'
-                  style={{
-                    width: '5.5rem',
-                    height: '8.875rem',
-                    marginLeft: '2rem',
-                  }}
-                />
-              </ImageItem>
-            </ImageRow>
-          </>
-        );
-      case 2:
-        return (
-          <>
-            <p>앗! 잠시 자리를 비운 사이, 누군가가 잠금장치를 망가뜨렸어요!</p>
-            <p style={{ marginBottom: '1rem' }}>
-              방해꾼이 잠금장치를 엉망으로 만들어버린 바람에, 문이 이상하게
-              작동하기 시작했어요.
-            </p>
-            <p>
-              아래 그림을 보고, 잠금장치에서 무엇이 잘못되었는지 설명해주세요.
-            </p>
-            <p>
-              그 후 잠금장치가 올바르게 작동하도록 새로운 조건문을 직접
-              작성해봅시다!
-            </p>
-            <ImageRow>
-              <ImageItem>
-                <small>열쇠 A</small>
-                <img src={keyAOImg} alt='열쇠 A' />
-              </ImageItem>
-              <ImageItem>
-                <small>열쇠 B</small>
-                <img src={keyBOImg} alt='열쇠 B' />
-              </ImageItem>
-              <ImageItem>
-                <small>열쇠 C</small>
-                <img src={keyCXImg} alt='열쇠 C' />
-              </ImageItem>
-              <ImageItem>
-                <img
-                  src={dooropenImg}
-                  alt='문'
-                  style={{
-                    width: '5.5rem',
-                    height: '8.875rem',
-                    marginLeft: '2rem',
-                  }}
-                />
-              </ImageItem>
-            </ImageRow>
-          </>
-        );
-      case 3:
-        return (
-          <>
-            <p>건축가로서 능력을 인정받은 당신!</p>
-            <p style={{ marginBottom: '1rem' }}>
-              이번에는 은행에서 새로운 잠금장치를 의뢰했어요.
-            </p>
-            <p>
-              보다 뛰어난 보안을 위해, 이전보다 복잡한 규칙으로 문이 열리도록
-              만들어야 해요.
-            </p>
-            <p>
-              아래 그림을 보고, 새로운 잠금장치에 맞는 조건문을 직접
-              작성해보세요!
-            </p>
-            <ImageRow style={{ marginTop: '0.5rem', gap: '0.75rem' }}>
-              <LockSetGroup>
-                <LockSet>
-                  <KeyGroup>
-                    <ImageItem>
-                      <small
-                        style={{
-                          fontSize: '0.6075rem',
-                          lineHeight: '0.91125rem',
-                        }}
-                      >
-                        열쇠 A
-                      </small>
-                      <img
-                        src={keyAImg}
-                        alt='열쇠 A'
-                        style={{ width: '3.52269rem', height: '5.43169rem' }}
-                      />
-                    </ImageItem>
-                    <ImageItem>
-                      <small
-                        style={{
-                          fontSize: '0.6075rem',
-                          lineHeight: '0.91125rem',
-                        }}
-                      >
-                        열쇠 B
-                      </small>
-                      <img
-                        src={keyBImg}
-                        alt='열쇠 B'
-                        style={{ width: '3.52269rem', height: '5.43169rem' }}
-                      />
-                    </ImageItem>
-                    <ImageItem>
-                      <small
-                        style={{
-                          fontSize: '0.6075rem',
-                          lineHeight: '0.91125rem',
-                        }}
-                      >
-                        열쇠 C
-                      </small>
-                      <img
-                        src={keyCImg}
-                        alt='열쇠 C'
-                        style={{ width: '3.52269rem', height: '5.43169rem' }}
-                      />
-                    </ImageItem>
-                  </KeyGroup>
-                </LockSet>
-                <SetLabel>3개 중 하나의 열쇠로 열기</SetLabel>
-              </LockSetGroup>
-              <Arrow src={arrowrightIcon} />
-              <LockSetGroup>
-                <LockSet>
-                  <KeyGroup>
-                    <ImageItem>
-                      <small
-                        style={{
-                          fontSize: '0.6075rem',
-                          lineHeight: '0.91125rem',
-                        }}
-                      >
-                        열쇠 1
-                      </small>
-                      <img
-                        src={keyAImg}
-                        alt='열쇠 1'
-                        style={{ width: '3.52269rem', height: '5.43169rem' }}
-                      />
-                    </ImageItem>
-                    <ImageItem>
-                      <small
-                        style={{
-                          fontSize: '0.6075rem',
-                          lineHeight: '0.91125rem',
-                        }}
-                      >
-                        열쇠 2
-                      </small>
-                      <img
-                        src={keyBImg}
-                        alt='열쇠 2'
-                        style={{ width: '3.52269rem', height: '5.43169rem' }}
-                      />
-                    </ImageItem>
-                    <ImageItem>
-                      <small
-                        style={{
-                          fontSize: '0.6075rem',
-                          lineHeight: '0.91125rem',
-                        }}
-                      >
-                        열쇠 3
-                      </small>
-                      <img
-                        src={keyCImg}
-                        alt='열쇠 3'
-                        style={{ width: '3.52269rem', height: '5.43169rem' }}
-                      />
-                    </ImageItem>
-                  </KeyGroup>
-                </LockSet>
-                <SetLabel>3개 중 하나의 열쇠로 열기</SetLabel>
-              </LockSetGroup>
-              <Arrow src={arrowrightIcon} />
-              <ImageItem>
-                <img
-                  src={doorImg}
-                  alt='문'
-                  style={{ width: '5.5rem', height: '8.875rem' }}
-                />
-              </ImageItem>
-            </ImageRow>
-          </>
-        );
-      default:
-        return <p>미션 설명을 불러올 수 없습니다.</p>;
-    }
-  };
-
-  if (!missionBackendId) {
-    return (
-      <Wrapper>
-        <TopNavigation />
-        <ContentWrap>
-          <p>잘못된 접근입니다.</p>
-        </ContentWrap>
-      </Wrapper>
-    );
-  }
+  }, [location.pathname]);
 
   return (
-    <Wrapper>
+    <SPageContainer>
       <TopNavigation />
-      <ContentWrap>
-        <MissionHeader
-          stepId={2}
-          stepNumber='02 조건'
-          title={
-            missionNumber === 1
-              ? '건축가의 잠금장치: 하나의 열쇠로만'
-              : missionNumber === 2
-                ? '건축가의 잠금장치: 고장난 잠금장치'
-                : '건축가의 잠금장치: 이중잠금'
-          }
-          initialStep={missionNumber}
-          status={status}
-        />
 
-        <MainLayout>
-          <LeftPanel>
-            <MissionDescription>{renderMissionContent()}</MissionDescription>
+      {/* 로그인 필요 */}
+      <Dialog
+        isOpen={loginDialog}
+        title='로그인이 필요해요!'
+        description={`학습을 시작하기 위해서
+        회원가입 또는 로그인을 먼저 진행해주세요.`}
+        buttonText='로그인하러 가기'
+        onButtonClick={() => navigate('/login')}
+        onClose={() => setLoginDialog(false)}
+        icon={<img src={AlertIcon} alt='alert' style={{ width: '3rem' }} />}
+      />
 
-            <AnswerCheckContainer status={status}>
-              {renderResultContent()}
-            </AnswerCheckContainer>
-          </LeftPanel>
+      {/* 미션 잠김 */}
+      <Dialog
+        isOpen={lockDialog}
+        title='미션이 현재 잠겨 있어요!'
+        description={`해당 미션을 진행하려면
+        이전 학습 단계를 먼저 완료해주세요.`}
+        buttonText='확인'
+        onButtonClick={() => setLockDialog(false)}
+        onClose={() => setLockDialog(false)}
+        icon={<img src={AlertIcon} alt='alert' style={{ width: '3rem' }} />}
+      />
 
-          <RightPanel>
-            {(() => {
-              switch (missionNumber) {
-                case 1:
-                  return (
-                    <AnswerChat
-                      key={missionId}
-                      botIcon={botIcon}
-                      initialMessage={`조건문은 다음과 같은 형식으로 작성해주세요!<br><span style="color:#868ba3;">예시) “만약 ○○라면, △△한다. 그렇지 않다면, ▽▽한다.”</span>`}
-                      status={status}
-                      historyId={historyId}
-                      setImage={setServerImages}
-                      initialMessages={initialMessages}   {/* 🔥 추가 */}
-                      readOnly={isSolved}                 {/* 🔥 추가 */}
-                      setStatus={async (v) => {
-                        setStatus(v);
-                        if (v === 'success') {
-                          setTimeout(async () => {
-                            await saveSolution(true);
-                            localStorage.setItem(
-                              'shouldRefreshMissions',
-                              'true',
-                            );
-                            if (onFinish) onFinish(true);
-                          }, 1200);
-                        }
-                        if (v === 'fail') {
-                          setTimeout(async () => {
-                            await saveSolution(false);
-                            if (onFinish) onFinish(false);
-                          }, 1200);
-                        }
-                      }}
-                    />
-                  );
-                case 2:
-                  return (
-                    <AnswerChat
-                      key={missionBackendId}
-                      botIcon={botIcon}
-                      initialMessage={`잠금장치에서 무엇이 잘못되었는지와 새로운 조건문을 모두 작성해주세요.<br><br>1.잠금장치에서 무엇이 잘못되었는지는 다음과 같은 형식으로 작성해볼 수 있어요!<br><span style="color:#868ba3;">    예시) “지금은 ~라서 잠금장치가 제대로 작동하지 않아요.”</span><br><br>2. 조건문은 다음과 같은 형식으로 작성해주세요!<br><span style="color:#868ba3;">    예시) “만약 ○○라면, △△한다. 그렇지 않다면, ▽▽한다.”</span>`}
-                      status={status}
-                      historyId={historyId}
-                      setImage={setServerImages}
-                      initialMessages={initialMessages}   {/* 🔥 추가 */}
-                      readOnly={isSolved}                 {/* 🔥 추가 */}
-                      setStatus={async (v) => {
-                        setStatus(v);
-                        if (v === 'success') {
-                          setTimeout(async () => {
-                            await saveSolution(true);
-                            localStorage.setItem(
-                              'shouldRefreshMissions',
-                              'true',
-                            );
-                            if (onFinish) onFinish(true);
-                          }, 1200);
-                        }
-                        if (v === 'fail') {
-                          setTimeout(async () => {
-                            await saveSolution(false);
-                            if (onFinish) onFinish(false);
-                          }, 1200);
-                        }
-                      }}
-                    />
-                  );
-                case 3:
-                  return (
-                    <AnswerChat
-                      key={missionBackendId}
-                      botIcon={botIcon}
-                      initialMessage={`2가지의 조건이 모두 반영되도록 새로운 조건문을 작성해주세요. <br><br>조건문은 다음과 같은 형식으로 작성해주세요!<br><span style="color:#868ba3; font-weight:500;">예시) “만약 ○○라면, △△한다. 그렇지 않다면, ▽▽한다.”</span>`}
-                      status={status}
-                      historyId={historyId}
-                      setImage={setServerImages}
-                      initialMessages={initialMessages}   {/* 🔥 추가 */}
-                      readOnly={isSolved}                 {/* 🔥 추가 */}
-                      setStatus={async (v) => {
-                        setStatus(v);
-                        if (v === 'success') {
-                          setTimeout(async () => {
-                            await saveSolution(true);
-                            localStorage.setItem(
-                              'shouldRefreshMissions',
-                              'true',
-                            );
-                            if (onFinish) onFinish(true);
-                          }, 1200);
-                        }
-                        if (v === 'fail') {
-                          setTimeout(async () => {
-                            await saveSolution(false);
-                            if (onFinish) onFinish(false);
-                          }, 1200);
-                        }
-                      }}
-                    />
-                  );
-                default:
-                  return null;
-              }
-            })()}
-          </RightPanel>
-        </MainLayout>
-      </ContentWrap>
-    </Wrapper>
+      <SWrapper>
+        {/* 챕터 탭 */}
+        <ChapterTabs>
+          {chapters.map((c, idx) => {
+            const locked = getChapterLocked(c.id);
+            const active = selectedChapter === c.id;
+
+            return (
+              <div key={c.id} style={{ display: 'flex', alignItems: 'center' }}>
+                <ChapterTab
+                  active={active}
+                  locked={locked}
+                  onClick={() => setSelectedChapter(c.id)}
+                >
+                  {c.title}
+                </ChapterTab>
+
+                {idx === 0 && chapters.length > 1 && (
+                  <LineImg src={LineIcon} alt='line' />
+                )}
+              </div>
+            );
+          })}
+        </ChapterTabs>
+
+        {/* 챕터 소제목 */}
+        <div style={{ display: 'flex', gap: '11rem', marginTop: '3rem' }}>
+          {chapters.map((c) => {
+            const active = selectedChapter === c.id;
+            const locked = getChapterLocked(c.id);
+
+            return (
+              <SubTitle
+                key={c.id}
+                active={active}
+                locked={locked}
+                onClick={() => setSelectedChapter(c.id)}
+              >
+                {c.subtitle}
+              </SubTitle>
+            );
+          })}
+        </div>
+
+        {/* 미션 카드 */}
+        <MissionContainer ref={containerRef}>
+          {chapterMissions.map((m) => (
+            <MissionWrapper
+              key={m.id}
+              onMouseEnter={() => setHoverId(m.id)}
+              onMouseLeave={() => setHoverId(null)}
+              onClick={() => clickMission(m)} // 여기서 수정된 함수 실행
+              ref={(el) => (itemRefs.current[m.id] = el)}
+            >
+              <MissionCard
+                size={hoverId === m.id ? 'large' : 'small'}
+                theme={m.is_unlocked ? 'light' : 'dark'}
+                missionNumber={m.number}
+                title={m.title}
+                description={m.description}
+                imageSrc={m.image}
+              />
+            </MissionWrapper>
+          ))}
+        </MissionContainer>
+
+        {/* 풀이기록 */}
+        {solutionHistory.length > 0 && (
+          <RecordBox>
+            {solutionHistory.map((h, idx) => (
+              <p
+                key={h.id}
+                onClick={() => navigate(`/solution-history/${h.id}`)}
+                style={{ cursor: 'pointer' }}
+              >
+                풀이 기록 {idx + 1} : {formatDate(h.updated_at)}
+              </p>
+            ))}
+          </RecordBox>
+        )}
+      </SWrapper>
+    </SPageContainer>
   );
 };
 
-export default MissionPage_02;
+export default LearningStepPage;
 
-/* ---------- 스타일 ---------- */
-const Wrapper = styled.div`
-  width: 100%;
+/* 스타일 컴포넌트 (기존과 동일) */
+const SPageContainer = styled.div`
+  background: linear-gradient(180deg, #fff 0%, #b1d0ff 100%);
   min-height: 100vh;
-  background: #fff;
   display: flex;
   flex-direction: column;
 `;
-const ContentWrap = styled.div`
-  width: 100%;
-  max-width: 1920px;
-  margin-top: 1rem;
+
+const SWrapper = styled.div`
+  position: relative;
+  padding-top: 6.25rem;
   display: flex;
   flex-direction: column;
+  align-items: center;
 `;
-const MainLayout = styled.div`
-  display: flex;
-  justify-content: space-between;
-  gap: 1.5rem;
-  padding: 0rem 12.5rem 0rem 12.5rem;
-`;
-const LeftPanel = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-`;
-const RightPanel = styled.div`
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-`;
-const ImageRow = styled.div`
+
+const ChapterTabs = styled.div`
   display: flex;
   justify-content: center;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 1.75rem;
-  margin-top: 1.51rem;
 `;
-const ImageItem = styled.div`
+
+const ChapterTab = styled.button`
+  color: var(--Black, #191927);
+  font-family: DungGeunMo;
+  font-size: 2.75rem;
+  cursor: pointer;
+  margin-left: 4.5rem;
+  margin-right: 4.5rem;
+
+  color: ${({ active }) => (active ? '#191927' : '#646879')};
+`;
+
+const SubTitle = styled.div`
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  small {
-    color: var(--Gray-1, #646879);
-    text-align: center;
-    font-family: Pretendard;
-    font-size: 0.75rem;
-    font-style: normal;
-    font-weight: 500;
-    line-height: 1.125rem;
-    margin-bottom: 0.5rem;
-    padding-left: 0.5rem;
+  color: #fff;
+  font-family: Pretendard;
+  font-size: 1.75rem;
+  font-style: normal;
+  font-weight: 600;
+  line-height: normal;
+  cursor: pointer;
+  padding: 0.88rem 2rem;
+  border-radius: 1rem;
+  border: none;
+  background-color: ${({ locked, active }) => {
+    if (locked) return 'rgba(196, 199, 211, 0.75)';
+    if (active) return 'var(--Brand-2, #7DB1FF)';
+    return 'var(--Brand-4, #B1D0FF)';
+  }};
+`;
+
+const MissionContainer = styled.div`
+  margin-top: 3rem;
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+
+  overflow-x: scroll;
+  scrollbar-width: none;
+  overflow: visible;
+
+  padding: 2rem 0;
+
+  width: 100%;
+  max-width: 900px;
+  margin-left: auto;
+  margin-right: auto;
+`;
+
+const MissionWrapper = styled.div`
+  flex-shrink: 0;
+  cursor: pointer;
+  position: relative;
+  overflow: visible;
+
+  transition:
+    transform 0.45s cubic-bezier(0.22, 0.61, 0.36, 1),
+    opacity 0.3s ease,
+    margin 0.45s cubic-bezier(0.22, 0.61, 0.36, 1);
+
+  transform-origin: center center;
+
+  margin-left: 2rem;
+  margin-right: 2rem;
+
+  &:hover {
+    transform: scale(1.15);
   }
-  img {
-    width: 4.349rem;
-    height: 6.70581rem;
-    object-fit: contain;
-  }
 `;
-const LockSetGroup = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin: 0.56rem;
-`;
-const LockSet = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  border-radius: 1.25rem;
-  border: 1px dashed var(--Gray-2, #868ba3);
-  padding: 0.56rem 0.94rem;
-`;
-const KeyGroup = styled.div`
-  display: flex;
-  gap: 0.61rem;
-`;
-const SetLabel = styled.small`
-  color: var(--Gray-2, #868ba3);
+
+const RecordBox = styled.div`
+  margin: auto;
+  margin-top: 2rem;
+  padding: 1rem 2rem;
+  background: rgba(255, 255, 255, 0.4);
+  border-radius: 1rem;
   text-align: center;
   font-family: Pretendard;
-  font-size: 0.75rem;
-  font-style: normal;
-  font-weight: 500;
-  line-height: 1.125rem;
-`;
-const Arrow = styled.img`
-  width: 1.5rem;
-  height: 1.5rem;
 `;
 
-const DefaultWrapper = styled.div`
-  text-align: center;
-  img {
-    width: auto;
-    height: 10rem;
-    object-fit: contain;
-  }
-  p {
-    margin-top: 1rem;
-    color: #868ba3;
-    font-size: 1rem;
-    font-weight: 500;
-  }
-`;
-
-const ResultWrapper = styled.div`
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 1.5rem;
-  flex-wrap: wrap;
-`;
-
-const ImageItemBox = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  img {
-    width: 5.5rem;
-    height: 9rem;
-    object-fit: contain;
-  }
+const LineImg = styled.img`
+  width: 12.5rem;
+  height: 0.1875rem;
 `;
