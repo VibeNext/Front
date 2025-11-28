@@ -15,6 +15,7 @@ const AnswerChat = ({
   setImage,
   historyId,
   readOnly,
+  setIsSolved,
 }) => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
@@ -111,6 +112,10 @@ const AnswerChat = ({
 
               // ✅ [핵심 수정] 리스트 전체를 가져옵니다.
               const assetList = parsed.answer_asset_list || [];
+
+              if (typeof setIsSolved === 'function') {
+                setIsSolved(parsed.is_solved);
+              }
 
               // (1) 상태 업데이트 (성공/실패)
               if (parsed.is_solved) setStatus('success');

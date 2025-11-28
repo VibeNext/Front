@@ -32,7 +32,7 @@ const MissionPage_01 = ({ onFinish }) => {
   const missionBackendId = Number(missionId);
   const missionNumber = missionBackendId % 10;
   const [historyId, setHistoryId] = useState(null);
-  const isSolved = location.state?.isSolved ?? false;
+  const [isSolved, setIsSolved] = useState(location.state?.isSolved ?? false);
 
   const [initialMessages, setInitialMessages] = useState([]);
 
@@ -73,7 +73,7 @@ const MissionPage_01 = ({ onFinish }) => {
     createHistory();
   }, [missionBackendId, location.search, location.state]);
 
-  // 🔍 기존 풀이기록 상세 조회 → 이전 채팅 복원
+  // 기존 풀이기록 상세 조회 → 이전 채팅 복원
   useEffect(() => {
     if (!historyId) return;
 
@@ -85,6 +85,10 @@ const MissionPage_01 = ({ onFinish }) => {
         console.log('📌 상세 조회 응답:', data);
 
         setInitialMessages(data.messages || []); // ← 메시지 저장
+
+        if (typeof data.is_solved === 'boolean') {
+          setIsSolved(data.is_solved);
+        }
       } catch (err) {
         console.error('❌ 상세 조회 실패:', err);
       }
@@ -330,6 +334,7 @@ const MissionPage_01 = ({ onFinish }) => {
                       wrongMessage={`<strong style="color:#FF644F;">오답입니다!</strong><br><br>레시피 순서를 다시 확인해주세요!<br><span style="color:#868ba3; font-weight:500;">예: 불을 켜야만 물을 끓일 수 있겠죠?</span>`}
                       status={status}
                       historyId={historyId}
+                      setIsSolved={setIsSolved}
                       setImage={setServerImages} // ✅ 이미지 리스트 설정 함수 전달
                       setStatus={async (v) => {
                         setStatus(v);
@@ -386,6 +391,7 @@ const MissionPage_01 = ({ onFinish }) => {
                       }}
                       initialMessages={initialMessages} // ★ 추가
                       readOnly={isSolved}
+                      setIsSolved={setIsSolved}
                     />
                   );
                 case 3:
@@ -420,6 +426,7 @@ const MissionPage_01 = ({ onFinish }) => {
                       }}
                       initialMessages={initialMessages} // ★ 추가
                       readOnly={isSolved}
+                      setIsSolved={setIsSolved}
                     />
                   );
                 default:

@@ -34,7 +34,7 @@ const MissionPage_02 = ({ onFinish }) => {
 
   const [historyId, setHistoryId] = useState(null);
 
-  const isSolved = location.state?.isSolved ?? false;
+  const [isSolved, setIsSolved] = useState(location.state?.isSolved ?? false);
   const [initialMessages, setInitialMessages] = useState([]);
 
   const queryHistoryId = new URLSearchParams(location.search).get('historyId');
@@ -83,9 +83,13 @@ const MissionPage_02 = ({ onFinish }) => {
         const res = await authClient.get(`/solutions/detail/${historyId}`);
         const data = res.data;
 
-        console.log('📌 기존 풀이 기록 상세:', data);
+        console.log('📌 상세 조회 응답:', data);
 
-        setInitialMessages(data.messages || []);
+        setInitialMessages(data.messages || []); // ← 메시지 저장
+
+        if (typeof data.is_solved === 'boolean') {
+          setIsSolved(data.is_solved);
+        }
       } catch (err) {
         console.error('❌ 상세 조회 실패:', err);
       }
@@ -409,6 +413,7 @@ const MissionPage_02 = ({ onFinish }) => {
                       setImage={setServerImages}
                       initialMessages={initialMessages}
                       readOnly={isSolved}
+                      setIsSolved={setIsSolved}
                       setStatus={async (v) => {
                         setStatus(v);
                         if (v === 'success') {
@@ -443,6 +448,7 @@ const MissionPage_02 = ({ onFinish }) => {
                       setImage={setServerImages}
                       initialMessages={initialMessages}
                       readOnly={isSolved}
+                      setIsSolved={setIsSolved}
                       setStatus={async (v) => {
                         setStatus(v);
                         if (v === 'success') {
@@ -477,6 +483,7 @@ const MissionPage_02 = ({ onFinish }) => {
                       setImage={setServerImages}
                       initialMessages={initialMessages}
                       readOnly={isSolved}
+                      setIsSolved={setIsSolved}
                       setStatus={async (v) => {
                         setStatus(v);
                         if (v === 'success') {
