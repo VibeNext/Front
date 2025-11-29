@@ -29,7 +29,7 @@
   </tbody>
 </table>
 
-## 👾 Directory
+## 👾 Directory Structure
 
 ```
 frontend/
