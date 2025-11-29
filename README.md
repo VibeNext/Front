@@ -20,12 +20,12 @@
 
 <table>
   <tbody>
-    <tr><td>Language</td><td>Javascript</td></tr>
-    <tr><td>Framework</td><td>React + Vite</td></tr>
-    <tr><td>Style</td><td>styled-components</td></tr>
-    <tr><td>State Management</td><td>Zustand</td></tr>
-    <tr><td>Data Fetch</td><td>Axios</td></tr>
-    <tr><td>Cloud Infrastructure</td><td>Netlify</td></tr>
+    <tr><td>Language</td><td><img src="https://img.shields.io/badge/javascript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black" /></td></tr>
+    <tr><td>Framework</td><td><img src="https://img.shields.io/badge/react-61DAFB?style=for-the-badge&logo=react&logoColor=black" /> <img src="https://img.shields.io/badge/vite-646CFF?style=for-the-badge&logo=vite&logoColor=white" /></td></tr>
+    <tr><td>Style</td><td><img src="https://img.shields.io/badge/styled--components-DB7093?style=for-the-badge&logo=styled-components&logoColor=white" /></td></tr>
+    <tr><td>State Management</td><td><img src="https://img.shields.io/badge/Zustand-654321?style=for-the-badge&logo=Zustand&logoColor=white"></td></tr>
+    <tr><td>Data Fetch</td><td><img src="https://img.shields.io/badge/axios-5A29E4?style=for-the-badge&logo=axios&logoColor=white"></td></tr>
+    <tr><td>Cloud Infrastructure</td><td><img src="https://img.shields.io/badge/Netlify-00C7B7?style=for-the-badge&logo=netlify&logoColor=white" /></td></tr>
   </tbody>
 </table>
 
